@@ -18,6 +18,7 @@ services:
     restart: always
     volumes:
       - ./backend:/home/node/app
+      - /home/node/app/node_modules
     expose:
       - "8000"
     networks:
