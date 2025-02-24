@@ -1,0 +1,32 @@
+services:
+  nginx:
+    build:
+      context: nginx
+    container_name: nginx
+    restart: always
+    ports:
+      - "443:443"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+    networks:
+      - transcendence-net
+
+  backend:
+    container_name: backend
+    build:
+      context: backend
+    restart: always
+    volumes:
+      - ./backend:/home/node/app
+    expose:
+      - "8000"
+    networks:
+      - transcendence-net
+    environment:
+      - NODE_ENV=production
+      - PORT=8000
+
+networks:
+  transcendence-net:
+    name: transcendence-net
+    driver: bridge
