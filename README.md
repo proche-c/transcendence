@@ -30,13 +30,13 @@ flowchart LR
 
 ## **Feature Checklist**
 ### **Major Modules** (1 point each)
-✅ Use a framework to build the backend. (Express.js)  
+✅ Use a framework to build the backend. (Node.js)  
 ✅ Standard user management, authentication, users across tournaments.  
 ✅ Remote players (1 point) (?)  
 ✅ Implement Two-Factor Authentication (2FA) and JWT. (?)  
 
 ### **Minor Modules** (0.5 points each)
-✅ Use a framework or a toolkit to build the frontend.  
+✅ Use a framework or a toolkit to build the frontend. (Tailwind CSS)  
 ✅ Use a database for the backend.  
 ✅ Game customization options.  
 ✅ User and game stats dashboards.  
@@ -45,11 +45,11 @@ flowchart LR
 
 ## **Technologies Used**
 - **Frontend**: TypeScript, Tailwind CSS
-- **Backend**: Node.js, Express.js
-- **Database**: (To be decided)
+- **Backend**: Node.js
+- **Database**: SQLite
 - **Proxy**: Nginx
 - **Authentication**: JWT, Two-Factor Authentication (2FA)
-- **Monitoring**: (To be decided)
+- **Monitoring**: Prometheus, Grafana
 
 ## **Setup Instructions**
 1. Clone the repository:
