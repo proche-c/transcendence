@@ -19,6 +19,7 @@ services:
     volumes:
       - ./backend:/home/node/app
       - /home/node/app/node_modules
+      - ./sqlite_data:/home/node/app/database.sqlite
     expose:
       - "8000"
     networks:
