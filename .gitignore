@@ -1,0 +1,10 @@
+.vscode
+*.env
+*.o
+*.d
+*.tar
+*-container
+node_modules/
+*.old
+database.sqlite
+*.log
