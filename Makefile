@@ -1,43 +1,39 @@
 # Colors
-
 RED := $(shell tput -Txterm setaf 1)
 GREEN := $(shell tput -Txterm setaf 2)
 YELLOW := $(shell tput -Txterm setaf 3)
 RESET := $(shell tput -Txterm sgr0)
 
-
 # Docker Image Name
 IMAGE_NAME = fastify-sqlite
 
-# Path to the SQLite database
+# Directory & Path for SQLite Database
+DB_DIR = ./sqlite_data
 DB_PATH = $(DB_DIR)/database.sqlite
-
-# Directory for the SQLite database
-DB_DIR = /home/$(USER)/fastify-sqlite
 
 # Port used for the app
 PORT = 8000
 
-
-# start the container
-run:
-# Create the database file if it doesn't exist
-	[ -f $(DB_PATH) ] || touch $(DB_PATH)
-
-# Set proper permissions on the SQLite file
-	chmod 666 $(DB_PATH)
-
-# Run the container
-	docker network create --driver bridge custom_network
-	docker run --rm -it --network custom_network -p $(PORT):$(PORT) -v $(DB_PATH):/app/database.sqlite $(IMAGE_NAME)
-
-# Default variables
+# Docker Compose settings
 DOCKER_COMPOSE := docker-compose
 DOCKER_COMPOSE_FILE := compose.yaml
 
-.PHONY: start stop clean
+# Ensure SQLite database file exists with correct permissions
+prepare-db:
+	@echo "$(YELLOW)Checking SQLite database file...$(RESET)"
+	@mkdir -p $(DB_DIR)
+	@sudo chmod 777 $(DB_DIR)
+	@[ -f $(DB_PATH) ] || touch $(DB_PATH)
+	@chmod 666 $(DB_PATH)
+	@chown $(shell whoami):$(shell whoami) $(DB_PATH)
+	@echo "$(GREEN)SQLite database is ready!$(RESET)"
 
-start:
+# Start the container with database setup
+run: prepare-db
+	docker network create --driver bridge custom_network || true
+	docker run --rm -it --network custom_network -p $(PORT):$(PORT) -v $(PWD)/$(DB_DIR):/app/sqlite_data $(IMAGE_NAME)
+
+start: prepare-db
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up -d $(c)
 
 stop:
@@ -49,23 +45,23 @@ clean: confirm
 confirm:
 	@( read -p "$(YELLOW)Are you sure you want to clean all data? [y/N]$(RESET): " sure && case "$$sure" in [yY]) true;; *) false;; esac)
 
-# build the docker image
-build:
+# Build and restart containers
+build: prepare-db
 	docker compose up --build
 
-# Print the logs of the container
+# Print container logs
 logs:
 	docker-compose logs -f
 
-# List all the containers
+# List all containers
 list:
 	docker ps -a
 
-# clean the container and the used images
+# Clean Docker system
 reclean:
 	docker system prune -f
 
-# fclean command to remove the database.sqlite file
+# Delete the SQLite database file
 fclean: stop clean
 	@read -p "Are you sure you want to delete the database.sqlite file and its contents? (y/n): " confirm; \
 	if [ "$$confirm" = "y" ]; then \
@@ -75,17 +71,18 @@ fclean: stop clean
 		echo "Operation canceled."; \
 	fi
 
-
-
-# disponible commands
+# Display available commands
 help:
 	@echo "Available commands:"
-	@echo "  make build         → Build the Docker Image"
-	@echo "  make run           → Execute the Docker container"
-	@echo "  make compose-up    → Start with Docker-compose"
-	@echo "  make compose-down  → Stop with Docker-compose"
+	@echo "  make build         → Build and start Docker containers"
+	@echo "  make run           → Run the container manually"
+	@echo "  make start         → Start with Docker-compose"
+	@echo "  make stop          → Stop with Docker-compose"
 	@echo "  make clean         → Clean the used containers"
 	@echo "  make logs          → Print the logs"
-	@echo "  make remove        → Delete the Docker Image"
-	@echo "  make re            → Full reload"
-	@echo "  make list          → List of the Images"
+	@echo "  make list          → List running containers"
+	@echo "  make fclean        → Delete the SQLite database file"
+	@echo "  make reclean       → Clean Docker system"
+	@echo "  make help          → Display this help message"
+
+.PHONY: run start stop clean logs list fclean reclean help
