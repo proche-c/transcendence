@@ -26,6 +26,7 @@ prepare-db:
 	@[ -f $(DB_PATH) ] || touch $(DB_PATH)
 	@chmod 666 $(DB_PATH)
 	@chown $(shell whoami):$(shell whoami) $(DB_PATH)
+	@sqlite3 $(DB_PATH) < backend/init.sql
 	@echo "$(GREEN)SQLite database is ready!$(RESET)"
 
 # Start the container with database setup
