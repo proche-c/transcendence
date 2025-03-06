@@ -5,7 +5,7 @@ YELLOW := $(shell tput -Txterm setaf 3)
 RESET := $(shell tput -Txterm sgr0)
 
 # Docker Image Name
-IMAGE_NAME = fastify-sqlite
+IMAGE_NAME = backend
 
 # Directory & Path for SQLite Database
 DB_DIR = ./sqlite_data
@@ -22,17 +22,34 @@ DOCKER_COMPOSE_FILE := compose.yaml
 prepare-db:
 	@echo "$(YELLOW)Checking SQLite database file...$(RESET)"
 	@mkdir -p $(DB_DIR)
-	@sudo chmod 777 $(DB_DIR)
+	if [ "$(USER)" = "alex" ]; then \
+        sudo chmod 777 $(DB_DIR); \
+	else \
+        chmod 777 $(DB_DIR); \
+	fi	
+
 	@[ -f $(DB_PATH) ] || touch $(DB_PATH)
 	@chmod 666 $(DB_PATH)
-	@chown $(shell whoami):$(shell whoami) $(DB_PATH)
-	@sqlite3 $(DB_PATH) < backend/init.sql
+	if [ "$(USER)" = "alex" ]; then \
+        chown $(shell whoami):$(shell whoami) $(DB_PATH); \
+	else \
+		chmod 777 $(DB_DIR); \
+	fi
+
+	if [ "$(USER)" = "ageiser" ] || [ "$(shell id -gn)" = "2022_barcelona" ]; then \
+        echo "$(YELLOW)Using SQLite via Docker (School Mode)$(RESET)"; \
+        docker run --rm -v $(PWD)/$(DB_DIR):/app/sqlite_data $(IMAGE_NAME) || true; \
+	else \
+        echo "$(YELLOW)Using local SQLite (Normal Mode)$(RESET)"; \
+        sqlite3 $(DB_PATH) < backend/init.sql; \
+	fi
 	@echo "$(GREEN)SQLite database is ready!$(RESET)"
 
 # Start the container with database setup
 run: prepare-db
 	docker network create --driver bridge custom_network || true
-	docker run --rm -it --network custom_network -p $(PORT):$(PORT) -v $(PWD)/$(DB_DIR):/app/sqlite_data $(IMAGE_NAME)
+#docker run --pull=never --rm -it --network custom_network -p $(PORT):$(PORT) -v $(PWD)/$(DB_DIR):/app/sqlite_data $(IMAGE_NAME)
+	docker run --rm --user $(id -u):$(id -g) backend
 
 start: prepare-db
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up -d $(c)
@@ -48,7 +65,11 @@ confirm:
 
 # Build and restart containers
 build: prepare-db
-	docker compose up --build
+	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) build backend:latest
+	docker tag transcommon-backend backend
+	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up -d
+
+#docker compose up --build $(IMAGE_NAME)
 
 # Print container logs
 logs:
@@ -59,8 +80,16 @@ list:
 	docker ps -a
 
 # Clean Docker system
-reclean:
+reclean: fclean
 	docker system prune -f
+	@if [ -n "$$(docker ps -q)" ]; then \
+        docker stop $$(docker ps -q); \
+        docker rm $$(docker ps -aq); \
+    fi
+	@if [ -n "$$(docker images -q)" ]; then \
+        docker rmi $$(docker images -q) --force; \
+	fi
+	docker system prune -a --volumes --force
 
 # Delete the SQLite database file
 fclean: stop clean

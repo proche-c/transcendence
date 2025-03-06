@@ -5,7 +5,7 @@ services:
     container_name: nginx
     restart: always
     ports:
-      - "443:443"
+      - "8443:443"
     volumes:
       - ./frontend:/usr/share/nginx/html
     networks:
@@ -27,6 +27,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=8000
+    image: backend
 
 networks:
   transcendence-net:
