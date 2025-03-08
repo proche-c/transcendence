@@ -5,7 +5,7 @@ YELLOW := $(shell tput -Txterm setaf 3)
 RESET := $(shell tput -Txterm sgr0)
 
 # Docker Image Name
-IMAGE_NAME = backend
+IMAGE_NAME = fastify-sqlite
 
 # Directory & Path for SQLite Database
 DB_DIR = ./sqlite_data
@@ -48,8 +48,7 @@ prepare-db:
 # Start the container with database setup
 run: prepare-db
 	docker network create --driver bridge custom_network || true
-#docker run --pull=never --rm -it --network custom_network -p $(PORT):$(PORT) -v $(PWD)/$(DB_DIR):/app/sqlite_data $(IMAGE_NAME)
-	docker run --rm --user $(id -u):$(id -g) backend
+	docker run --rm -it --network custom_network -p $(PORT):$(PORT) -v $(PWD)/$(DB_DIR):/app/sqlite_data $(IMAGE_NAME)
 
 start: prepare-db
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up -d $(c)
@@ -65,11 +64,7 @@ confirm:
 
 # Build and restart containers
 build: prepare-db
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) build backend:latest
-	docker tag transcommon-backend backend
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up -d
-
-#docker compose up --build $(IMAGE_NAME)
+	docker compose up --build
 
 # Print container logs
 logs:
