@@ -22,7 +22,7 @@ DOCKER_COMPOSE_FILE := compose.yaml
 prepare-db:
 	@echo "$(YELLOW)Checking SQLite database file...$(RESET)"
 	@mkdir -p $(DB_DIR)
-	if [ "$(USER)" = "alex" ]; then \
+	@if [ "$(USER)" = "alex" ]; then \
         sudo chmod 777 $(DB_DIR); \
 	else \
         chmod 777 $(DB_DIR); \
@@ -30,13 +30,13 @@ prepare-db:
 
 	@[ -f $(DB_PATH) ] || touch $(DB_PATH)
 	@chmod 666 $(DB_PATH)
-	if [ "$(USER)" = "alex" ]; then \
+	@if [ "$(USER)" = "alex" ]; then \
         chown $(shell whoami):$(shell whoami) $(DB_PATH); \
 	else \
 		chmod 777 $(DB_DIR); \
 	fi
 
-	if [ "$(USER)" = "ageiser" ] || [ "$(shell id -gn)" = "2022_barcelona" ]; then \
+	@if [ "$(USER)" = "ageiser" ] || [ "$(shell id -gn)" = "2022_barcelona" ]; then \
         echo "$(YELLOW)Using SQLite via Docker (School Mode)$(RESET)"; \
         docker run --rm -v $(PWD)/$(DB_DIR):/app/sqlite_data $(IMAGE_NAME) || true; \
 	else \
