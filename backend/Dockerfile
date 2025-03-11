@@ -13,11 +13,15 @@ COPY --chown=node:node package*.json ./
 # Change the user to node
 USER node
 
-# Install the dependencies
+# Install all dependencies
 RUN npm install
 
 # Copy the source code
 COPY --chown=node:node . .
+
+# Ensure @fastify/jwt and bcrypt are installed
+RUN npm list @fastify/jwt || npm install @fastify/jwt
+RUN npm list bcrypt || npm install bcrypt
 
 # Exposing the port used by Fastify
 EXPOSE 8000

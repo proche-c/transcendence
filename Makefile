@@ -109,5 +109,6 @@ help:
 	@echo "  make fclean        → Delete the SQLite database file"
 	@echo "  make reclean       → Clean Docker system"
 	@echo "  make help          → Display this help message"
+	@echo "  make prepare-db    → Prepare the SQLite database file"
 
-.PHONY: run start stop clean logs list fclean reclean help
+.PHONY: run start stop clean logs list fclean reclean help prepare-db
