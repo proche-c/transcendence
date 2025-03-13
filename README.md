@@ -32,6 +32,7 @@ flowchart LR
 ✅  = done  
 💻  = in progress  
 ❌  = free to develop  
+
 🐶  = Paula  
 🐱  = Alex  
 🐭  = Israel  
