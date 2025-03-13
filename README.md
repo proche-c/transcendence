@@ -40,9 +40,9 @@ flowchart LR
 
 
 • Web  
-    •💻🐶 Minor module: Use a framework or a toolkit to build the frontend.             0.5  
-    ✅🐱 Minor module: Use a database for the backend.                                 0.5  
-    ❌ Major module: Store the score of a tournament in the Blockchain.  
+    0.5  💻🐶 Minor module: Use a framework or a toolkit to build the frontend.             
+    0.5  ✅🐱 Minor module: Use a database for the backend.                                   
+         ❌ Major module: Store the score of a tournament in the Blockchain.  
 • User Management  
     💻🐱 Major module: Standard user management, authentication, users across          1  
         tournaments.  
