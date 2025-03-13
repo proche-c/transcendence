@@ -45,9 +45,9 @@ flowchart LR
     0.5  ✅🐱 Minor module: Use a database for the backend.                                   
          ❌ Major module: Store the score of a tournament in the Blockchain.  
 • User Management  
-    💻🐱 Major module: Standard user management, authentication, users across          1  
+    1 💻🐱 Major module: Standard user management, authentication, users across            
         tournaments.  
-    💻🐱 Major module: Implementing a remote authentication.                           1 
+    1 💻🐱 Major module: Implementing a remote authentication.                           
 • Gameplay and user experience  
     ❌ Major module: Remote players  
     ❌ Major module: Multiplayer (more than 2 players in the same game).  
@@ -56,15 +56,15 @@ flowchart LR
     ❌ Major module: Live chat.  
 • AI-Algo  
     ❌ Major module: Introduce an AI opponent.  
-    💻🐱 Minor module: User and game stats dashboards                                   0.5  
+    0.5 💻🐱 Minor module: User and game stats dashboards                                     
 • Cybersecurity  
     ❌ Major module: Implement WAF/ModSecurity with a hardened configura-  
        tion and HashiCorp Vault for secrets management.  
     ❌ Minor module: GDPR compliance options with user anonymization, local  
        data management, and Account Deletion.  
-    💻🐱 Major module: Implement Two-Factor Authentication (2FA) and JWT.               1
+    1 💻🐱 Major module: Implement Two-Factor Authentication (2FA) and JWT.               
 • Devops  
-    💻🐱 Major module: Infrastructure setup for log management.                         1  
+    1 💻🐱 Major module: Infrastructure setup for log management.                          
     ❌ Minor module: Monitoring system.  
     ❌ Major module: Designing the backend as microservices.  
 • Graphics  
@@ -78,11 +78,9 @@ flowchart LR
 • Server-Side Pong  
     ❌ Major module: Replace basic Pong with server-side Pong and implement an  
         API.  
-    💻🐱 Major module: Enabling Pong gameplay via CLI against web users with              1  
+    1 💻🐱 Major module: Enabling Pong gameplay via CLI against web users with               
         API integration.  
-
-
-                                                                            Total:      7.5
+    7.5 TOTAL
 
 ## **Technologies Used**
 - **Frontend**: TypeScript, Tailwind CSS
