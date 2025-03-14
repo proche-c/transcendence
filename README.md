@@ -37,7 +37,7 @@ flowchart LR
 🐱  = Alex  
 🐭  = Israel  
 🐹  = Pau  
-🐰  =  
+🐰  = Anna 
 
 
 • Web  
