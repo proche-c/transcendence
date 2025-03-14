@@ -38,7 +38,6 @@ prepare-db:
 
 	@if [ "$(USER)" = "ageiser" ] || [ "$(shell id -gn)" = "2022_barcelona" ]; then \
         echo "$(YELLOW)Using SQLite via Docker (School Mode)$(RESET)"; \
-        docker run --rm -v $(PWD)/$(DB_DIR):/app/sqlite_data $(IMAGE_NAME) || true; \
 	else \
         echo "$(YELLOW)Using local SQLite (Normal Mode)$(RESET)"; \
         sqlite3 $(DB_PATH) < backend/init.sql; \
@@ -85,6 +84,7 @@ reclean: fclean
         docker rmi $$(docker images -q) --force; \
 	fi
 	docker system prune -a --volumes --force
+	rm -rf $(DB_DIR)
 
 # Delete the SQLite database file
 fclean: stop clean
@@ -112,3 +112,5 @@ help:
 	@echo "  make prepare-db    → Prepare the SQLite database file"
 
 .PHONY: run start stop clean logs list fclean reclean help prepare-db
+
+#docker run --rm -v $(PWD)/$(DB_DIR):/app/sqlite_data $(IMAGE_NAME) || true; \
