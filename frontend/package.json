@@ -1,0 +1,23 @@
+{
+  "name": "transcendence-backend",
+  "version": "1.0.0",
+  "description": "Backend for the Transcendence project",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "build": "tailwindcss -i ./app/styles.css -o ./app/tailwind.css --minify"
+  },
+  "dependencies": {
+    "@tailwindcss/cli": "^4.0.12",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6",
+    "tailwindcss": "^4.0.12"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "nodemon": "^3.0.0"
+  }
+}
