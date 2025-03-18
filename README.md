@@ -29,83 +29,19 @@ flowchart LR
 - **Backend**: A Node.js-based server handling application logic and database communication.
 
 ## **Feature Checklist**
-✅ = done  
-💻 = in progress  
-❌ = free to develop  
+### **Major Modules** (1 point each)
+✅ Use a framework to build the backend. (Node.js)  
+✅ Standard user management, authentication, users across tournaments.  
+✅ Remote players (1 point) (?)  
+✅ Implement Two-Factor Authentication (2FA) and JWT. (?)  
 
-🐶 = Paula  
-🐱 = Alex  
-🐭 = Israel  
-🐹 = Pau  
-🐰 = Anna  
-
-### Web  
-| Points | Status | Student | Module |
-|--------|--------|----------|--------|
-| 1      | ✅     | 🐱       | Major module: Use a framework to build the backend. |
-| 0.5    | 💻     | 🐶       | Minor module: Use a framework or a toolkit to build the frontend. |
-| 0.5    | ✅     | 🐱       | Minor module: Use a database for the backend. |
-|        | ❌     |          | Major module: Store the score of a tournament in the Blockchain. |
-
-### User Management  
-| Points | Status | Student | Module |
-|--------|--------|----------|--------|
-| 1      | 💻     | 🐱        | Major module: Standard user management, authentication, users across tournaments. |
-| 1      | 💻     | 🐱        | Major module: Implementing a remote authentication. |
-
-### Gameplay and User Experience  
-| Points | Status | Student |Module |
-|--------|--------|----------|-------|
-|        | ❌     |          |Major module: Remote players |
-|        | ❌     |          |Major module: Multiplayer (more than 2 players in the same game). |
-|        | ❌     |          |Major module: Add another game with user history and matchmaking. |
-|        | ❌     |          |Minor module: Game customization options. |
-|        | ❌     |          |Major module: Live chat. |
-
-### AI-Algo  
-| Points | Status | Student | Module |
-|--------|--------|----------|--------|
-|        | ❌     |          | Major module: Introduce an AI opponent. |
-| 0.5    | 💻     | 🐱       | Minor module: User and game stats dashboards. |
-
-### Cybersecurity  
-| Points | Status | Student |Module |
-|--------|--------|----------|-------|
-|        | ❌     |           | Major module: Implement WAF/ModSecurity with a hardened configuration and HashiCorp Vault for secrets management. |
-|        | ❌     |           |Minor module: GDPR compliance options with user anonymization, local data management, and Account Deletion. |
-| 1      | 💻     | 🐱        |Major module: Implement Two-Factor Authentication (2FA) and JWT. |
-
-### DevOps  
-| Points | Status | Student | Module |
-|--------|--------|----------|--------|
-| 1      | 💻     | 🐱       | Major module: Infrastructure setup for log management. |
-|        | ❌     |          | Minor module: Monitoring system. |
-|        | ❌     |          | Major module: Designing the backend as microservices. |
-
-### Graphics  
-| Points | Status | Student | Module |
-|--------|--------|----------|--------|
-|        | ❌     |           | Major module: Use advanced 3D techniques. |
-
-### Accessibility  
-| Points | Status | Student | Module |
-|--------|--------|----------|--------|
-|        | ❌     |           | Minor module: Support on all devices. |
-|        | ❌     |           | Minor module: Expanding browser compatibility. |
-|        | ❌     |           | Minor module: Supports multiple languages. |
-|        | ❌     |           | Minor module: Add accessibility features for visually impaired users. |
-|        | ❌     |           | Minor module: Server-Side Rendering (SSR) integration. |
-
-### Server-Side Pong  
-| Points | Status | Student | Module |
-|--------|--------|----------|--------|
-|        | ❌     |          | Major module: Replace basic Pong with server-side Pong and implement an API. |
-| 1      | 💻     | 🐱       | Major module: Enabling Pong gameplay via CLI against web users with API integration. |
-
-### **Total**  
-**7.5**  
-
-
+### **Minor Modules** (0.5 points each)
+✅ Use a framework or a toolkit to build the frontend. (Tailwind CSS)  
+✅ Use a database for the backend.  
+✅ Game customization options.  
+✅ User and game stats dashboards.  
+✅ Monitoring system.  
+✅ Supports multiple languages.  
 
 ## **Technologies Used**
 - **Frontend**: TypeScript, Tailwind CSS
