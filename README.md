@@ -50,7 +50,7 @@ flowchart LR
 ### User Management  
 | Points | Status | Student | Module |
 |--------|--------|----------|--------|
-| 1      | 💻     | 🐱        | Major module: Standard user management, authentication, users across tournaments. |
+| 1      | ✅     | 🐱        | Major module: Standard user management, authentication, users across tournaments. |
 | 1      | 💻     | 🐱        | Major module: Implementing a remote authentication. |
 
 ### Gameplay and User Experience  
