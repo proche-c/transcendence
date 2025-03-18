@@ -127,5 +127,37 @@ nvm alias default 18
 make build
 make run
 
+----------------------
 
 
+requests:
+
+BASE TEST:
+curl -X GET http://localhost:8000/
+
+USER INSCRIPTION:
+curl -X POST http://localhost:8000/register \
+     -H "Content-Type: application/json" \
+     -d '{"username": "testuser", "email": "test@example.com", "password": "mypassword"}'
+
+CONNECTION (GET USER TOKEN)
+curl -X POST http://localhost:8000/login \
+     -H "Content-Type: application/json" \
+     -d '{"email": "test@example.com", "password": "mypassword"}'
+
+GET LIST OF TOURNAMENTS:
+curl -X GET http://localhost:8000/tournaments
+
+CREATING A TOURNAMENT:
+curl -X POST http://localhost:8000/tournaments \
+     -H "Content-Type: application/json" \
+     -d '{"name": "Tournoi Test", "start_date": "2025-03-12"}'
+
+GET USERS LIST (with JWT)
+curl -X GET http://localhost:8000/users \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer [MY TOKEN]"
+
+GET USER FRIENDS LIST (with JWT)
+curl -X GET http://localhost:8000/friends/1 \
+     -H "Authorization: Bearer [MY TOKEN]"
