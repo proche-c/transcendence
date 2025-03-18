@@ -65,7 +65,7 @@ flowchart LR
 ### AI-Algo  
 | Points | Status | Student | Module |
 |--------|--------|----------|--------|
-|        | ❌     |🐰       | Major module: Introduce an AI opponent. |
+|        | ❌     |          | Major module: Introduce an AI opponent. |
 | 0.5    | 💻     | 🐱       | Minor module: User and game stats dashboards. |
 
 ### Cybersecurity  
