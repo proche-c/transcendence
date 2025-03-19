@@ -1,7 +1,8 @@
 "use strict";
-class HeaderComponent extends HTMLElement {
+class BoardComponent extends HTMLElement {
     constructor() {
         super();
+        this.content = null;
         this.attachShadow({ mode: "open" });
         this.render();
     }
@@ -12,10 +13,14 @@ class HeaderComponent extends HTMLElement {
         style.rel = "stylesheet";
         style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
         this.shadowRoot.innerHTML = `
-        <div class= "bg-gray-950 flex items-center align-middle justify-center p-3 m-2 h-30 shadow-lg  rounded-lg">
-                <img src="./app/assets/pong.png" class="scale-50">
-        </div>`;
+            <pong-header></pong-header>
+            <pong-menu></pong-menu>
+			<div id="content" class="mt-4 p-4 border border-gray-300 rounded-lg">
+				Esto es el leader board
+			</div>
+		`;
         this.shadowRoot.appendChild(style);
+        this.content = this.shadowRoot.querySelector("#content");
     }
 }
-customElements.define("pong-header", HeaderComponent);
+customElements.define("pong-board", BoardComponent);

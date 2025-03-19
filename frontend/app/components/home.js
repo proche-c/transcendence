@@ -25,7 +25,7 @@ class HomeComponent extends HTMLElement {
         style.rel = "stylesheet";
         style.href = "./app/tailwind.css";
         this.shadowRoot.innerHTML = `
-            <div class="bg-black flex items-center justify-center overflow-hidden m-1">
+            <div class="bg-black flex items-center justify-center overflow-hidden m-2 rounded-lg shadow-lg">
                 <img src="./app/assets/start2.png" class="p-1">
             </div>
             <div class="p-2">
