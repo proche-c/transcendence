@@ -1,9 +1,5 @@
 .vscode
-<<<<<<< HEAD
 .env
-=======
-*.env
->>>>>>> 63bb39ea94832ca38e3f9721e77d52d370e12c47
 *.o
 *.d
 *.tar
