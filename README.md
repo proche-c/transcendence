@@ -78,7 +78,7 @@ flowchart LR
 ### DevOps  
 | Points | Status | Student | Module |
 |--------|--------|----------|--------|
-| 1      | 💻     | 🐱       | Major module: Infrastructure setup for log management. |
+| 1      | ❌     | 🐱       | Major module: Infrastructure setup for log management. |
 |        | ❌     |          | Minor module: Monitoring system. |
 |        | ❌     |          | Major module: Designing the backend as microservices. |
 
@@ -100,7 +100,7 @@ flowchart LR
 | Points | Status | Student | Module |
 |--------|--------|----------|--------|
 |        | ❌     |          | Major module: Replace basic Pong with server-side Pong and implement an API. |
-| 1      | 💻     | 🐱       | Major module: Enabling Pong gameplay via CLI against web users with API integration. |
+| 1      |   ❌   | 🐱       | Major module: Enabling Pong gameplay via CLI against web users with API integration. |
 
 ### **Total**  
 **7.5**  
