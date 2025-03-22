@@ -1,5 +1,8 @@
 // Fastify server using node.js that manages an API listening on port 3000
-require('dotenv').config(); // Load environment variables from a .env file into process.env
+require('dotenv').config({ path: '../.env' }); // Load environment variables from a .env file into process.env
+console.log("GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID);
+console.log("GOOGLE_CLIENT_SECRET:", process.env.GOOGLE_CLIENT_SECRET);
+
 
 const fastify = require('fastify')({ logger: true }); //loading the fastify Framework and activate the logs
 const sqlite3 = require('sqlite3').verbose(); // SQLite3 library
