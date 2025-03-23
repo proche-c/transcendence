@@ -14,7 +14,7 @@ class HeaderComponent extends HTMLElement {
 		style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
 
         this.shadowRoot.innerHTML = `
-        <div class= "bg-gray-950 flex items-center align-middle justify-center p-3 m-2 h-30 shadow-lg  rounded-lg">
+        <div class= "bg-gray-950 flex items-center align-middle justify-center p-3 m-1 h-30">
                 <img src="./app/assets/pong.png" class="scale-50">
         </div>`
 

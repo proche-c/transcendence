@@ -1,16 +1,6 @@
 // Fastify server using node.js that manages an API listening on port 3000
 
-
 const fastify = require('fastify')({ logger: true }); //loading the fastify Framework and activate the logs
-
-const fastifyCors = require('@fastify/cors');
-
-fastify.register(fastifyCors, {
-    origin: true, // Permite cualquier origen. Puedes cambiarlo a ['http://localhost:3000'] o el dominio que necesites
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-});
-
 const sqlite3 = require('sqlite3').verbose(); // SQLite3 library
 const fs = require('fs'); // File system library
 const path = require('path'); // Path library

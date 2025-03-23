@@ -9,21 +9,15 @@ class MenuComponent extends HTMLElement {
 	private render(): void {
 		if(!this.shadowRoot)
 			return;
-
-		const currentHash = window.location.hash;
-		const isActive = (hash: string) => currentHash === hash ? "text-purple-900" : "text-purple-700";
 		const style = document.createElement("link");
 		style.rel = "stylesheet";
 		style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
 
 		this.shadowRoot.innerHTML = `
-			<nav class="flex p-2 rounded-lg shadow-lg m-2 justify-between">
-				<div>
-					<a id="profile" href="#profile" class="ml-0 ${isActive("#profile")} hover:text-purple-900 font-bold mx-1 my-1 lg:text-3xl lg:mx-10 lg:ml-0">PROFILE</a>
-					<a id="board" href="#board" class="${isActive("#board")} hover:text-purple-900 font-bold mx-1 my-1 lg:text-3xl lg:mx-10 lg:ml-0">LEADER BOARD</a>
-					<a id="play" href="#play" class="${isActive("#play")} hover:text-purple-900 font-bold mx-1 my-1 lg:text-3xl lg:mx-10 lg:ml-0">PLAY</a>
-				</div>
-				<button id="logout" class="bg-purple-400 text-black mx-1 ml-3 p-1 text-center text-xs font-bold rounded-lg my-1 lg:text-base px-2">Logout</button>
+			<nav class="flex gap-4 bg-gray-800 text-white p-4 rounded-lg">
+				<a id="profile" href="#profile" class="hover:text-yellow-400">PROFILE</a>
+				<a id="board" href="#board" class="hover:text-yellow-400">LEADER BOARD</a>
+				<a id="play" href="#play" class="hover:text-yellow-400">PLAY</a>
 			</nav>
 		`;
 
@@ -47,7 +41,6 @@ class MenuComponent extends HTMLElement {
 						this.render();
 					} else {
 						window.location.hash = targetId;
-						this.render();
 					}
 				});
 			}

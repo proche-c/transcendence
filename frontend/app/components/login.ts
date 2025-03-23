@@ -1,4 +1,4 @@
-class HomeComponent extends HTMLElement {
+class LoginComponent extends HTMLElement {
     private usernameInput: HTMLInputElement | null = null;
     private passwordInput: HTMLInputElement | null = null;
     private loginButton: HTMLElement | null = null;
@@ -10,7 +10,7 @@ class HomeComponent extends HTMLElement {
         this.render();
     }
 
-    render() {
+    private render(): void {
         if (!this.shadowRoot) return;
 
         const style = document.createElement("link");
@@ -18,22 +18,12 @@ class HomeComponent extends HTMLElement {
         style.href = "./app/tailwind.css";
 
         this.shadowRoot.innerHTML = `
-            <div class="bg-black flex items-center justify-center overflow-hidden m-1">
-                <img src="./app/assets/start2.png" class="p-1">
-            </div>
-            <div class="p-2">
-                <h1 class="font-sans text-center font-bold text-purple-900 text-2xl">WELCOME TO PONG!</h1>
-            </div>
-            <div class="border-1 border-purple-900 flex justify-center items-center content-center m-1 p-1">
-                <div class="flex-col bg-black m-4 py-4 px-6 justify-center content-center">
-                    <p class="text-white mx-1 my-2">Doesn't have an account yet? <button id="register" class="font-bold"> Sing in</button></p>
-                    <input type="text" id="username" placeholder="Username" class="bg-white mx-1 my-2 p-1" required><br>
-                    <input type="password" id="password" placeholder="Password" class="bg-white mx-1 my-2 p-1" required><br>
-                    <div class="align-middle">
-                    <button id="login" class="bg-gray-800 text-white m-1 p-1 text-center font-bold text-lg">Login</button>
-                    </div>
-                <div>
-            </div>
+            <header>
+                <h1>Login</h1>
+            </header>
+            <input type="text" id="username" placeholder="Username" required><br>
+            <input type="password" id="password" placeholder="Password" required><br>
+            <button id="login">Login</button>
         `;
 
         this.shadowRoot.appendChild(style);
@@ -71,7 +61,6 @@ class HomeComponent extends HTMLElement {
             });
 
             this.response = await response.json();
-            location.hash = "#profile"; // Cambiar la vista
             // Aqui el backend hará las validaciones de username y password y me enviara un error
             // en caso de que haya algun problema
             // Si la autenticacion es valida, el backend creara un token jwt y lo guardara en las cookies
@@ -81,21 +70,8 @@ class HomeComponent extends HTMLElement {
         } catch (error: any) {
             console.log("error en la peticion");
         }
-    } 
-
-    // addEventListeners() {
-    //     // const loginButton = this.shadowRoot?.querySelector("#login");
-    //     // if (loginButton) {
-    //     //     loginButton.addEventListener("click", () => {
-    //     //         location.hash = "#login"; // Cambiar la vista
-    //     //     });
-    //     // }
-    //     // const registerButton = this.shadowRoot?.querySelector("#register");
-    //     // if (loginButton) {
-    //     //     loginButton.addEventListener("click", () => {
-    //     //         location.hash = "#register"; // Cambiar la vista
-    //     //     });
-    //     // }
+    }    
 }
+customElements.define("pong-login", LoginComponent);
 
-customElements.define("pong-home", HomeComponent);
+

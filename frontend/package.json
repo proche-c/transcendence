@@ -6,8 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "css": "npx @tailwindcss/cli -i ./app/styles.css -o ./app/tailwind.css --watch",
-    "server": "npx json-server app/assets/db.json"
+    "build": "tailwindcss -i ./app/styles.css -o ./app/tailwind.css --minify"
   },
   "dependencies": {
     "@tailwindcss/cli": "^4.0.12",
