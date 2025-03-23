@@ -1,13 +1,18 @@
-// Fastify server using node.js that manages an API listening on port 3000
-
-const fastify = require('fastify')({ logger: true }); //loading the fastify Framework and activate the logs
+// Fastify server using Node.js that manages an API listening on port 8000
+const fastify = require('fastify')({ logger: true }); // Loading Fastify framework with logging enabled
 const sqlite3 = require('sqlite3').verbose(); // SQLite3 library
 const fs = require('fs'); // File system library
 const path = require('path'); // Path library
-const bcrypt = require('bcrypt'); // Bcrypt library for hashing passwords
-const jwt = require('@fastify/jwt'); // JWT library for authentication
-const oauthPlugin = require('@fastify/oauth2'); // OAuth2 library for authentication
+const bcrypt = require('bcrypt'); // Bcrypt for password hashing
+const jwt = require('@fastify/jwt'); // JWT for authentication
+const oauthPlugin = require('@fastify/oauth2'); // OAuth2 for authentication
+const cors = require('@fastify/cors'); // CORS plugin
 
+// Register CORS middleware
+fastify.register(cors, {
+    origin: ['https://localhost'], // Allow requests only from this origin
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+});
 
 // Register JWT with a secret key
 fastify.register(jwt, { secret: 'supersecretkey' });
@@ -21,194 +26,108 @@ fastify.decorate("authenticate", async (request, reply) => {
     }
 });
 
-
 // Define a simple route
-fastify.get('/', async (request, reply) => 
-    {
+fastify.get('/', async (request, reply) => {
     return { message: 'Pong!' };
-    });
-
-// Get all users (Protected route)
-fastify.get('/users', { preHandler: [fastify.authenticate] }, async (request, reply) => {
-    try {
-        const users = await dbAllAsync('SELECT id, username, email FROM users');
-        return reply.send(users);
-    } catch (error) {
-        return reply.status(500).send({ message: 'Error retrieving users' });
-    }
 });
-
 
 // Route to the SQLite database
 const dbPath = "./sqlite_data/database.sqlite";
-//const dbPath = "/home/node/app/sqlite_data/database.sqlite";
+const db = new sqlite3.Database(dbPath, (err) => {
+    if (err) {
+        console.error('Database opening failed:', err.message);
+    } else {
+        console.log('Connected to database');
 
-// Create or open the SQLite Database
-const db = new sqlite3.Database(dbPath, (err) => 
-    {
-    if (err) 
-        {
-        console.error('Database opening failed', err.message);
-        } 
-    else 
-    {
-        console.log('Connection to database completed');
-        const initSQL = fs.readFileSync(path.join(__dirname, 'init.sql'), 'utf8'); // Read and execute the SQL file to initialise the database
-        db.exec(initSQL, (err) => {
-            if (err) 
-                {
-                console.error('Error while executing the file init.sql:', err.message);
+        // Initialize database
+        try {
+            const initSQL = fs.readFileSync(path.join(__dirname, 'init.sql'), 'utf8');
+            db.exec(initSQL, (err) => {
+                if (err) {
+                    console.error('Error executing init.sql:', err.message);
+                } else {
+                    console.log('Database initialized');
+                    const seedSQL = fs.readFileSync(path.join(__dirname, 'seeds.sql'), 'utf8');
+                    db.exec(seedSQL, (err) => {
+                        if (err) console.error('Error executing seeds.sql:', err.message);
+                        else console.log('Database seeded');
+                    });
                 }
-            else {
-                console.log('Database initiated successfully');
-                
-                // Seeds execution
-                const seedSQL = fs.readFileSync(path.join(__dirname, 'seeds.sql'), 'utf8');
-                db.exec(seedSQL, (err) => {
-                    if (err) {
-                        console.error('Error while executing seeds.sql:', err.message);
-                    } else {
-                        console.log('Database seeded successfully');
-                    }
-                });
-            }
-        });
+            });
+        } catch (fileError) {
+            console.error('Error reading SQL files:', fileError.message);
+        }
     }
 });
 
-// Promisified function to handle DB get
-function dbGetAsync(query, params) 
-{
-    return new Promise((resolve, reject) => 
-        {
-            db.get(query, params, (err, row) => 
-                {
-                if (err) reject(err);
-                    resolve(row);
-                });
-        });
-}
-
-// Promisified function to handle DB all
-function dbAllAsync(query, params = []) {
+// Promisified functions for database queries
+const dbGetAsync = (query, params) => {
     return new Promise((resolve, reject) => {
-        db.all(query, params, (err, rows) => {
-            if (err) reject(err);
-            else resolve(rows);
-        });
+        db.get(query, params, (err, row) => (err ? reject(err) : resolve(row)));
     });
-}
+};
 
-// Promisified function to handle DB run
-function dbRunAsync(query, params) 
-{
-    return new Promise((resolve, reject) => 
-        {
-        db.run(query, params, function (err) 
-        {
+const dbAllAsync = (query, params = []) => {
+    return new Promise((resolve, reject) => {
+        db.all(query, params, (err, rows) => (err ? reject(err) : resolve(rows)));
+    });
+};
+
+const dbRunAsync = (query, params) => {
+    return new Promise((resolve, reject) => {
+        db.run(query, params, function (err) {
             if (err) reject(err);
             resolve(this);
         });
-        });
-}
+    });
+};
 
-// Inscription route for a new user
-fastify.post('/register', async (request, reply) => 
-    {
+// User registration route
+fastify.post('/register', async (request, reply) => {
     const { username, email, password } = request.body;
-
-    // Check if the fields are filled
-    if (!username || !email || !password) 
-        {
-        return reply.status(400).send({ message: 'All fields need to be filled' });
-        }
+    if (!username || !email || !password) {
+        return reply.status(400).send({ message: 'All fields are required' });
+    }
 
     try {
-        // Check if the user already exists
         const row = await dbGetAsync('SELECT * FROM users WHERE email = ? OR username = ?', [email, username]);
+        if (row) {
+            return reply.status(400).send({ message: 'Username or email already exists' });
+        }
 
-        if (row) 
-            {
-            return reply.status(400).send({ message: 'The username or email already exists' });
-            }
-
-        // Password hash
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-        // Insert a new user in the database
+        const hashedPassword = await bcrypt.hash(password, 10);
         const result = await dbRunAsync('INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)', [username, email, hashedPassword]);
 
-        // Successfully created user, return response
-        return reply.status(201).send({ message: 'User successfully created', userId: result.lastID });
+        return reply.status(201).send({ message: 'User created', userId: result.lastID });
+    } catch (err) {
+        return reply.status(500).send({ message: 'Error processing request', error: err.message });
+    }
+});
 
-        } 
-        catch (err) 
-        {
-            return reply.status(500).send({ message: 'Error while processing the request', error: err.message });
-        }
-    });
-
-// User login with JWT token generation
+// User login with JWT
 fastify.post('/login', async (request, reply) => {
     const { email, password } = request.body;
     if (!email || !password) {
         return reply.status(400).send({ message: 'All fields are required' });
     }
+
     try {
         const user = await dbGetAsync('SELECT * FROM users WHERE email = ?', [email]);
         if (!user) {
             return reply.status(404).send({ message: 'User not found' });
         }
+
         const match = await bcrypt.compare(password, user.password_hash);
         if (!match) {
             return reply.status(401).send({ message: 'Incorrect password' });
         }
+
         const token = fastify.jwt.sign({ userId: user.id, username: user.username });
         return reply.send({ message: 'Login successful', token });
     } catch (err) {
         return reply.status(500).send({ message: 'Error processing request', error: err.message });
     }
 });
-
-
-// Add friend
-fastify.post('/friends', async (request, reply) => {
-    const { user_id, friend_id } = request.body;
-    if (!user_id || !friend_id) return reply.status(400).send({ message: 'User ID and Friend ID are required' });
-    try {
-        await dbRunAsync('INSERT INTO friends (user_id, friend_id) VALUES (?, ?)', [user_id, friend_id]);
-        return reply.status(201).send({ message: 'Friend request sent' });
-    } catch (error) {
-        return reply.status(500).send({ message: 'Error adding friend', error: error.message });
-    }
-});
-
-// Get friends
-fastify.get('/friends/:user_id', async (request, reply) => {
-    const { user_id } = request.params;
-    if (!user_id) return reply.status(400).send({ message: 'User ID is required' });
-    try {
-        const friends = await dbAllAsync('SELECT * FROM friends WHERE user_id = ?', [user_id]);
-        return reply.send(friends);
-    } catch (error) {
-        return reply.status(500).send({ message: 'Error getting friends', error: error.message });
-    }
-});
-
-// Create tournament
-fastify.post('/tournaments', async (request, reply) => {
-    const { name, start_date } = request.body;
-    if (!name || !start_date) return reply.status(400).send({ message: 'Name and start date are required' });
-    try {
-        const result = await dbRunAsync('INSERT INTO tournaments (name, start_date) VALUES (?, ?)', [name, start_date]);
-        return reply.status(201).send({ message: 'Tournament created', tournamentId: result.lastID });
-    } catch (error) {
-        return reply.status(500).send({ message: 'Error creating tournament', error: error.message });
-    }
-});
-
-
 
 // Get tournaments
 fastify.get('/tournaments', async (request, reply) => {
@@ -217,6 +136,21 @@ fastify.get('/tournaments', async (request, reply) => {
         return reply.send(tournaments);
     } catch (error) {
         return reply.status(500).send({ message: 'Error getting tournaments', error: error.message });
+    }
+});
+
+// Create tournament
+fastify.post('/tournaments', async (request, reply) => {
+    const { name, start_date } = request.body;
+    if (!name || !start_date) {
+        return reply.status(400).send({ message: 'Name and start date are required' });
+    }
+
+    try {
+        const result = await dbRunAsync('INSERT INTO tournaments (name, start_date) VALUES (?, ?)', [name, start_date]);
+        return reply.status(201).send({ message: 'Tournament created', tournamentId: result.lastID });
+    } catch (error) {
+        return reply.status(500).send({ message: 'Error creating tournament', error: error.message });
     }
 });
 
@@ -245,15 +179,11 @@ fastify.get('/auth/google/callback', async (request, reply) => {
 });
 
 // Start the server
-const start = async () => 
-    {
-    try 
-    {
+const start = async () => {
+    try {
         await fastify.listen({ port: 8000, host: '0.0.0.0' });
         console.log('Server is running on http://localhost:8000');
-    } 
-    catch (err) 
-    {
+    } catch (err) {
         fastify.log.error(err);
         process.exit(1);
     }

@@ -66,7 +66,7 @@ class HomeComponent extends HTMLElement {
             const data = { id: 9, username, password };
             try {
                 // Esta url sera el endponit que configure el servidor
-                const response = yield fetch("http://localhost:3000/users", {
+                const response = yield fetch("http://localhost:8000/login", {
                     method: "POST",
                     body: JSON.stringify(data),
                     headers: { "Content-Type": "application/json" },
