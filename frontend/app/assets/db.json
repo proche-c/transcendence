@@ -1,0 +1,84 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "username": "usuario1",
+      "password": "constrasenya1"
+    },
+    {
+      "id": "2",
+      "username": "usuario2",
+      "password": "constrasenya2"
+    },
+    {
+      "id": "3",
+      "username": "usuario3",
+      "password": "constrasenya3"
+    },
+    {
+      "id": "4",
+      "username": "usuario4",
+      "password": "constrasenya4"
+    },
+    {
+      "id": "5",
+      "username": "usuario cambiado",
+      "password": "constrasenya cambiada"
+    },
+    {
+      "id": "9",
+      "username": "cndwjiq",
+      "password": "cdw"
+    },
+    {
+      "id": "9",
+      "username": "fd",
+      "password": "sx "
+    },
+    {
+      "id": "9",
+      "username": "zxs",
+      "password": "sw"
+    },
+    {
+      "id": "9",
+      "username": "cd",
+      "password": "asx"
+    },
+    {
+      "id": "9",
+      "username": "bjsdwk",
+      "password": "xsq"
+    },
+    {
+      "id": "9",
+      "username": "cbdhw",
+      "password": "cdwnj"
+    },
+    {
+      "id": "9",
+      "username": "csxw",
+      "password": "xsacd"
+    },
+    {
+      "id": "9",
+      "username": "qs",
+      "password": "xa"
+    },
+    {
+      "id": "9",
+      "username": "bhjdcs",
+      "password": "cdsx"
+    },
+    {
+      "id": "9",
+      "username": "hbk",
+      "password": "hj"
+    },
+    {
+      "id": 9,
+      "username": "cdsa",
+      "password": "dcs"
+    }
+  ]
+}

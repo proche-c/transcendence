@@ -1,9 +1,53 @@
 <!DOCTYPE html>
-<html>
-  <head>
-	<title>My First Web Page</title>
-	</head>
-	<body>
-	  <h1>Welcome to my first web page!</h1>
-    </body>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong</title>
+    <link rel="stylesheet" href="./app/tailwind.css">
+</head>
+<body class="bg-amber-50">
+    <div id="app"></div>
+
+    <script type="module" src="./app/components/header.js"></script>
+    <script type="module" src="./app/components/home.js"></script>
+    <script type="module" src="./app/components/menu.js"></script>
+    <script type="module" src="./app/components/profile.js"></script>
+    <script type="module" src="./app/components/board.js"></script>
+    <script type="module" src="./app/components/play.js"></script>
+    <script>
+        function renderComponent() {
+            const appContainer = document.getElementById("app");
+            if (!appContainer) return;
+    
+            if (location.hash === "#profile") {
+                // Evita recrear el componente si ya existe
+                if (!appContainer.querySelector("pong-profile")) {
+                    appContainer.innerHTML = ""; 
+                    appContainer.appendChild(document.createElement("pong-profile"));
+                }
+            } else if (location.hash === "#board") {
+                if (!appContainer.querySelector("pong-board")) {
+                    appContainer.innerHTML = ""; 
+                    appContainer.appendChild(document.createElement("pong-board"));
+                }
+            } else if (location.hash === "#play") {
+                if (!appContainer.querySelector("pong-play")) {
+                    appContainer.innerHTML = ""; 
+                    appContainer.appendChild(document.createElement("pong-play"));
+                }                
+            }
+            else {
+                if (!appContainer.querySelector("pong-home")) {
+                    appContainer.innerHTML = "";
+                    appContainer.appendChild(document.createElement("pong-home"));
+                }
+            }
+        }
+    
+        // Detectar cambios en la URL y al cargar la página
+        window.onpopstate = renderComponent;
+        window.addEventListener("DOMContentLoaded", renderComponent);
+    </script>
+</body>
 </html>
