@@ -28,6 +28,8 @@ services:
       - NODE_ENV=production
       - PORT=8000
     image: backend
+    env_file:
+      - .env
 
 networks:
   transcendence-net:
