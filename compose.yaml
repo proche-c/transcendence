@@ -5,7 +5,7 @@ services:
     container_name: nginx
     restart: always
     ports:
-      - "443:443"
+      - "8443:8443"
     volumes:
       - ./frontend:/usr/share/nginx/html
     networks:
@@ -18,7 +18,7 @@ services:
     restart: always
     volumes:
       - ./backend:/home/node/app
-      - /home/node/app/node_modules
+      - /home/node/app/node_modules # Missing host volume!!
       - ./sqlite_data:/home/node/app/sqlite_data
     ports:
       - "8000:8000"
