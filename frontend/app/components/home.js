@@ -1,12 +1,7 @@
 "use strict";
 class HomeComponent extends HTMLElement {
-    // private registerButton: HTMLElement | null = null;
-    // private response: Promise<Response> | null = null;
     constructor() {
         super();
-        // private emailInput: HTMLInputElement | null = null;
-        // private passwordInput: HTMLInputElement | null = null;
-        // private loginButton: HTMLElement | null = null;
         this.dataContainer = null;
         this.attachShadow({ mode: "open" });
         this.render();
