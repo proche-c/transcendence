@@ -8,12 +8,20 @@ const jwt = require('@fastify/jwt'); // JWT for authentication
 const oauthPlugin = require('@fastify/oauth2'); // OAuth2 for authentication
 const cors = require('@fastify/cors'); // CORS plugin
 
+const fastifyWebsocket = require('@fastify/websocket');
+
+fastify.register(fastifyWebsocket);
+
 // Register CORS middleware
 fastify.register(cors, { origin: '*' });
 
 
 // Register JWT with a secret key
 fastify.register(jwt, { secret: 'supersecretkey' });
+
+// Register the chat plugin 
+const chatRoutes = require('./chat');
+fastify.register(chatRoutes, { prefix: '/chat' });
 
 // Decorate Fastify with an authentication middleware
 fastify.decorate("authenticate", async (request, reply) => {
