@@ -1,5 +1,4 @@
 class ChatComponent extends HTMLElement {
-	private content: HTMLElement | null = null;
 	constructor() {
 		super();
 		this.attachShadow({mode: "open"});
@@ -16,13 +15,12 @@ class ChatComponent extends HTMLElement {
 		this.shadowRoot.innerHTML = `
             <pong-header></pong-header>
             <pong-menu></pong-menu>
-			<div id="content" class="mt-4 p-4 border border-gray-300 rounded-lg">
+			<div id="content" class="bg-purple-300 m-4 p-4 border border-violet-500 rounded-lg">
 				Esto es el chat
 			</div>
 		`;
 
 		this.shadowRoot.appendChild(style);
-		this.content = this.shadowRoot.querySelector("#content");
 	}
 
 }
