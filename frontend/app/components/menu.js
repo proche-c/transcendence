@@ -20,6 +20,7 @@ class MenuComponent extends HTMLElement {
 					<a id="profile" href="#profile" class="ml-0 ${isActive("#profile")} hover:text-purple-900 font-bold mx-1 my-1 lg:text-3xl lg:mx-10 lg:ml-0">PROFILE</a>
 					<a id="board" href="#board" class="${isActive("#board")} hover:text-purple-900 font-bold mx-1 my-1 lg:text-3xl lg:mx-10 lg:ml-0">LEADER BOARD</a>
 					<a id="play" href="#play" class="${isActive("#play")} hover:text-purple-900 font-bold mx-1 my-1 lg:text-3xl lg:mx-10 lg:ml-0">PLAY</a>
+					<a id="chat" href="#chat" class="${isActive("#chat")} hover:text-purple-900 font-bold mx-1 my-1 lg:text-3xl lg:mx-10 lg:ml-0">CHAT</a>
 				</div>
 				<button id="logout" class="bg-purple-400 text-black mx-1 ml-3 p-1 text-center text-xs font-bold rounded-lg my-1 lg:text-base px-2">Logout</button>
 			</nav>
@@ -29,11 +30,12 @@ class MenuComponent extends HTMLElement {
         this.addEventListeners();
     }
     addEventListeners() {
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
         const profileLink = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelector("#profile");
         const boardLink = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.querySelector("#board");
         const playLink = (_c = this.shadowRoot) === null || _c === void 0 ? void 0 : _c.querySelector("#play");
-        [profileLink, boardLink, playLink].forEach((link) => {
+        const chatLink = (_d = this.shadowRoot) === null || _d === void 0 ? void 0 : _d.querySelector("#chat");
+        [profileLink, boardLink, playLink, chatLink].forEach((link) => {
             if (link) {
                 link.addEventListener("click", (event) => {
                     var _a;
