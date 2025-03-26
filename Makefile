@@ -1,24 +1,33 @@
-# Colors
-
+# Colors (opcional para mensajes)
 RED := $(shell tput -Txterm setaf 1)
 GREEN := $(shell tput -Txterm setaf 2)
 YELLOW := $(shell tput -Txterm setaf 3)
 RESET := $(shell tput -Txterm sgr0)
 
-# Default variables
 DOCKER_COMPOSE := docker-compose
 DOCKER_COMPOSE_FILE := compose.yaml
 
-.PHONY: start stop clean
-
 start:
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up -d $(c)
+	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up -d
 
-stop:
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) stop $(c)
+down:
+	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down
 
-clean: confirm
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down --remove-orphans
+clean:
+	@docker stop $$(docker ps -qa) || true; \
+	docker rm $$(docker ps -qa) || true; \
+	docker rmi -f $$(docker images -qa) || true; \
+	docker volume rm $$(docker volume ls -q) || true; \
+	docker network rm $$(docker network ls -q) 2>/dev/null || true;
 
-confirm:
-	@( read -p "$(YELLOW)Are you sure you want to clean all data? [y/N]$(RESET): " sure && case "$$sure" in [yY]) true;; *) false;; esac)
+fclean: clean
+	@docker system prune -af
+
+help:
+	@echo "Available commands:"
+	@echo "  make start → Levanta los contenedores"
+	@echo "  make stop  → Detiene los contenedores"
+	@echo "  make clean → Elimina los contenedores"
+	@echo "  make help  → Muestra este mensaje"
+
+.PHONY: start stop clean help
