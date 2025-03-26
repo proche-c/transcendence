@@ -4,6 +4,7 @@ class LoginComponent extends HTMLElement {
     private loginButton: HTMLElement | null = null;
     private registerButton: HTMLElement | null = null;
     private inputData: HTMLElement | null = null;
+    private errorMsg: HTMLElement | null = null;
     private response: Promise<Response> | null = null;
 
     constructor() {
@@ -28,6 +29,9 @@ class LoginComponent extends HTMLElement {
                     <div class="align-middle">
                     <button id="login" class="bg-gray-800 text-white m-1 p-1 text-center font-bold text-lg">Login</button>
                     </div>
+                    <div class="text-red-600">
+                    <p id="error"> </p>
+                    </div>
                 <div>
             </div>
         `;
@@ -39,6 +43,7 @@ class LoginComponent extends HTMLElement {
         this.loginButton = this.shadowRoot.querySelector("#login");
         this.inputData = this.shadowRoot.querySelector("#inputData");
         this.registerButton = this.shadowRoot.querySelector("#register");
+        this.errorMsg = this.shadowRoot.querySelector("#error") as HTMLElement;
 
         this.addEventListeners();
     }
@@ -52,6 +57,8 @@ class LoginComponent extends HTMLElement {
 
             if (email && password) {
                 await this.postData(email, password);
+            } else {
+                this.errorMsg!.textContent = "All fields are required";
             }
         });
         
@@ -63,7 +70,7 @@ class LoginComponent extends HTMLElement {
     }
 
     private async postData(email: string, password: string) {
-        const data = { email, password };
+        const data = { "email": email, "password": password };
 
         try {
             // Esta url sera el endponit que configure el servidor
@@ -74,18 +81,29 @@ class LoginComponent extends HTMLElement {
             });
 
             this.response = await response.json();
-            location.hash = "#profile"; // Cambiar la vista
+            // location.hash = "#profile"; // Cambiar la vista
             // Aqui el backend hará las validaciones de email y password y me enviara un error
             // en caso de que haya algun problema
             // Si la autenticacion es valida, el backend creara un token jwt y lo guardara en las cookies
             console.log(response);
-            if (!response.ok) {
-                throw { status: response.status, statusText: response.statusText };
+            if (response.ok) {
+                location.hash = "#profile";
+            }
+            if (response.status === 404 || response.status === 401) {
+                this.errorMsg!.textContent = "Incorrect email or password";
+                this.resetValues();
             }
         } catch (error: any) {
             console.log("error en la peticion");
         }
     }
+
+    private resetValues() {
+        if (this.emailInput)
+            this.emailInput.value = "";
+        if (this.passwordInput)
+            this.passwordInput.value = "";
+    } 
 
 }
 

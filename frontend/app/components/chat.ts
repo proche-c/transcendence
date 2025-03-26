@@ -1,4 +1,4 @@
-class ProfileComponent extends HTMLElement {
+class ChatComponent extends HTMLElement {
 	constructor() {
 		super();
 		this.attachShadow({mode: "open"});
@@ -15,8 +15,8 @@ class ProfileComponent extends HTMLElement {
 		this.shadowRoot.innerHTML = `
             <pong-header></pong-header>
             <pong-menu></pong-menu>
-			<div id="content" class="mt-4 p-4 border border-gray-300 rounded-lg">
-				Esto es el profile
+			<div id="content" class="bg-purple-300 m-4 p-4 border border-violet-500 rounded-lg">
+				Esto es el chat
 			</div>
 		`;
 
@@ -25,4 +25,4 @@ class ProfileComponent extends HTMLElement {
 
 }
 
-customElements.define("pong-profile", ProfileComponent);
+customElements.define("pong-chat", ChatComponent);

@@ -92,6 +92,9 @@ class RegisterComponent extends HTMLElement {
                 // en caso de que haya algun problema
                 // Si la autenticacion es valida, el backend creara un token jwt y lo guardara en las cookies
                 console.log(response);
+                if (response.ok) {
+                    location.hash = "#";
+                }
                 if (!response.ok) {
                     throw { status: response.status, statusText: response.statusText };
                 }

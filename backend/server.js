@@ -9,10 +9,8 @@ const oauthPlugin = require('@fastify/oauth2'); // OAuth2 for authentication
 const cors = require('@fastify/cors'); // CORS plugin
 
 // Register CORS middleware
-fastify.register(cors, {
-    origin: ['https://localhost'], // Allow requests only from this origin
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-});
+fastify.register(cors, { origin: '*' });
+
 
 // Register JWT with a secret key
 fastify.register(jwt, { secret: 'supersecretkey' });

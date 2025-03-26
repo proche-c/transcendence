@@ -15,6 +15,7 @@
     <script type="module" src="./app/components/profile.js"></script>
     <script type="module" src="./app/components/board.js"></script>
     <script type="module" src="./app/components/play.js"></script>
+    <script type="module" src="./app/components/chat.js"></script>
     <script type="module" src="./app/components/login.js"></script>
     <script type="module" src="./app/components/register.js"></script>
     <script>
@@ -38,6 +39,11 @@
                     appContainer.innerHTML = ""; 
                     appContainer.appendChild(document.createElement("pong-play"));
                 }                
+            } else if (location.hash === "#chat") {
+                if (!appContainer.querySelector("pong-chat")) {
+                    appContainer.innerHTML = ""; 
+                    appContainer.appendChild(document.createElement("pong-chat"));
+                }
             }
             else {
                 // if (!appContainer.querySelector("pong-home")) {
