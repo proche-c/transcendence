@@ -1,5 +1,4 @@
 class BoardComponent extends HTMLElement {
-	private content: HTMLElement | null = null;
 	constructor() {
 		super();
 		this.attachShadow({mode: "open"});
@@ -22,7 +21,6 @@ class BoardComponent extends HTMLElement {
 		`;
 
 		this.shadowRoot.appendChild(style);
-		this.content = this.shadowRoot.querySelector("#content");
 	}
 
 }

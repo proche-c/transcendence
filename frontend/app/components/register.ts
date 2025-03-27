@@ -89,6 +89,9 @@ class RegisterComponent extends HTMLElement {
             // en caso de que haya algun problema
             // Si la autenticacion es valida, el backend creara un token jwt y lo guardara en las cookies
             console.log(response);
+            if (response.ok) {
+                location.hash = "#";
+            }
             if (!response.ok) {
                 throw { status: response.status, statusText: response.statusText };
             }
@@ -97,16 +100,16 @@ class RegisterComponent extends HTMLElement {
         }
     }
 
-        private resetValues() {
-            if (this.emailInput)
-                this.emailInput.value = "";
-            if (this.userInput)
-                this.userInput.value = "";
-            if (this.passwordInput)
-                this.passwordInput.value = "";
-            if (this.password2Input)
-                this.password2Input.value = "";
-        }
+    private resetValues() {
+        if (this.emailInput)
+            this.emailInput.value = "";
+        if (this.userInput)
+            this.userInput.value = "";
+        if (this.passwordInput)
+            this.passwordInput.value = "";
+        if (this.password2Input)
+            this.password2Input.value = "";
+    }
 }
 
 customElements.define("pong-register", RegisterComponent);

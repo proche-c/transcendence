@@ -13,10 +13,8 @@ const fastifyWebsocket = require('@fastify/websocket');
 fastify.register(fastifyWebsocket);
 
 // Register CORS middleware
-fastify.register(cors, {
-    origin: ['https://localhost'], // Allow requests only from this origin
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-});
+fastify.register(cors, { origin: '*' });
+
 
 // Register JWT with a secret key
 fastify.register(jwt, { secret: 'supersecretkey' });

@@ -22,6 +22,7 @@ class MenuComponent extends HTMLElement {
 					<a id="profile" href="#profile" class="ml-0 ${isActive("#profile")} hover:text-purple-900 font-bold mx-1 my-1 lg:text-3xl lg:mx-10 lg:ml-0">PROFILE</a>
 					<a id="board" href="#board" class="${isActive("#board")} hover:text-purple-900 font-bold mx-1 my-1 lg:text-3xl lg:mx-10 lg:ml-0">LEADER BOARD</a>
 					<a id="play" href="#play" class="${isActive("#play")} hover:text-purple-900 font-bold mx-1 my-1 lg:text-3xl lg:mx-10 lg:ml-0">PLAY</a>
+					<a id="chat" href="#chat" class="${isActive("#chat")} hover:text-purple-900 font-bold mx-1 my-1 lg:text-3xl lg:mx-10 lg:ml-0">CHAT</a>
 				</div>
 				<button id="logout" class="bg-purple-400 text-black mx-1 ml-3 p-1 text-center text-xs font-bold rounded-lg my-1 lg:text-base px-2">Logout</button>
 			</nav>
@@ -36,8 +37,9 @@ class MenuComponent extends HTMLElement {
 		const profileLink = this.shadowRoot?.querySelector("#profile");
 		const boardLink = this.shadowRoot?.querySelector("#board");
 		const playLink = this.shadowRoot?.querySelector("#play");
+		const chatLink = this.shadowRoot?.querySelector("#chat");
 
-		[profileLink, boardLink, playLink].forEach((link) => {
+		[profileLink, boardLink, playLink, chatLink].forEach((link) => {
 			if (link) {
 				link.addEventListener("click", (event) => {
 					event.preventDefault();
