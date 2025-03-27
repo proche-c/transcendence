@@ -2,7 +2,6 @@
 class ProfileComponent extends HTMLElement {
     constructor() {
         super();
-        this.content = null;
         this.attachShadow({ mode: "open" });
         this.render();
     }
@@ -20,7 +19,6 @@ class ProfileComponent extends HTMLElement {
 			</div>
 		`;
         this.shadowRoot.appendChild(style);
-        this.content = this.shadowRoot.querySelector("#content");
     }
 }
 customElements.define("pong-profile", ProfileComponent);
