@@ -59,17 +59,42 @@ async function chatRoutes(fastify, options) {
         if (type === 0) {
           userSockets.forEach((clientSocket) => {
             if (
-              clientSocket.readyState === clientSocket.OPEN &&
-              clientSocket !== connection
-            ) {
+              clientSocket.readyState === clientSocket.OPEN ) {
               clientSocket.send(`${connection.username}: ${message}`);
             }
           });
       
           fastify.log.info(`[WebSocket] Broadcasted message from ${connection.username} to ${userSockets.size - 1} clients`);
         }
+       // Handling dms
+        if (type === 1) {
+          const recipient = data.destinatary;
+
+          if (!recipient) {
+            fastify.log.warn(`[WebSocket] DM missing destinatary from ${connection.username}`);
+            return;
+          }
+
+          // Finding the receiver in the map
+          const recipientSocket = [...userSockets.values()].find(sock => sock.username === recipient);
+          if (!recipientSocket) {
+            fastify.log.warn(`[WebSocket] DM recipient '${recipient}' not found (from ${connection.username})`);
+            return;
+          }
+
+          if (recipientSocket.readyState === recipientSocket.OPEN) {
+            recipientSocket.send(`[DM from ${connection.username}]: ${message}`);
+          }
+          if (connection.readyState === connection.OPEN) {
+            connection.send(`[DM to ${recipient}]: ${message}`);
+          }
+
+          fastify.log.info(`[WebSocket] DM from ${connection.username} to ${recipient}: ${message}`);
+        } 
+        
+          // Need to handle more message types here
       });
-      // Need to handle more message types here
+  
       // Handling disconnection
       connection.on('close', () => {
         userSockets.delete(userId);
