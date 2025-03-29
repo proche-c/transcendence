@@ -9,6 +9,7 @@
     "css": "npx @tailwindcss/cli -i ./app/styles.css -o ./app/tailwind.css --watch"
   },
   "dependencies": {
+    "@fastify/cookie": "^11.0.2",
     "@tailwindcss/cli": "^4.0.17",
     "cors": "^2.8.5",
     "express": "^4.18.2",

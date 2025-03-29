@@ -469,6 +469,9 @@
   .h-30 {
     height: calc(var(--spacing) * 30);
   }
+  .h-120 {
+    height: calc(var(--spacing) * 120);
+  }
   .h-screen {
     height: 100vh;
   }
@@ -966,6 +969,9 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+  .overflow-auto {
+    overflow: auto;
   }
   .overflow-hidden {
     overflow: hidden;
