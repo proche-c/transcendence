@@ -24,7 +24,8 @@ class ChatComponent extends HTMLElement {
 			// const data: Data = JSON.parse(event.data);
 			console.log("data que recibo");
 			console.log(event);
-			// this.addMessageToList(data);
+			console.log(event.data);
+			this.addMessageToList(event.data);
 		}
 	}
 
@@ -69,11 +70,11 @@ class ChatComponent extends HTMLElement {
 		});
 	}
 
-		private addMessageToList(data: Data): void {
+		private addMessageToList(data: string): void {
 			if (!this.messages)
 				return ;
 			const messageElement = document.createElement("li");
-			messageElement.textContent = `${data.user}: ${data.message}`;
+			messageElement.textContent = data;
 			messageElement.className = "p-2 border-b border-gray-300";
 			this.messages.appendChild(messageElement);
 			this.messages.scrollTop = this.messages.scrollHeight;
