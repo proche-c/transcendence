@@ -26,10 +26,6 @@ fastify.register(cors, {
 // Register JWT with a secret key
 fastify.register(jwt, { secret: 'supersecretkey' });
 
-// Register the chat plugin 
-const chatRoutes = require('./chat');
-fastify.register(chatRoutes, { prefix: '/chat' });
-
 // Decorate Fastify with an authentication middleware
 fastify.decorate("authenticate", async (request, reply) => {
     try {
@@ -94,6 +90,15 @@ const dbRunAsync = (query, params) => {
         });
     });
 };
+
+// Register the chat plugin 
+const chatRoutes = require('./chat');
+fastify.register(chatRoutes, {
+  prefix: '/chat',
+  db,            // SQLite connection
+  dbGetAsync,    //promisified DB getter
+  dbRunAsync     //  promisified DB runner
+});
 
 // User registration route
 fastify.post('/register', async (request, reply) => {
