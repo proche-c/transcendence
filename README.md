@@ -100,7 +100,7 @@ flowchart LR
 | Points | Status | Student | Module |
 |--------|--------|----------|--------|
 |        | ❌     |          | Major module: Replace basic Pong with server-side Pong and implement an API. |
-|        | ❌     | 🐱       | Major module: Enabling Pong gameplay via CLI against web users with API integration. |
+|        | ❌     |         | Major module: Enabling Pong gameplay via CLI against web users with API integration. |
 
 ### **Total**  
 **5.0**  
