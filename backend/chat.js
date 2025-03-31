@@ -1,4 +1,7 @@
 async function chatRoutes(fastify, options) {
+  const db = options.db; // getting the db passed from server.js
+  const dbGetAsync = options.dbGetAsync;
+  const dbRunAsync = options.dbRunAsync;
   // Creating a map to store user sockets: key = userId, value = connection instance
   const userSockets = new Map();
 
@@ -46,53 +49,139 @@ async function chatRoutes(fastify, options) {
           return;
         }
       
-        const { type, message } = data;
+        const { type, message, destinatary } = data;
       
         if (typeof message !== 'string') {
           fastify.log.warn(`[WebSocket] Invalid or missing 'message' from ${connection.username}: ${rawMessage}`);
           return;
         }
       
-        fastify.log.info(`[WebSocket] Message type "${type}" from ${connection.username}: ${message}`);
+        const senderId = connection.userId;
       
         //  Only broadcast global messages
         if (type === 0) {
           userSockets.forEach((clientSocket) => {
-            if (
-              clientSocket.readyState === clientSocket.OPEN ) {
-              clientSocket.send(`${connection.username}: ${message}`);
+            if (clientSocket.readyState === clientSocket.OPEN) {
+              clientSocket.send(JSON.stringify({
+                type,
+                message,
+                sender: connection.username,
+                destinatary: null
+              }));
             }
           });
       
-          fastify.log.info(`[WebSocket] Broadcasted message from ${connection.username} to ${userSockets.size - 1} clients`);
+          fastify.log.info(`[WebSocket] Broadcasted message from ${connection.username}`);
         }
        // Handling dms
-        if (type === 1) {
-          const recipient = data.destinatary;
+        else if (type === 1) {
+          if (!destinatary) {
+            connection.send(JSON.stringify({
+              type,
+              message: `[DM ERROR] No destinatary specified.`,
+              sender: "system",
+              destinatary
+            }));
+            return;
+          }
 
+          const recipient = await dbGetAsync('SELECT id FROM users WHERE username = ?', [destinatary]);
           if (!recipient) {
-            fastify.log.warn(`[WebSocket] DM missing destinatary from ${connection.username}`);
+            connection.send(JSON.stringify({
+              type,
+              message: `[DM ERROR] User '${destinatary}' not found.`,
+              sender: "system",
+              destinatary
+            }));
+            fastify.log.warn(`[DM ERROR] User '${destinatary}' not found.`)
             return;
           }
 
-          // Finding the receiver in the map
-          const recipientSocket = [...userSockets.values()].find(sock => sock.username === recipient);
-          if (!recipientSocket) {
-            fastify.log.warn(`[WebSocket] DM recipient '${recipient}' not found (from ${connection.username})`);
+          const user1_id = Math.min(connection.userId, recipient.id);
+          const user2_id = Math.max(connection.userId, recipient.id);
+
+          // Finding chat 
+          let chat = await dbGetAsync(
+            'SELECT id FROM chats WHERE user1_id = ? AND user2_id = ?',
+            [user1_id, user2_id]
+          );
+          // if chat doesn't exist, creating it
+          if (!chat) {
+            await dbRunAsync(
+              'INSERT INTO chats (user1_id, user2_id) VALUES (?, ?)',
+              [user1_id, user2_id]
+            );
+            chat = await dbGetAsync(
+              'SELECT id FROM chats WHERE user1_id = ? AND user2_id = ?',
+              [user1_id, user2_id]
+            );
+          }
+
+          // Save message with chat_id
+          await dbRunAsync(
+            'INSERT INTO messages (chat_id, sender_id, message, type) VALUES (?, ?, ?, ?)',
+            [chat.id, connection.userId, message, 1]
+          );
+
+          const responseData = {
+            type,
+            message,
+            sender: connection.username,
+            destinatary,
+            chatId: chat.id
+          };
+
+          const recipientSocket = userSockets.get(recipient.id);
+          if (recipientSocket && recipientSocket.readyState === recipientSocket.OPEN) {
+            recipientSocket.send(JSON.stringify(responseData));
+          }
+
+          connection.send(JSON.stringify(responseData));
+
+          fastify.log.info(`[WebSocket] DM saved to chat ${chat.id} from ${connection.username} to ${destinatary}`);
+        }
+        // type 2 = invite
+        // inviting to play 
+        else if (type === 2) {
+          if (!destinatary) {
+            connection.send(JSON.stringify({
+              type,
+              message: `[INVITE ERROR] No destinatary specified.`,
+              sender: "system",
+              destinatary
+            }));
             return;
           }
 
-          if (recipientSocket.readyState === recipientSocket.OPEN) {
-            recipientSocket.send(`[DM from ${connection.username}]: ${message}`);
-          }
-          if (connection.readyState === connection.OPEN) {
-            connection.send(`[DM to ${recipient}]: ${message}`);
+          const recipient = await dbGetAsync('SELECT id FROM users WHERE username = ?', [destinatary]);
+          if (!recipient) {
+            connection.send(JSON.stringify({
+              type,
+              message: `[INVITE ERROR] User '${destinatary}' not found.`,
+              sender: "system",
+              destinatary
+            }));
+            fastify.log.warn(`[DM ERROR] User '${destinatary}' not found.`)
+            return;
           }
 
-          fastify.log.info(`[WebSocket] DM from ${connection.username} to ${recipient}: ${message}`);
-        } 
-        
-          // Need to handle more message types here
+          const recipientSocket = userSockets.get(recipient.id);
+          if (recipientSocket && recipientSocket.readyState === recipientSocket.OPEN) {
+            recipientSocket.send(JSON.stringify({
+              type,
+              message: `${connection.username} has invited you to a Pong match!`,
+              sender: connection.username,
+              destinatary
+            }));
+          }
+          connection.send(JSON.stringify({
+            type,
+            message: `Pong invite sent to ${destinatary}`,
+            sender: connection.username,
+            destinatary
+          }));
+          fastify.log.info(`[WebSocket] ${connection.username} invited ${destinatary}`);
+        }
       });
   
       // Handling disconnection
@@ -106,7 +195,7 @@ async function chatRoutes(fastify, options) {
     }
   });
 
-  // Expose the userSockets map globally in Fastify
+  // Exposing the userSockets map globally in Fastify
   fastify.decorate('userSockets', userSockets);
 }
 
