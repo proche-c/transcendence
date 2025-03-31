@@ -18,7 +18,7 @@ fastify.register(fastifyCookie);
 
 // Register CORS middleware
 fastify.register(cors, { 
-    origin: ["https://localhost:8443"], // Especifica el origen permitido
+    origin: ["https://localhost:8443", "http://localhost:5500/frontend/"], // Especifica el origen permitido
     credentials: true // Permite el envío de cookies y cabeceras de autenticación
 });
 
