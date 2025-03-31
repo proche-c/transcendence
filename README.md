@@ -78,7 +78,7 @@ flowchart LR
 ### DevOps  
 | Points | Status | Student | Module |
 |--------|--------|----------|--------|
-|        | ❌     | 🐱       | Major module: Infrastructure setup for log management. |
+|        | ❌     |          | Major module: Infrastructure setup for log management. |
 |        | ❌     |          | Minor module: Monitoring system. |
 |        | ❌     |          | Major module: Designing the backend as microservices. |
 
