@@ -25,8 +25,23 @@ RUN npm list bcrypt || npm install bcrypt
 RUN npm install fastify-passport @fastify/oauth2 fastify-secure-session 
 RUN npm install dotenv
 
+# Switch back to root to modify permissions
+USER root
+
+# for google auth
+RUN npm install -g ngrok
+
+
+
+# Copy the entrypoint script and give execution permissions
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Switch back to node
+USER node
+
 # Exposing the port used by Fastify
 EXPOSE 8000
 
-# Start the app
-CMD ["node", "server.js"]
+# Start the app using the entrypoint script
+CMD ["/entrypoint.sh"]
