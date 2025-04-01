@@ -7,12 +7,18 @@ const bcrypt = require('bcrypt'); // Bcrypt for password hashing
 const jwt = require('@fastify/jwt'); // JWT for authentication
 const oauthPlugin = require('@fastify/oauth2'); // OAuth2 for authentication
 const cors = require('@fastify/cors'); // CORS plugin
+const fastifyWebsocket = require('@fastify/websocket');
+
 
 // Register CORS middleware
 fastify.register(cors, {
     origin: ['https://localhost'], // Allow requests only from this origin
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
 });
+
+//Pluguin juego
+fastify.register(fastifyWebsocket);
+fastify.register(require('./game/game')); // Plugin del juego
 
 // Register JWT with a secret key
 fastify.register(jwt, { secret: 'supersecretkey' });
