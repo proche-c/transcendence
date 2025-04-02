@@ -36,8 +36,8 @@ services:
     container_name: ngrok
     environment:
       - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
-      - NGROK_REGION=us
       - NGROK_PORT=backend:8000
+    command: ["ngrok", "http", "backend:8000"]
     networks:
       - transcendence-net
 

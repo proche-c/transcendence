@@ -236,17 +236,22 @@ fastify.register(oauthPlugin, {
         auth: oauthPlugin.GOOGLE_CONFIGURATION
     },
     startRedirectPath: '/login/google',
-    callbackUri: 'http://localhost:8000/auth/google/callback'
+    callbackUri: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:8000/auth/google/callback'
 });
 
-fastify.get('/auth/google/callback', async (request, reply) => {
-    try {
-        const token = await fastify.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(request);
-        return reply.send({ token });
-    } catch (err) {
-        return reply.status(500).send({ message: 'Google authentication failed', error: err.message });
+// Google authentication route
+app.get('/auth/google',
+    passport.authenticate('google', { scope: ['profile', 'email'] })
+  );
+
+// Google callback route
+app.get('/auth/google/callback', 
+    passport.authenticate('google', { failureRedirect: '/' }),
+    function(req, res) {
+      res.redirect('/dashboard'); // Redirection après connexion réussie
     }
-});
+  );
+  
 
 // Start the server
 const start = async () => 
