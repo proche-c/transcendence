@@ -98,10 +98,20 @@ CREATE TABLE IF NOT EXISTS chatroom_members(
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   chatroom_id INTEGER NOT NULL,
   user_id INTEGER NOT NULL,
-  role TEXT NOT NULL DEFAULT 'member', -- role: 'owner', 'admin', 'member'
+  role TEXT NOT NULL CHECK(role IN ('owner', 'admin', 'member')) DEFAULT 'member',
   is_muted BOOLEAN DEFAULT 0,
   is_banned BOOLEAN DEFAULT 0,
   UNIQUE (chatroom_id, user_id),
   FOREIGN KEY (chatroom_id) REFERENCES chatrooms(id) ON DELETE CASCADE,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-)
+);
+
+CREATE TABLE IF NOT EXISTS chatroom_messages (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  chatroom_id INTEGER NOT NULL,
+  sender_id INTEGER NOT NULL,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (chatroom_id) REFERENCES chatrooms(id),
+  FOREIGN KEY (sender_id) REFERENCES users(id)
+);
