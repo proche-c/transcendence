@@ -37,34 +37,34 @@ fastify.get('/', async (request, reply) => {
     return { message: 'Pong!' };
 });
 
-// Route to the SQLite database
-// const dbPath = "./sqlite_data/database.sqlite";
-// const db = new sqlite3.Database(dbPath, (err) => {
-//     if (err) {
-//         console.error('Database opening failed:', err.message);
-//     } else {
-//         console.log('Connected to database');
+//Route to the SQLite database
+const dbPath = "./sqlite_data/database.sqlite";
+const db = new sqlite3.Database(dbPath, (err) => {
+    if (err) {
+        console.error('Database opening failed:', err.message);
+    } else {
+        console.log('Connected to database');
 
-//         // Initialize database
-//         try {
-//             const initSQL = fs.readFileSync(path.join(__dirname, 'init.sql'), 'utf8');
-//             db.exec(initSQL, (err) => {
-//                 if (err) {
-//                     console.error('Error executing init.sql:', err.message);
-//                 } else {
-//                     console.log('Database initialized');
-//                     const seedSQL = fs.readFileSync(path.join(__dirname, 'seeds.sql'), 'utf8');
-//                     db.exec(seedSQL, (err) => {
-//                         if (err) console.error('Error executing seeds.sql:', err.message);
-//                         else console.log('Database seeded');
-//                     });
-//                 }
-//             });
-//         } catch (fileError) {
-//             console.error('Error reading SQL files:', fileError.message);
-//         }
-//     }
-// });
+        // Initialize database
+        try {
+            const initSQL = fs.readFileSync(path.join(__dirname, 'init.sql'), 'utf8');
+            db.exec(initSQL, (err) => {
+                if (err) {
+                    console.error('Error executing init.sql:', err.message);
+                } else {
+                    console.log('Database initialized');
+                    const seedSQL = fs.readFileSync(path.join(__dirname, 'seeds.sql'), 'utf8');
+                    db.exec(seedSQL, (err) => {
+                        if (err) console.error('Error executing seeds.sql:', err.message);
+                        else console.log('Database seeded');
+                    });
+                }
+            });
+        } catch (fileError) {
+            console.error('Error reading SQL files:', fileError.message);
+        }
+    }
+});
 
 // Promisified functions for database queries
 const dbGetAsync = (query, params) => {

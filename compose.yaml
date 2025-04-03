@@ -17,9 +17,8 @@ services:
       context: backend
     restart: always
     volumes:
-      - ./backend:/home/node/app
-      - /home/node/app/node_modules
-      - ./backend/sqlite_data:/home/node/app/sqlite_data
+      - /home/node/app/node_modules  # Solo para evitar sobrescritura
+      - sqlite_data:/home/node/app/sqlite_data  # Volumen nombrado
     ports:
       - "8000:8000"
     networks:
@@ -27,9 +26,10 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=8000
-    #image: backend
 
 networks:
   transcendence-net:
-    name: transcendence-net
     driver: bridge
+
+volumes:
+  sqlite_data:  # Volumen persistente para SQLite
