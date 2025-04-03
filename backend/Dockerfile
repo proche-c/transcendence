@@ -1,5 +1,5 @@
 # Use an official Node.js image
-FROM node:18
+FROM node:latest
 
 # Install sqlite3 (required for initializing the database)
 USER root
@@ -13,6 +13,10 @@ WORKDIR /home/node/app
 
 # Copy package files
 COPY --chown=node:node package*.json ./
+
+COPY init.sql /home/node/app/init.sql
+COPY seeds.sql /home/node/app/seeds.sql
+
 
 # Switch to node user for installing dependencies
 USER node
