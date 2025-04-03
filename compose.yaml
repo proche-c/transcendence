@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   nginx:
     build:
@@ -7,7 +9,9 @@ services:
     ports:
       - "8443:8443"
     volumes:
-      - ./frontend:/usr/share/nginx/html
+      - ./frontend/app/dist:/usr/share/nginx/html # Cambiado para apuntar a la carpeta de build
+    depends_on:
+      - frontend
     networks:
       - transcendence-net
 
@@ -17,8 +21,8 @@ services:
       context: backend
     restart: always
     volumes:
-      - /home/node/app/node_modules  # Solo para evitar sobrescritura
-      - sqlite_data:/home/node/app/sqlite_data  # Volumen nombrado
+      - /home/node/app/node_modules
+      - sqlite_data:/home/node/app/sqlite_data
     ports:
       - "8000:8000"
     networks:
@@ -27,9 +31,25 @@ services:
       - NODE_ENV=production
       - PORT=8000
 
+  frontend:
+    container_name: frontend
+    build:
+      context: frontend
+    volumes:
+      - ./frontend:/app # Cambiado para montar todo el directorio frontend
+      - /app/node_modules
+    working_dir: /app # Añadido
+    ports:
+      - "3000:3000" # Añadido para acceso durante desarrollo
+    networks:
+      - transcendence-net
+    environment:
+      - NODE_ENV=development
+    command: sh -c "npm install && npm run dev" # Añadido
+
 networks:
   transcendence-net:
     driver: bridge
 
 volumes:
-  sqlite_data:  # Volumen persistente para SQLite
+  sqlite_data:

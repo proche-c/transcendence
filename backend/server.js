@@ -10,12 +10,13 @@ const cors = require('@fastify/cors'); // CORS plugin
 const fastifyWebsocket = require('@fastify/websocket');
 
 
-// Register CORS middleware
-fastify.register(cors, {
-    origin: ['https://localhost'], // Allow requests only from this origin
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-});
 
+// Configura CORS
+fastify.register(require('@fastify/cors'), {
+    origin: 'http://localhost:8443',
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
+  });
+  
 //Pluguin juego
 fastify.register(fastifyWebsocket);
 fastify.register(require('./game/game')); // Plugin del juego
