@@ -11,7 +11,7 @@ class MenuComponent extends HTMLElement {
 			return;
 
 		const currentHash = window.location.hash;
-		const isActive = (hash: string) => currentHash === hash ? "text-purple-900" : "text-purple-200";
+		const isActive = (hash: string) => currentHash === hash ? "text-purple-900" : "text-purple-700";
 		const style = document.createElement("link");
 		style.rel = "stylesheet";
 		style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
