@@ -239,18 +239,16 @@ fastify.register(oauthPlugin, {
     callbackUri: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:8000/auth/google/callback'
 });
 
-// Google authentication route
-app.get('/auth/google',
-    passport.authenticate('google', { scope: ['profile', 'email'] })
-  );
-
 // Google callback route
-app.get('/auth/google/callback', 
-    passport.authenticate('google', { failureRedirect: '/' }),
-    function(req, res) {
-      res.redirect('/dashboard'); // Redirection après connexion réussie
-    }
-  );
+fastify.get('/auth/google/callback', async function (request, reply) {
+    const token = await fastify.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(request);
+
+    // Tu peux stocker ou utiliser le token ici
+    // Exemple : afficher l’access token
+    console.log('Google token:', token);
+
+    return reply.send({ token });
+});
   
 
 // Start the server
