@@ -79,6 +79,7 @@ class LoginComponent extends HTMLElement {
                     method: "POST",
                     body: JSON.stringify(data),
                     headers: { "Content-Type": "application/json" },
+                    credentials: "include",
                 });
                 this.response = yield response.json();
                 // location.hash = "#profile"; // Cambiar la vista

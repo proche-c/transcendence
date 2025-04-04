@@ -1,12 +1,34 @@
+
+
 interface Data {
-	user: string;
-	type: number; // 0 for global messages and 1 for dms
+	user: string; // No lo necesitas porque lo tienes en el payload
+	type: number; // 0 : global messages
+	destinatary: string; // No te paso nada porque es global
+	message: string;
+	chatId: number;  // Te paso el chatId que ya lo tendre
+}
+
+
+
+interface Message {
+	chat : number;
+	type : number;
+	sender: string;
 	destinatary: string;
 	message: string;
 }
 
+interface Chat {
+	id : number;
+	name: string;
+	messages: Array<Message>;
+}
+
 class ChatComponent extends HTMLElement {
-	private messages: HTMLElement | null = null;
+	private messages: Array<Data> = [];
+	private chats: Array<Chat> = [];
+	private globalChat: Array<Data> = [];
+	private messagesBox: HTMLElement | null = null;
 	private messageInput:  HTMLInputElement | null = null;
 	private sendButton: HTMLElement | null = null;
 	private socket: WebSocket | null = null;
@@ -24,7 +46,9 @@ class ChatComponent extends HTMLElement {
 			// const data: Data = JSON.parse(event.data);
 			console.log("data que recibo");
 			console.log(event);
-			// this.addMessageToList(data);
+			console.log(event.data);
+			this.addMessageToMessages(event.data);
+			this.addMessageToList(event.data);
 		}
 	}
 
@@ -39,8 +63,13 @@ class ChatComponent extends HTMLElement {
             <pong-header></pong-header>
             <pong-menu></pong-menu>
 			<div id="content" class="bg-purple-300 m-4 p-4 border border-violet-500 rounded-lg flex flex-col h-120 justify-between">
-				<div id="chat" class="grow bg-amber-50 overflow-auto">
+				<div id="chat" class="grow bg-amber-50 overflow-auto flex">
+					<div id="chats" class="w-1/4 bg-gray-200 border border-gray-300 rounded-lg p-2">
+						CHATS
+					</div>
+					<div id="messages" class="w-3/4 bg-gray-100 border border-gray-300 rounded-lg p-2 overflow-auto">
 					<ul id="messages"></ul>
+					</div>
 				</div>
 				<div id="form">
 					<input type="text" id="message" placeholder="Type a message" class="border">
@@ -49,7 +78,7 @@ class ChatComponent extends HTMLElement {
 		`;
 
 		this.shadowRoot.appendChild(style);
-		this.messages = this.shadowRoot.querySelector("#messages") as HTMLElement;
+		this.messagesBox = this.shadowRoot.querySelector("#messages") as HTMLElement;
 		this.messageInput = this.shadowRoot.querySelector("#message") as HTMLInputElement;
 		this.sendButton = this.shadowRoot.querySelector("#send") as HTMLElement;
 		this.addEventListeners();
@@ -61,23 +90,37 @@ class ChatComponent extends HTMLElement {
 		this.sendButton?.addEventListener("click", () => {
 			const messageToSend = this.messageInput?.value || "";
 			if (messageToSend) {
-				const data: Data = { user: "paula", type: 0, destinatary: "", message: messageToSend };
-				this.socket?.send(JSON.stringify(data));
+				const msg: Data = { user: "paula", type: 0, destinatary: "", message: messageToSend, chatId: -1};
+				this.socket?.send(JSON.stringify(msg));
 				if (this.messageInput)
 					this.messageInput.value = "";
 			}
 		});
 	}
 
-		private addMessageToList(data: Data): void {
-			if (!this.messages)
-				return ;
-			const messageElement = document.createElement("li");
-			messageElement.textContent = `${data.user}: ${data.message}`;
-			messageElement.className = "p-2 border-b border-gray-300";
-			this.messages.appendChild(messageElement);
-			this.messages.scrollTop = this.messages.scrollHeight;
+	private addMessageToMessages(data: string): void {
+		const datas = data.split(":");
+		const user = datas[0];
+		const messageToPrint = datas[1];
+		const message: Data = { user: user, type: 0, destinatary: "", message: messageToPrint, chatId: -1};
+		if (message.type === 0)
+			this.globalChat.push(message);
+		else {
+			this.messages.push(message);
+			// let name: string;
+			// if ()
 		}
+	}
+
+	private addMessageToList(data: string): void {
+		if (!this.messagesBox)
+			return ;
+		const messageElement = document.createElement("li");
+		messageElement.textContent = data;
+		messageElement.className = "p-2 border-b border-gray-300";
+		this.messagesBox.appendChild(messageElement);
+		this.messagesBox.scrollTop = this.messagesBox.scrollHeight;
+	}
 }
 
 customElements.define("pong-chat", ChatComponent);
