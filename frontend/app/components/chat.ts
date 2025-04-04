@@ -64,9 +64,12 @@ class ChatComponent extends HTMLElement {
             <pong-menu></pong-menu>
 			<div id="content" class="bg-purple-300 m-4 p-4 border border-violet-500 rounded-lg flex flex-col h-120 justify-between">
 				<div id="chat" class="grow bg-amber-50 overflow-auto flex">
-					<div id="chats">
+					<div id="chats" class="w-1/4 bg-gray-200 border border-gray-300 rounded-lg p-2">
+						CHATS
 					</div>
+					<div id="messages" class="w-3/4 bg-gray-100 border border-gray-300 rounded-lg p-2 overflow-auto">
 					<ul id="messages"></ul>
+					</div>
 				</div>
 				<div id="form">
 					<input type="text" id="message" placeholder="Type a message" class="border">
