@@ -12,7 +12,7 @@ const fastifyWebsocket = require('@fastify/websocket');
 
 // Register CORS middleware
 fastify.register(cors, {
-    origin: ['https://localhost'], // Allow requests only from this origin
+    origin: ['https://localhost:8443'], // Allow requests only from this origin
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
 });
 
