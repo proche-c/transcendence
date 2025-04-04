@@ -17,6 +17,7 @@ services:
       context: backend
     restart: always
     volumes:
+      - ./backend:/home/node/app
       - /home/node/app/node_modules  # Solo para evitar sobrescritura
       - sqlite_data:/home/node/app/sqlite_data  # Volumen nombrado
     ports:
