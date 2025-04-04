@@ -8,6 +8,21 @@ services:
       - "8443:8443"
     volumes:
       - ./frontend:/usr/share/nginx/html
+    depends_on:
+      - frontend
+    networks:
+      - transcendence-net
+
+  frontend:
+    build:
+      context: frontend
+    container_name: frontend
+    restart: always
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
     networks:
       - transcendence-net
 
