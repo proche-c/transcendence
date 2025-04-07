@@ -1,3 +1,20 @@
+/*
+      FROM FRONT I NEED:
+type - always
+Normalmente ya tengo la info sobre el usuario que envie cosas,
+y siempre devuelvo el type, el mensaje mio(en el caso de error, es la causa del error, 
+o si todo está bien, también devuelvo el mensaje con la info (está en message))
+type 0(global): message
+type 1(dms): message, destinatary (devuelvo todo + chatID)
+type 2(invite): message, destinatary
+type 3(create chatroom): chatroom_name (devuelvo todo + chatroomID )
+type 4(join channel): chatroom_name 
+type 5(send chatroom message): message, chatroom_name
+type 6(set admin): chatroom_name, targetUser
+type 7(block user (not in the chatroom)): targetUser
+type 8(unblock user): targetUser
+type 9
+*/
 async function chatRoutes(fastify, options) {
   const db = options.db; // getting the db passed from server.js
   const dbGetAsync = options.dbGetAsync;
@@ -61,8 +78,10 @@ async function chatRoutes(fastify, options) {
             await handleChatMessages(connection, data, userSockets, dbGetAsync, dbRunAsync, dbAllAsync, fastify);
             break;
           case 6: 
-            await handleSetAdmin(connection, data, userSockets, dbGetAsync, dbRunAsync, dbAllAsync);
-            break;  
+            await handleSetAdmin(connection, data, dbGetAsync, dbRunAsync, dbAllAsync);
+            break; 
+          case 7:
+            await handleBlockUser(connection, data, dbGetAsync, dbRunAsync)
           default:
             connection.send(JSON.stringify({ type: data.type, message: "Unknown message type" }));    
         }
@@ -90,7 +109,7 @@ async function handleGlobalMessages(connection, userSockets, data, fastify) {
     connection.send(JSON.stringify({
       type: data.type,
       message: `[Global Message ERROR] Cannot send empty message.`,
-      sender: "system",
+      sender: "system", // i dont know here "system" or the sender's username/id
     }));
     return;
   }
@@ -435,7 +454,7 @@ async function handleChatMessages (connection, data, userSockets, dbGetAsync, db
 
 
 // here i need to receive also the potential admin nick (targetUser)
-async function handleSetAdmin(connection, data, userSockets, dbGetAsync, dbRunAsync, dbAllAsync, fastify) {
+async function handleSetAdmin(connection, data, dbGetAsync, dbRunAsync, dbAllAsync, fastify) {
   if (!data.chatroom_name || !data.targetUser) {
     connection.send(JSON.stringify({
       type: data.type,
@@ -501,3 +520,58 @@ async function handleSetAdmin(connection, data, userSockets, dbGetAsync, dbRunAs
 
   fastify.log.info(`[Chatroom: set admin] ${connection.username} set ${data.targetUser} as an admin in '${data.chatroom_name}'`);
 }
+
+async function handleBlockUser(connection, data, dbGetAsync, dbRunAsync) {
+  if (!data.destinatary) {
+    connection.send(JSON.stringify({
+      type: data.type,
+      message: `[BLOCK ERROR] No destinatary specified.`,
+      sender: "system",
+      destinatary: data.destinatary
+    }));
+    return;
+  }
+
+  const recipient = await dbGetAsync('SELECT id FROM users WHERE username = ?', [data.destinatary]);
+  if (!recipient) {
+    connection.send(JSON.stringify({
+      type: data.type,
+      message: `[BLOCK ERROR] User '${data.destinatary}' not found.`,
+      sender: "system",
+      destinatary: null
+    }));
+    fastify.log.warn(`[BLOCK ERROR] User '${data.destinatary}' not found.`);
+    return;
+  }
+
+  const alreadyBlocked = await dbGetAsync(
+    'SELECT 1 FROM blocked_users WHERE blocker_id = ? AND blocked_id = ?',
+    [connection.userId, recipient.id]
+  );
+
+  if (alreadyBlocked) {
+    connection.send(JSON.stringify({
+      type: data.type,
+      message: `${data.destinatary} is already blocked.`,
+      sender: "system"
+    }));
+    return;
+  }
+
+  await dbRunAsync(
+    "INSERT INTO blocked_users (blocker_id, blocked_id) VALUES (?, ?)",
+    [connection.userId, recipient.id]
+  );
+
+  connection.send(JSON.stringify({
+    type: data.type,
+    message: `You blocked ${data.destinatary} successfully`,
+    sender: connection.username,
+    destinatary: data.destinatary
+  }));
+
+  fastify.log.info(`[WebSocket: block] ${connection.username} blocked ${data.destinatary}`);
+}
+
+//missing: unblock, mute, ban , private channel(password)
+
