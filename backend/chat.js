@@ -78,10 +78,10 @@ async function chatRoutes(fastify, options) {
             await handleChatMessages(connection, data, userSockets, dbGetAsync, dbRunAsync, dbAllAsync, fastify);
             break;
           case 6: 
-            await handleSetAdmin(connection, data, dbGetAsync, dbRunAsync, dbAllAsync);
+            await handleSetAdmin(connection, data, dbGetAsync, dbRunAsync, fastify);
             break; 
           case 7:
-            await handleBlockUser(connection, data, dbGetAsync, dbRunAsync)
+            await handleBlockUser(connection, data, dbGetAsync, dbRunAsync, fastify)
           default:
             connection.send(JSON.stringify({ type: data.type, message: "Unknown message type" }));    
         }
@@ -454,7 +454,7 @@ async function handleChatMessages (connection, data, userSockets, dbGetAsync, db
 
 
 // here i need to receive also the potential admin nick (targetUser)
-async function handleSetAdmin(connection, data, dbGetAsync, dbRunAsync, dbAllAsync, fastify) {
+async function handleSetAdmin(connection, data, dbGetAsync, dbRunAsync, fastify) {
   if (!data.chatroom_name || !data.targetUser) {
     connection.send(JSON.stringify({
       type: data.type,
@@ -521,7 +521,10 @@ async function handleSetAdmin(connection, data, dbGetAsync, dbRunAsync, dbAllAsy
   fastify.log.info(`[Chatroom: set admin] ${connection.username} set ${data.targetUser} as an admin in '${data.chatroom_name}'`);
 }
 
-async function handleBlockUser(connection, data, dbGetAsync, dbRunAsync) {
+
+
+
+async function handleBlockUser(connection, data, dbGetAsync, dbRunAsync, fastify) {
   if (!data.destinatary) {
     connection.send(JSON.stringify({
       type: data.type,
@@ -571,6 +574,61 @@ async function handleBlockUser(connection, data, dbGetAsync, dbRunAsync) {
   }));
 
   fastify.log.info(`[WebSocket: block] ${connection.username} blocked ${data.destinatary}`);
+}
+
+
+
+
+async function handleUnblockUser(connection, data, dbGetAsync, dbRunAsync, fastify) {
+  if (!data.destinatary) {
+    connection.send(JSON.stringify({
+      type: data.type,
+      message: `[UNBLOCK ERROR] No destinatary specified.`,
+      sender: "system",
+      destinatary: data.destinatary
+    }));
+    return;
+  }
+
+  const recipient = await dbGetAsync('SELECT id FROM users WHERE username = ?', [data.destinatary]);
+  if (!recipient) {
+    connection.send(JSON.stringify({
+      type: data.type,
+      message: `[UNBLOCK ERROR] User '${data.destinatary}' not found.`,
+      sender: "system",
+      destinatary: null
+    }));
+    fastify.log.warn(`[UNBLOCK ERROR] User '${data.destinatary}' not found.`);
+    return;
+  }
+
+  const unblocked = await dbGetAsync(
+    'SELECT id FROM blocked_users WHERE blocker_id = ? AND blocked_id = ?',
+    [connection.userId, recipient.id]
+  );
+
+  if (!unblocked) {
+    connection.send(JSON.stringify({
+      type: data.type,
+      message: `${data.destinatary} is not blocked.`,
+      sender: "system"
+    }));
+    return;
+  }
+
+  await dbRunAsync(
+    'DELETE FROM blocked_users WHERE blocker_id = ? AND blocked_id = ?',
+    [connection.userId, recipient.id]
+  );
+
+  connection.send(JSON.stringify({
+    type: data.type,
+    message: `You unblocked ${data.destinatary} successfully`,
+    sender: connection.username,
+    destinatary: data.destinatary
+  }));
+
+  fastify.log.info(`[WebSocket: unblock] ${connection.username} unblocked ${data.destinatary}`);
 }
 
 //missing: unblock, mute, ban , private channel(password)
