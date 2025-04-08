@@ -64,7 +64,8 @@ CREATE TABLE IF NOT EXISTS auth_providers (
 
 CREATE TABLE IF NOT EXISTS messages (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  chat_id INTEGER NOT NULL,
+  chat_id INTEGER,
+  chatroom_id INTEGER,
   sender_id INTEGER NOT NULL,
   message TEXT NOT NULL,
   type INTEGER NOT NULL,
@@ -77,7 +78,40 @@ CREATE TABLE IF NOT EXISTS chats (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user1_id INTEGER NOT NULL,
   user2_id INTEGER NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(user1_id, user2_id),
   FOREIGN KEY (user1_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (user2_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS chatrooms (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE,
+  owner_id INTEGER NOT NULL,
+  is_private BOOLEAN,
+  password_hash TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS chatroom_members(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  chatroom_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  role TEXT NOT NULL CHECK(role IN ('owner', 'admin', 'member')) DEFAULT 'member',
+  is_muted BOOLEAN DEFAULT 0,
+  is_banned BOOLEAN DEFAULT 0,
+  UNIQUE (chatroom_id, user_id),
+  FOREIGN KEY (chatroom_id) REFERENCES chatrooms(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS chatroom_messages (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  chatroom_id INTEGER NOT NULL,
+  sender_id INTEGER NOT NULL,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (chatroom_id) REFERENCES chatrooms(id),
+  FOREIGN KEY (sender_id) REFERENCES users(id)
 );
