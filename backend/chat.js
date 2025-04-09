@@ -10,10 +10,19 @@ type 2(invite): message, destinatary
 type 3(create chatroom): chatroom_name (devuelvo todo + chatroomID )
 type 4(join channel): chatroom_name 
 type 5(send chatroom message): message, chatroom_name
-type 6(set admin): chatroom_name, targetUser
-type 7(block user (not in the chatroom)): targetUser
-type 8(unblock user): targetUser
-type 9
+type 6(set admin): chatroom_name, destinatary
+type 7(block user (not in the chatroom)): destinatary
+type 8(unblock user): destinatary
+type 9(ban in the chat): destinatary, chatroom_name
+type 10(unban in the chat): destinatary, chatroom_name
+*/
+
+
+/*TODO 
+if smdb is blocked, shouldnt be able send a maessage to the chatroom/person
+mute
+kick
+private chatroom
 */
 async function chatRoutes(fastify, options) {
   const db = options.db; // getting the db passed from server.js
@@ -24,8 +33,11 @@ async function chatRoutes(fastify, options) {
 
   fastify.get('/', { websocket: true }, async (connection, req) => {
     try {
-      // Extract token from query string to authenticate
-      const token = req.cookies.token;
+      //const token = req.cookies.token;
+      // these are for testing
+      const query = new URLSearchParams(req.url.split('?')[1]);
+      const token = req.cookies?.token || query.get('token');
+
       if (!token) {
         fastify.log.warn('WebSocket connection rejected: no token');
         connection.close();
@@ -82,6 +94,16 @@ async function chatRoutes(fastify, options) {
             break; 
           case 7:
             await handleBlockUser(connection, data, dbGetAsync, dbRunAsync, fastify)
+            break;
+          case 8: 
+            await handleUnblockUser(connection, data, dbGetAsync, dbRunAsync, fastify);
+            break;
+          case 9:
+            await handleBanUser(connection, data, dbGetAsync, dbRunAsync, userSockets, fastify);
+            break;
+          case 10:
+            await handleUnbanUser(connection, data, dbGetAsync, dbRunAsync, fastify);
+            break; 
           default:
             connection.send(JSON.stringify({ type: data.type, message: "Unknown message type" }));    
         }
@@ -453,9 +475,8 @@ async function handleChatMessages (connection, data, userSockets, dbGetAsync, db
 /*----------------HANDLING CHATROOMS (ADMIN/OWNER STUFF) ----------------*/
 
 
-// here i need to receive also the potential admin nick (targetUser)
 async function handleSetAdmin(connection, data, dbGetAsync, dbRunAsync, fastify) {
-  if (!data.chatroom_name || !data.targetUser) {
+  if (!data.chatroom_name || !data.destinatary) {
     connection.send(JSON.stringify({
       type: data.type,
       message: `Chatroom name and target user are required.`,
@@ -486,43 +507,43 @@ async function handleSetAdmin(connection, data, dbGetAsync, dbRunAsync, fastify)
     return;
   }
 
-  const targetUserId = await dbGetAsync("SELECT id FROM users WHERE username = ?", [data.targetUser]);
-  if (!targetUserId) {
+  const destinataryId = await dbGetAsync("SELECT id FROM users WHERE username = ?", [data.destinatary]);
+  if (!destinataryId) {
     connection.send(JSON.stringify({
       type: data.type,
-      message: `User '${data.targetUser}' not found.`,
+      message: `User '${data.destinatary}' not found.`,
       sender: "system"
     }));
-    fastify.log.warn(`[Chatroom: set admin] Target user '${data.targetUser}' not found.`);
+    fastify.log.warn(`[Chatroom: set admin] Target user '${data.destinatary}' not found.`);
     return;
   }
 
-  const targetMembership = await dbGetAsync("SELECT * FROM chatroom_members WHERE chatroom_id = ? AND user_id = ?", [chatroom.id, targetUserId.id]);
+  const targetMembership = await dbGetAsync("SELECT * FROM chatroom_members WHERE chatroom_id = ? AND user_id = ?", [chatroom.id, destinataryId.id]);
   if (!targetMembership || targetMembership.is_banned || targetMembership.is_muted) {
     connection.send(JSON.stringify({
       type: data.type,
-      message: `User '${data.targetUser}' must be a member and not muted or banned to become admin.`,
+      message: `User '${data.destinatary}' must be a member and not muted or banned to become admin.`,
       sender: "system"
     }));
-    fastify.log.warn(`[Chatroom: set admin] ${data.targetUser} is either not a member or is muted/banned in '${data.chatroom_name}'`);
+    fastify.log.warn(`[Chatroom: set admin] ${data.destinatary} is either not a member or is muted/banned in '${data.chatroom_name}'`);
     return;
   }
 
-  await dbRunAsync("UPDATE chatroom_members SET role = 'admin' WHERE chatroom_id = ? AND user_id = ?", [chatroom.id, targetUserId.id]);
+  await dbRunAsync("UPDATE chatroom_members SET role = 'admin' WHERE chatroom_id = ? AND user_id = ?", [chatroom.id, destinataryId.id]);
 
   connection.send(JSON.stringify({
     type: data.type,
-    message: `${data.targetUser} is now an admin in '${data.chatroom_name}'`,
+    message: `${data.destinatary} is now an admin in '${data.chatroom_name}'`,
     chatroomId: chatroom.id,
     chatroom_name: data.chatroom_name,
     sender: "system"
   }));
 
-  fastify.log.info(`[Chatroom: set admin] ${connection.username} set ${data.targetUser} as an admin in '${data.chatroom_name}'`);
+  fastify.log.info(`[Chatroom: set admin] ${connection.username} set ${data.destinatary} as an admin in '${data.chatroom_name}'`);
 }
 
 
-
+/*----------------BLOCK USER IN PRIVATE-------------*/
 
 async function handleBlockUser(connection, data, dbGetAsync, dbRunAsync, fastify) {
   if (!data.destinatary) {
@@ -589,8 +610,8 @@ async function handleUnblockUser(connection, data, dbGetAsync, dbRunAsync, fasti
     }));
     return;
   }
-
   const recipient = await dbGetAsync('SELECT id FROM users WHERE username = ?', [data.destinatary]);
+
   if (!recipient) {
     connection.send(JSON.stringify({
       type: data.type,
@@ -602,12 +623,9 @@ async function handleUnblockUser(connection, data, dbGetAsync, dbRunAsync, fasti
     return;
   }
 
-  const unblocked = await dbGetAsync(
-    'SELECT id FROM blocked_users WHERE blocker_id = ? AND blocked_id = ?',
-    [connection.userId, recipient.id]
-  );
+  const blocked = await dbGetAsync('SELECT * FROM blocked_users WHERE blocker_id = ? AND blocked_id = ?', [connection.userId, recipient.id]);
 
-  if (!unblocked) {
+  if (!blocked) {
     connection.send(JSON.stringify({
       type: data.type,
       message: `${data.destinatary} is not blocked.`,
@@ -616,10 +634,7 @@ async function handleUnblockUser(connection, data, dbGetAsync, dbRunAsync, fasti
     return;
   }
 
-  await dbRunAsync(
-    'DELETE FROM blocked_users WHERE blocker_id = ? AND blocked_id = ?',
-    [connection.userId, recipient.id]
-  );
+  await dbRunAsync('DELETE FROM blocked_users WHERE blocker_id = ? AND blocked_id = ?',[connection.userId, recipient.id]);
 
   connection.send(JSON.stringify({
     type: data.type,
@@ -631,5 +646,177 @@ async function handleUnblockUser(connection, data, dbGetAsync, dbRunAsync, fasti
   fastify.log.info(`[WebSocket: unblock] ${connection.username} unblocked ${data.destinatary}`);
 }
 
-//missing: unblock, mute, ban , private channel(password)
+
+/*--------------------BAN USER IN CHATROOMS--------------------*/
+
+async function handleBanUser(connection, data, dbGetAsync, dbRunAsync, userSockets, fastify) {
+  if (!data.destinatary || !data.chatroom_name) {
+    connection.send(JSON.stringify({
+      type: data.type,
+      message: `[BAN ERROR] Missing destinatary or chatroom name.`,
+      sender: "system"
+    }));
+    return;
+  }
+
+  const recipient = await dbGetAsync('SELECT id FROM users WHERE username = ?', [data.destinatary]);
+
+  if (!recipient) {
+    connection.send(JSON.stringify({
+      type: data.type,
+      message: `[BAN ERROR] User '${data.destinatary}' not found.`,
+      sender: "system"
+    }));
+    return;
+  }
+
+  const chatroom = await dbGetAsync('SELECT id FROM chatrooms WHERE name = ?', [data.chatroom_name]);
+
+  if (!chatroom) {
+    connection.send(JSON.stringify({
+      type: data.type,
+      message: `[BAN ERROR] Chatroom '${data.chatroom_name}' not found.`,
+      sender: "system"
+    }));
+    return;
+  }
+
+  const senderRole = await dbGetAsync('SELECT role FROM chatroom_members WHERE chatroom_id = ? AND user_id = ?', [chatroom.id, connection.userId]);
+
+  if (!senderRole || !['admin', 'owner'].includes(senderRole.role)) {
+    connection.send(JSON.stringify({
+      type: data.type,
+      message: `[BAN ERROR] You are not an admin or owner of this chatroom.`,
+      sender: "system"
+    }));
+    return;
+  }
+
+  const recipientMembership = await dbGetAsync('SELECT is_banned FROM chatroom_members WHERE chatroom_id = ? AND user_id = ?', [chatroom.id, recipient.id]);
+
+  if (!recipientMembership) {
+    connection.send(JSON.stringify({
+      type: data.type,
+      message: `[BAN ERROR] ${data.destinatary} is not in the chatroom.`,
+      sender: "system"
+    }));
+    return;
+  }
+
+  if (recipientMembership.is_banned) {
+    connection.send(JSON.stringify({
+      type: data.type,
+      message: `${data.destinatary} is already banned from ${data.chatroom_name}.`,
+      sender: "system"
+    }));
+    return;
+  }
+
+  await dbRunAsync(
+    'UPDATE chatroom_members SET is_banned = 1 WHERE chatroom_id = ? AND user_id = ?',
+    [chatroom.id, recipient.id]
+  );
+
+  connection.send(JSON.stringify({
+    type: data.type,
+    message: `You banned ${data.destinatary} from ${data.chatroom_name}`,
+    sender: "system"
+  }));
+
+  fastify.log.info(`[WebSocket: ban] ${connection.username} banned ${data.destinatary} from ${data.chatroom_name}`);
+
+  const recipientSocket = [...userSockets.values()].find(sock => sock.userId === recipient.id);
+
+  if (recipientSocket && recipientSocket.readyState === recipientSocket.OPEN) {
+    recipientSocket.send(JSON.stringify({
+      type: "system",
+      message: `You have been banned from ${data.chatroom_name}`,
+      chatroom_id: chatroom.id
+    }));
+  }
+}
+
+async function handleUnbanUser(connection, data, dbGetAsync, dbRunAsync, fastify) {
+  if (!data.destinatary || !data.chatroom_name) {
+    connection.send(JSON.stringify({
+      type: data.type,
+      message: `[UNBAN ERROR] Missing destinatary or chatroom name.`,
+      sender: "system"
+    }));
+    return;
+  }
+
+  const destinataryUsername = data.destinatary.trim().toLowerCase();
+
+  const recipient = await dbGetAsync('SELECT id FROM users WHERE LOWER(username) = ?', [destinataryUsername]);
+
+  if (!recipient) {
+    connection.send(JSON.stringify({
+      type: data.type,
+      message: `[UNBAN ERROR] User '${data.destinatary}' not found.`,
+      sender: "system"
+    }));
+    return;
+  }
+
+  const chatroom = await dbGetAsync('SELECT id FROM chatrooms WHERE name = ?', [data.chatroom_name]);
+
+  if (!chatroom) {
+    connection.send(JSON.stringify({
+      type: data.type,
+      message: `[UNBAN ERROR] Chatroom '${data.chatroom_name}' not found.`,
+      sender: "system"
+    }));
+    return;
+  }
+
+  const senderRole = await dbGetAsync(
+    'SELECT role FROM chatroom_members WHERE chatroom_id = ? AND user_id = ?',
+    [chatroom.id, connection.userId]
+  );
+
+  if (!senderRole || !['admin', 'owner'].includes(senderRole.role)) {
+    connection.send(JSON.stringify({
+      type: data.type,
+      message: `[UNBAN ERROR] You are not an admin or owner of this chatroom.`,
+      sender: "system"
+    }));
+    return;
+  }
+
+  const recipientMembership = await dbGetAsync('SELECT is_banned FROM chatroom_members WHERE chatroom_id = ? AND user_id = ?', [chatroom.id, recipient.id]);
+
+  if (!recipientMembership) {
+    connection.send(JSON.stringify({
+      type: data.type,
+      message: `[UNBAN ERROR] ${data.destinatary} is not a member of the chatroom.`,
+      sender: "system"
+    }));
+    return;
+  }
+
+  if (!recipientMembership.is_banned) {
+    connection.send(JSON.stringify({
+      type: data.type,
+      message: `${data.destinatary} is not banned from ${data.chatroom_name}.`,
+      sender: "system"
+    }));
+    return;
+  }
+
+  await dbRunAsync(
+    'UPDATE chatroom_members SET is_banned = 0 WHERE chatroom_id = ? AND user_id = ?',
+    [chatroom.id, recipient.id]
+  );
+
+  connection.send(JSON.stringify({
+    type: data.type,
+    message: `You unbanned ${data.destinatary} from ${data.chatroom_name}`,
+    sender: "system"
+  }));
+
+  fastify.log.info(`[WebSocket: unban] ${connection.username} unbanned ${data.destinatary} from ${data.chatroom_name}`);
+}
+
+
 
