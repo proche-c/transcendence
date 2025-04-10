@@ -9,16 +9,18 @@ const oauthPlugin = require('@fastify/oauth2'); // OAuth2 for authentication
 const cors = require('@fastify/cors'); // CORS plugin
 const fastifyWebsocket = require('@fastify/websocket');
 
+fastify.register(fastifyWebsocket);
+
+const fastifyCookie = require('@fastify/cookie');
+
+fastify.register(fastifyCookie);
 
 // Register CORS middleware
-fastify.register(cors, {
-    origin: ['https://localhost:8443'], // Allow requests only from this origin
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+fastify.register(cors, { 
+    origin: ["https://localhost:8443", "http://localhost:5500/frontend/"], // Especifica el origen permitido
+    credentials: true // Permite el envío de cookies y cabeceras de autenticación
 });
 
-//Pluguin juego
-fastify.register(fastifyWebsocket);
-fastify.register(require('./game/game')); // Plugin del juego
 
 // Register JWT with a secret key
 fastify.register(jwt, { secret: 'supersecretkey' });
@@ -88,6 +90,18 @@ const dbRunAsync = (query, params) => {
     });
 };
 
+// Register the chat plugin 
+const chatRoutes = require('./chat');
+fastify.register(chatRoutes, {
+  prefix: '/chat',
+  db,            // SQLite connection
+  dbGetAsync,    //promisified DB getter
+  dbRunAsync     //  promisified DB runner
+});
+
+//Pluguin juego
+fastify.register(require('./game/game')); // Plugin del juego
+
 // User registration route
 fastify.post('/register', async (request, reply) => {
     const { username, email, password } = request.body;
@@ -128,8 +142,24 @@ fastify.post('/login', async (request, reply) => {
             return reply.status(401).send({ message: 'Incorrect password' });
         }
 
-        const token = fastify.jwt.sign({ userId: user.id, username: user.username });
-        return reply.send({ message: 'Login successful', token });
+        const token = fastify.jwt.sign(
+            { userId: user.id, username: user.username },
+            { expiresIn: '1h'}
+        );
+
+
+        // Added by paula to save token in cookies, saver way
+        reply.setCookie("token", token, {
+            httpOnly: false,
+            secure: true, // true si usas HTTPSmake sta
+            sameSite: "none",
+            domain: "localhost",
+            path: "/",
+            expires: new Date(Date.now() + 60 * 70 * 1000), // Expira en 1 hora
+            // O usa Max-Age en segundos:
+            maxAge: 60 * 70, // 1 hora
+        }).send({ message: 'Login successful',});
+
     } catch (err) {
         return reply.status(500).send({ message: 'Error processing request', error: err.message });
     }
@@ -181,6 +211,30 @@ fastify.get('/auth/google/callback', async (request, reply) => {
         return reply.send({ token });
     } catch (err) {
         return reply.status(500).send({ message: 'Google authentication failed', error: err.message });
+    }
+});
+
+
+//Added by paula to verify authentication througt frontend request
+fastify.get('/check-auth', async (request, reply) => {
+    try {
+        const token = request.cookies.token; // Leer la cookie del request
+        console.log("**Cookies in check-auth:");
+        console.log(token);
+        if (!token) {
+            return reply.status(401).send({ message: "Not authenticated" });
+        }
+
+        // Verificar el JWT
+        const decoded = await fastify.jwt.verify(token);
+
+        return reply.send({ 
+            message: "Authenticated", 
+            user: decoded // Enviar datos del usuario autenticado
+        });
+
+    } catch (error) {
+        return reply.status(401).send({ message: "Invalid or expired token" });
     }
 });
 

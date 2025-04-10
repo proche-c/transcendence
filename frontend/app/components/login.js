@@ -16,6 +16,7 @@ class LoginComponent extends HTMLElement {
         this.loginButton = null;
         this.registerButton = null;
         this.inputData = null;
+        this.errorMsg = null;
         this.response = null;
         this.attachShadow({ mode: "open" });
         this.render();
@@ -35,6 +36,9 @@ class LoginComponent extends HTMLElement {
                     <div class="align-middle">
                     <button id="login" class="bg-gray-800 text-white m-1 p-1 text-center font-bold text-lg">Login</button>
                     </div>
+                    <div class="text-red-600">
+                    <p id="error"> </p>
+                    </div>
                 <div>
             </div>
         `;
@@ -44,6 +48,7 @@ class LoginComponent extends HTMLElement {
         this.loginButton = this.shadowRoot.querySelector("#login");
         this.inputData = this.shadowRoot.querySelector("#inputData");
         this.registerButton = this.shadowRoot.querySelector("#register");
+        this.errorMsg = this.shadowRoot.querySelector("#error");
         this.addEventListeners();
     }
     addEventListeners() {
@@ -56,6 +61,9 @@ class LoginComponent extends HTMLElement {
             if (email && password) {
                 yield this.postData(email, password);
             }
+            else {
+                this.errorMsg.textContent = "All fields are required";
+            }
         }));
         (_b = this.registerButton) === null || _b === void 0 ? void 0 : _b.addEventListener("click", () => {
             console.log("he pulsado sign in");
@@ -64,28 +72,39 @@ class LoginComponent extends HTMLElement {
     }
     postData(email, password) {
         return __awaiter(this, void 0, void 0, function* () {
-            const data = { email, password };
+            const data = { "email": email, "password": password };
             try {
                 // Esta url sera el endponit que configure el servidor
                 const response = yield fetch("http://localhost:8000/login", {
                     method: "POST",
                     body: JSON.stringify(data),
                     headers: { "Content-Type": "application/json" },
+                    credentials: "include",
                 });
                 this.response = yield response.json();
-                location.hash = "#profile"; // Cambiar la vista
+                // location.hash = "#profile"; // Cambiar la vista
                 // Aqui el backend hará las validaciones de email y password y me enviara un error
                 // en caso de que haya algun problema
                 // Si la autenticacion es valida, el backend creara un token jwt y lo guardara en las cookies
                 console.log(response);
-                if (!response.ok) {
-                    throw { status: response.status, statusText: response.statusText };
+                if (response.ok) {
+                    location.hash = "#profile";
+                }
+                if (response.status === 404 || response.status === 401) {
+                    this.errorMsg.textContent = "Incorrect email or password";
+                    this.resetValues();
                 }
             }
             catch (error) {
                 console.log("error en la peticion");
             }
         });
+    }
+    resetValues() {
+        if (this.emailInput)
+            this.emailInput.value = "";
+        if (this.passwordInput)
+            this.passwordInput.value = "";
     }
 }
 customElements.define("pong-login", LoginComponent);

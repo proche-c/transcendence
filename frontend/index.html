@@ -15,12 +15,40 @@
     <script type="module" src="./app/components/profile.js"></script>
     <script type="module" src="./app/components/board.js"></script>
     <script type="module" src="./app/components/play.js"></script>
+    <script type="module" src="./app/components/chat.js"></script>
     <script type="module" src="./app/components/login.js"></script>
     <script type="module" src="./app/components/register.js"></script>
     <script>
-        function renderComponent() {
+
+        async function isAuthenticated() {
+            try {
+                const response = await fetch("http://localhost:8000/check-auth", {
+                    method: "GET",
+                    credentials: "include",
+                });
+                console.log(response);
+
+                return response.ok;
+            } catch (error) {
+                console.log("Authentication verification failed", error);
+                return false;
+            }
+
+        }
+
+        async function renderComponent() {
             const appContainer = document.getElementById("app");
             if (!appContainer) return;
+
+            const protectedRoutes = ["#profile", "#board", "#play", "#chat"];
+
+            if (protectedRoutes.includes(location.hash)) {
+                const auth = await isAuthenticated();
+                if (!auth) {
+                    location.hash = "#";
+                    return ;
+                }
+            }
     
             if (location.hash === "#profile") {
                 // Evita recrear el componente si ya existe
@@ -38,6 +66,11 @@
                     appContainer.innerHTML = ""; 
                     appContainer.appendChild(document.createElement("pong-play"));
                 }                
+            } else if (location.hash === "#chat") {
+                if (!appContainer.querySelector("pong-chat")) {
+                    appContainer.innerHTML = ""; 
+                    appContainer.appendChild(document.createElement("pong-chat"));
+                }
             }
             else {
                 // if (!appContainer.querySelector("pong-home")) {
