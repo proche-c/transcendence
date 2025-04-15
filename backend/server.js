@@ -7,6 +7,7 @@ const bcrypt = require('bcrypt'); // Bcrypt for password hashing
 const jwt = require('@fastify/jwt'); // JWT for authentication
 const oauthPlugin = require('@fastify/oauth2'); // OAuth2 for authentication
 const cors = require('@fastify/cors'); // CORS plugin
+// const authMiddleware = require('./authMiddleware')(dbGetAsync);
 
 const fastifyWebsocket = require('@fastify/websocket');
 
@@ -91,6 +92,8 @@ const dbRunAsync = (query, params) => {
     });
 };
 
+const authMiddleware = require('./authMiddleware')(dbGetAsync, fastify);
+
 // Register the chat plugin 
 const chatRoutes = require('./chat');
 fastify.register(chatRoutes, {
@@ -163,6 +166,10 @@ fastify.post('/login', async (request, reply) => {
         return reply.status(500).send({ message: 'Error processing request', error: err.message });
     }
 });
+
+fastify.get('/profile', { preHandler: authMiddleware}, async (request, reply) => {
+    return reply.send({ user: request.user});
+})
 
 // Get tournaments
 fastify.get('/tournaments', async (request, reply) => {
