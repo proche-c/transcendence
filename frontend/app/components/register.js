@@ -28,19 +28,34 @@ class RegisterComponent extends HTMLElement {
         style.rel = "stylesheet";
         style.href = "./app/tailwind.css";
         this.shadowRoot.innerHTML = `
-        <div class="border-1 border-purple-900 flex justify-center items-center content-center m-1 p-1">
-            <div id="inputData" class="flex-col bg-black m-4 py-4 px-6 justify-center content-center">
-                <input type="text" id="email" placeholder="Email" class="bg-white mx-1 my-2 p-1" required><br>
-                <input type="text" id="username" placeholder="Username" class="bg-white mx-1 my-2 p-1" required><br>
-                <input type="password" id="password" placeholder="Password" class="bg-white mx-1 my-2 p-1" required><br>
-                <input type="password" id="password2" placeholder="Confirm password" class="bg-white mx-1 my-2 p-1" required><br>
-                <div class="align-middle">
-                <button id="register" class="bg-gray-800 text-white m-1 p-1 text-center font-bold text-lg">Register</button>
+        <div class="relative py-3 sm:max-w-xl sm:mx-auto w-full">
+        <div class="relative px-4 py-10 bg-black mx-8 md:mx-0 shadow rounded-3xl sm:p-10">
+            <div class="max-w-md mx-auto text-white">
+                <div class="mt-5">
+                    <label for="email" class="font-semibold text-sm text-gray-400 pb-1 block">E-mail</label>
+                    <input id="email" type="text"
+                        class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+                    <label for="username" class="font-semibold text-sm text-gray-400 pb-1 block">Username</label>
+                    <input id="username" type="text"
+                        class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>                    
+                    <label for="password" class="font-semibold text-sm text-gray-400 pb-1 block">Password</label>
+                    <input id="password" type="password"
+                        class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+                    <label for="password2" class="font-semibold text-sm text-gray-400 pb-1 block">Confirm Password</label>
+                    <input id="password2" type="password"
+                        class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+                </div>
+                <div class="mt-5">
+                    <button id="register"
+                        class="py-2 px-4 bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg">
+                        Register
+                    </button>
                 </div>
                 <div class="text-red-600">
-                <p id="error"> </p>
+                    <p id="error"> </p>
                 </div>
-            <div>
+            </div>
+        </div>
         </div>
         `;
         this.shadowRoot.appendChild(style);
