@@ -118,7 +118,7 @@ fastify.post('/register', async (request, reply) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const result = await dbRunAsync('INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)', [username, email, hashedPassword]);
+        const result = await dbRunAsync('INSERT INTO users (username, email, password_hash, avatar) VALUES (?, ?, ?, ?)', [username, email, hashedPassword, "default.png"]);
 
         return reply.status(201).send({ message: 'User created', userId: result.lastID });
     } catch (err) {
