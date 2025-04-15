@@ -98,7 +98,8 @@ fastify.register(chatRoutes, {
   db,            // SQLite connection
   dbGetAsync,    //promisified DB getter
   dbRunAsync,     //  promisified DB runner
-  dbAllAsync
+  dbAllAsync,
+  bcrypt
 });
 
 // User registration route
