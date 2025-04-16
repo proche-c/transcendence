@@ -18,7 +18,7 @@ class MenuComponent extends HTMLElement {
 
 		this.shadowRoot.innerHTML = `
 		<div class="flex h-screen items-center">
-			<div class="flex h-7/8 w-16 md:w-32 flex-col items-center justify-around border-e border-gray-100 bg-white rounded-4xl my-10 px-2 ml-4">	
+			<div class="flex h-7/8 w-16 md:w-32 flex-col items-center justify-around border-e border-violet-700 bg-white rounded-4xl my-10 px-2 ml-4">	
 				<div>
 					<a href="#profile" id="profile" class="group relative flex justify-center rounded-sm px-2 py-1.5 text-gray-500 hover:bg-gray-50 hover:text-gray-700">
 					<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-10 md:size-16">

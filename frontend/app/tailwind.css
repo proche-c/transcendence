@@ -15,6 +15,8 @@
     --color-blue-600: oklch(54.6% 0.245 262.881);
     --color-blue-700: oklch(48.8% 0.243 264.376);
     --color-violet-500: oklch(60.6% 0.25 292.717);
+    --color-violet-700: oklch(49.1% 0.27 292.581);
+    --color-violet-900: oklch(38% 0.189 293.745);
     --color-purple-300: oklch(82.7% 0.119 306.383);
     --color-purple-400: oklch(71.4% 0.203 305.504);
     --color-purple-700: oklch(49.6% 0.265 301.924);
@@ -231,11 +233,20 @@
   .start-full {
     inset-inline-start: 100%;
   }
+  .top-0 {
+    top: calc(var(--spacing) * 0);
+  }
   .top-1\/2 {
     top: calc(1/2 * 100%);
   }
   .bottom-0 {
     bottom: calc(var(--spacing) * 0);
+  }
+  .left-0 {
+    left: calc(var(--spacing) * 0);
+  }
+  .z-50 {
+    z-index: 50;
   }
   .container {
     width: 100%;
@@ -294,6 +305,9 @@
   .mt-1 {
     margin-top: calc(var(--spacing) * 1);
   }
+  .mt-2 {
+    margin-top: calc(var(--spacing) * 2);
+  }
   .mt-4 {
     margin-top: calc(var(--spacing) * 4);
   }
@@ -302,6 +316,9 @@
   }
   .mt-8 {
     margin-top: calc(var(--spacing) * 8);
+  }
+  .mb-4 {
+    margin-bottom: calc(var(--spacing) * 4);
   }
   .mb-5 {
     margin-bottom: calc(var(--spacing) * 5);
@@ -451,6 +468,9 @@
       margin-block-end: calc(calc(var(--spacing) * 1) * calc(1 - var(--tw-space-y-reverse)));
     }
   }
+  .place-self-start {
+    place-self: start;
+  }
   .overflow-auto {
     overflow: auto;
   }
@@ -518,6 +538,9 @@
   }
   .border-violet-500 {
     border-color: var(--color-violet-500);
+  }
+  .border-violet-700 {
+    border-color: var(--color-violet-700);
   }
   .bg-amber-50 {
     background-color: var(--color-amber-50);
@@ -683,6 +706,9 @@
   }
   .text-red-600 {
     color: var(--color-red-600);
+  }
+  .text-violet-900 {
+    color: var(--color-violet-900);
   }
   .text-white {
     color: var(--color-white);
@@ -866,18 +892,6 @@
   .sm\:p-10 {
     @media (width >= 40rem) {
       padding: calc(var(--spacing) * 10);
-    }
-  }
-  .sm\:text-2xl {
-    @media (width >= 40rem) {
-      font-size: var(--text-2xl);
-      line-height: var(--tw-leading, var(--text-2xl--line-height));
-    }
-  }
-  .sm\:text-base {
-    @media (width >= 40rem) {
-      font-size: var(--text-base);
-      line-height: var(--tw-leading, var(--text-base--line-height));
     }
   }
   .md\:mx-0 {
