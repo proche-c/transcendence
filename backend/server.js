@@ -168,7 +168,20 @@ fastify.post('/login', async (request, reply) => {
 });
 
 fastify.get('/profile', { preHandler: authMiddleware}, async (request, reply) => {
-    return reply.send({ user: request.user});
+    const data = {
+        username: request.user.username,
+        email: request.user.email,
+        avatar: request.user.avatar
+    }
+    return reply.send({ user: data});
+})
+
+fastify.get('/edit-profile', { preHandler: authMiddleware}, async (request, reply) => {
+    const data = {
+        username: request.user.username,
+        avatar: request.user.avatar
+    }
+    return reply.send({ user: data});
 })
 
 // Get tournaments
