@@ -10,11 +10,11 @@
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
-    "@tailwindcss/cli": "^4.0.17",
+    "@tailwindcss/cli": "^4.1.4",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "sqlite3": "^5.1.6",
-    "tailwindcss": "^4.0.17"
+    "tailwindcss": "^4.1.4"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

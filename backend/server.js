@@ -7,6 +7,7 @@ const bcrypt = require('bcrypt'); // Bcrypt for password hashing
 const jwt = require('@fastify/jwt'); // JWT for authentication
 const oauthPlugin = require('@fastify/oauth2'); // OAuth2 for authentication
 const cors = require('@fastify/cors'); // CORS plugin
+// const authMiddleware = require('./authMiddleware')(dbGetAsync);
 
 const fastifyWebsocket = require('@fastify/websocket');
 
@@ -15,6 +16,19 @@ fastify.register(fastifyWebsocket);
 const fastifyCookie = require('@fastify/cookie');
 
 fastify.register(fastifyCookie);
+
+//********************TO SERVE STATIC FILES(AVATAR IMGS)******************** */
+
+const fastifyStatic = require('@fastify/static');
+
+const uploadssPath = path.join(__dirname, 'uploads');
+console.log("Serving statics from: ", uploadssPath);
+
+fastify.register(fastifyStatic, {
+    root: uploadssPath,
+    prefix: '/static/',
+});
+
 
 // Register CORS middleware
 fastify.register(cors, { 
@@ -91,13 +105,16 @@ const dbRunAsync = (query, params) => {
     });
 };
 
+const authMiddleware = require('./authMiddleware')(dbGetAsync, fastify);
+
 // Register the chat plugin 
 const chatRoutes = require('./chat');
 fastify.register(chatRoutes, {
   prefix: '/chat',
   db,            // SQLite connection
   dbGetAsync,    //promisified DB getter
-  dbRunAsync     //  promisified DB runner
+  dbRunAsync,     //  promisified DB runner
+  dbAllAsync
 });
 
 // User registration route
@@ -114,7 +131,7 @@ fastify.post('/register', async (request, reply) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const result = await dbRunAsync('INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)', [username, email, hashedPassword]);
+        const result = await dbRunAsync('INSERT INTO users (username, email, password_hash, avatar) VALUES (?, ?, ?, ?)', [username, email, hashedPassword, "avatars/default.jpg"]);
 
         return reply.status(201).send({ message: 'User created', userId: result.lastID });
     } catch (err) {
@@ -162,6 +179,23 @@ fastify.post('/login', async (request, reply) => {
         return reply.status(500).send({ message: 'Error processing request', error: err.message });
     }
 });
+
+fastify.get('/profile', { preHandler: authMiddleware}, async (request, reply) => {
+    const data = {
+        username: request.user.username,
+        email: request.user.email,
+        avatar: request.user.avatar
+    }
+    return reply.send({ user: data});
+})
+
+fastify.get('/edit-profile', { preHandler: authMiddleware}, async (request, reply) => {
+    const data = {
+        username: request.user.username,
+        avatar: request.user.avatar
+    }
+    return reply.send({ user: data});
+})
 
 // Get tournaments
 fastify.get('/tournaments', async (request, reply) => {
