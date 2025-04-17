@@ -300,7 +300,16 @@ async function handleBanUser(connection, data, dbGetAsync, dbRunAsync, userSocke
       }));
       return;
     }
-  
+    
+    if (recipient.id === connection.userId) {
+        connection.send(JSON.stringify({
+          type: data.type,
+          message: `[BAN ERROR] You cannot ban yourself.`,
+          sender: "system"
+        }));
+        return;
+      }
+      
     const chatroom = await dbGetAsync('SELECT id FROM chatrooms WHERE name = ?', [data.chatroom_name]);
   
     if (!chatroom) {
@@ -605,6 +614,16 @@ async function handleKickUser(connection, data, dbGetAsync, dbRunAsync, fastify,
       }));
       return;
     }
+
+    if (recipient.id === connection.userId) {
+        connection.send(JSON.stringify({
+          type: data.type,
+          message: `[KICK ERROR] You cannot kick yourself.`,
+          sender: "system"
+        }));
+        return;
+      }
+      
   
     const chatroom = await dbGetAsync('SELECT id FROM chatrooms WHERE name = ?', [data.chatroom_name]);
     if (!chatroom) {

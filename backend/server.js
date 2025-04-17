@@ -158,7 +158,7 @@ fastify.post('/login', async (request, reply) => {
             expires: new Date(Date.now() + 60 * 70 * 1000), // Expira en 1 hora
             // O usa Max-Age en segundos:
             maxAge: 60 * 70, // 1 hora
-        }).send({ message: 'Login successful', token});  // token for testing the chat, laterb need to remove
+        }).send({ message: 'Login successful'});
 
     } catch (err) {
         return reply.status(500).send({ message: 'Error processing request', error: err.message });

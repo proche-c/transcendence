@@ -20,11 +20,9 @@ type 11(mute in the chat): destinatary, chatroom_name
 type 12(unmute in the chat): destinatary, chatroom_name
 */
 
+/* TO DO
 
-/*TODO 
-
-if banned, cannot join the channel or be invited or be an admin
-*/
+ */
 
 const {
   handleChatrooms,
@@ -38,9 +36,9 @@ const {
   handleKickUser
 } = require('./chatroomHandler');
 
-const bcrypt = options.bcrypt;
 
 async function chatRoutes(fastify, options) {
+  const bcrypt = options.bcrypt;
   const db = options.db; // getting the db passed from server.js
   const dbGetAsync = options.dbGetAsync;
   const dbRunAsync = options.dbRunAsync;
