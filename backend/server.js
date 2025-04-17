@@ -17,6 +17,19 @@ const fastifyCookie = require('@fastify/cookie');
 
 fastify.register(fastifyCookie);
 
+//********************TO SERVE STATIC FILES(AVATAR IMGS)******************** */
+
+const fastifyStatic = require('@fastify/static');
+
+const uploadssPath = path.join(__dirname, 'uploads');
+console.log("Serving statics from: ", uploadssPath);
+
+fastify.register(fastifyStatic, {
+    root: uploadssPath,
+    prefix: '/static/',
+});
+
+
 // Register CORS middleware
 fastify.register(cors, { 
     origin: ["https://localhost:8443", "http://localhost:5500/frontend/"], // Especifica el origen permitido
@@ -118,7 +131,7 @@ fastify.post('/register', async (request, reply) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const result = await dbRunAsync('INSERT INTO users (username, email, password_hash, avatar) VALUES (?, ?, ?, ?)', [username, email, hashedPassword, "default.png"]);
+        const result = await dbRunAsync('INSERT INTO users (username, email, password_hash, avatar) VALUES (?, ?, ?, ?)', [username, email, hashedPassword, "avatars/default.jpg"]);
 
         return reply.status(201).send({ message: 'User created', userId: result.lastID });
     } catch (err) {

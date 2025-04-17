@@ -46,6 +46,8 @@ class ProfileComponent extends HTMLElement {
         const style = document.createElement("link");
         style.rel = "stylesheet";
         style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
+        const avatar = this.response.avatar || "avatars/default.jpg";
+        const avatarUrl = `http://localhost:8000/static/${avatar}`;
         this.shadowRoot.innerHTML = `
 			<div class="flex h-screen justify-between">
 				<div class="">
@@ -53,12 +55,12 @@ class ProfileComponent extends HTMLElement {
 				</div>
 				<div class="grow h-7/8 my-10 mx-4 w-7/12 flex items-center justify-center">
 
-					<div class="group relative block max-w-screen-sm mx-auto h-80 sm:h-80 lg:h-96">
+					<div class="group relative block max-w-screen-sm mx-auto h-100 lg:h-120">
 						<div id="editCard" class="absolute z-50 top-0 left-0 bg-white mt-8 ml-8"></div>
 						<span class="absolute inset-0 border-2 border-dashed border-black"></span>
 						<div class="relative flex flex-col h-full w-60 md:w-72 transform border-2 border-black bg-white transition-transform group-hover:scale-105">
 							<div class="w-32 h-32 rounded-full overflow-hidden border-4 border-black flex items-center justify-center my-5 mx-auto">
-								<img src="./app/avatars/default.jpg" class="w-full h-full object-cover" />
+								<img src="${avatarUrl}" class="w-full h-full object-cover" />
 							</div>
 							<div id="username" class="text-2xl font-bold text-center mt-4">
 							usuario
