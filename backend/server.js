@@ -1,9 +1,9 @@
 // Fastify server using node.js that manages an API listening on port 3000
-require('dotenv').config({ path: '../.env' }); // Load environment variables from a .env file into process.env
-console.log("GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID);
-console.log("GOOGLE_CLIENT_SECRET:", process.env.GOOGLE_CLIENT_SECRET);
 
+//console.log("GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID);
+//console.log("GOOGLE_CLIENT_SECRET:", process.env.GOOGLE_CLIENT_SECRET);
 
+const dotenv = require('dotenv').config({ path: '../.env' }); // Load environment variables from a .env file into process.env
 const fastify = require('fastify')({ logger: true }); //loading the fastify Framework and activate the logs
 const sqlite3 = require('sqlite3').verbose(); // SQLite3 library
 const fs = require('fs'); // File system library
@@ -11,7 +11,8 @@ const path = require('path'); // Path library
 const bcrypt = require('bcrypt'); // Bcrypt library for hashing passwords
 const jwt = require('@fastify/jwt'); // JWT library for authentication
 const oauthPlugin = require('@fastify/oauth2'); // OAuth2 library for authentication
-
+const speakeasy = require('speakeasy'); // Two-factor authentication library
+const qrcode = require('qrcode');
 
 // Register JWT with a secret key
 fastify.register(jwt, { secret: 'supersecretkey' });
@@ -164,6 +165,26 @@ fastify.post('/login', async (request, reply) => {
         if (!user) {
             return reply.status(404).send({ message: 'User not found' });
         }
+
+        //  cxheck if 2FA is enabled
+        if (user.is_twofa_enabled) {
+            if (!twofa_token) {
+                return reply.status(401).send({ message: '2FA token required' });
+            }
+
+            const verified = speakeasy.totp.verify({
+                secret: user.twofa_secret,
+                encoding: 'base32',
+                token: twofa_token,
+            });
+
+            if (!verified) {
+                return reply.status(401).send({ message: 'Invalid 2FA token' });
+            }
+        }
+
+
+
         const match = await bcrypt.compare(password, user.password_hash);
         if (!match) {
             return reply.status(401).send({ message: 'Incorrect password' });
@@ -249,6 +270,49 @@ fastify.get('/auth/google/callback', async function (request, reply) {
 
     return reply.send({ token });
 });
+
+// Two-factor authentication route
+fastify.post('/2fa/setup', { preHandler: [fastify.authenticate] }, async (request, reply) => {
+    const userId = request.user.userId;
+
+    const secret = speakeasy.generateSecret({
+        name: `PongApp (${request.user.username})`, // Name printed on Google Authenticator
+    });
+
+    await dbRunAsync('UPDATE users SET twofa_secret = ?, is_twofa_enabled = 1 WHERE id = ?', [secret.base32, userId]);
+
+    const qrCode = await qrcode.toDataURL(secret.otpauth_url);
+
+    return reply.send({
+        message: '2FA setup',
+        qrCode,
+        secret: secret.base32, // to hide in production
+    });
+});
+
+// Verify 2FA code
+fastify.post('/2fa/verify', { preHandler: [fastify.authenticate] }, async (request, reply) => {
+    const { token } = request.body;
+    const userId = request.user.userId;
+
+    const user = await dbGetAsync('SELECT twofa_secret FROM users WHERE id = ?', [userId]);
+    if (!user || !user.twofa_secret) {
+        return reply.status(400).send({ message: '2FA not set up' });
+    }
+
+    const verified = speakeasy.totp.verify({
+        secret: user.twofa_secret,
+        encoding: 'base32',
+        token,
+    });
+
+    if (!verified) {
+        return reply.status(401).send({ message: 'Invalid 2FA code' });
+    }
+
+    return reply.send({ message: '2FA verified successfully' });
+});
+
   
 
 // Start the server

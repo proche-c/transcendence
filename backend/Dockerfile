@@ -24,6 +24,8 @@ RUN npm list @fastify/jwt || npm install @fastify/jwt
 RUN npm list bcrypt || npm install bcrypt
 RUN npm install fastify-passport @fastify/oauth2 fastify-secure-session 
 RUN npm install dotenv
+RUN npm install speakeasy qrcode
+
 
 # Switch back to root to modify permissions
 USER root
