@@ -55,12 +55,12 @@ class RegisterComponent extends HTMLElement {
     addEventListeners() {
         var _a;
         (_a = this.registerButton) === null || _a === void 0 ? void 0 : _a.addEventListener("click", (event) => __awaiter(this, void 0, void 0, function* () {
-            var _a, _b, _c, _d;
+            var _b, _c, _d, _e;
             event.preventDefault();
-            const email = ((_a = this.emailInput) === null || _a === void 0 ? void 0 : _a.value) || "";
-            const user = ((_b = this.userInput) === null || _b === void 0 ? void 0 : _b.value) || "";
-            const password = ((_c = this.passwordInput) === null || _c === void 0 ? void 0 : _c.value) || "";
-            const password2 = ((_d = this.password2Input) === null || _d === void 0 ? void 0 : _d.value) || "";
+            const email = ((_b = this.emailInput) === null || _b === void 0 ? void 0 : _b.value) || "";
+            const user = ((_c = this.userInput) === null || _c === void 0 ? void 0 : _c.value) || "";
+            const password = ((_d = this.passwordInput) === null || _d === void 0 ? void 0 : _d.value) || "";
+            const password2 = ((_e = this.password2Input) === null || _e === void 0 ? void 0 : _e.value) || "";
             if (email && user && password && password2) {
                 if (password === password2) {
                     yield this.postData(email, user, password);

@@ -54,10 +54,10 @@ class LoginComponent extends HTMLElement {
     addEventListeners() {
         var _a, _b;
         (_a = this.loginButton) === null || _a === void 0 ? void 0 : _a.addEventListener("click", (event) => __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
+            var _c, _d;
             event.preventDefault();
-            const email = ((_a = this.emailInput) === null || _a === void 0 ? void 0 : _a.value) || "";
-            const password = ((_b = this.passwordInput) === null || _b === void 0 ? void 0 : _b.value) || "";
+            const email = ((_c = this.emailInput) === null || _c === void 0 ? void 0 : _c.value) || "";
+            const password = ((_d = this.passwordInput) === null || _d === void 0 ? void 0 : _d.value) || "";
             if (email && password) {
                 yield this.postData(email, password);
             }

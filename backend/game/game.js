@@ -3,26 +3,30 @@ async function gameRoutes(fastify, options) {
     fastify.websocketGames = [];
   }
 
-  // Estado del juego
+  // Estado del juego con ambos jugadores inicializados
   const gameState = {
-    running: false, // Nuevo estado para saber si el juego ha empezado
-    players: {},  // Jugadores conectados
-    ball: { x: 300, y: 200, speedX: 5, speedY: 5 }, // Pelota
-    scores: { player1: 0, player2: 0 } // Puntuaciones
+    running: false,
+    players: {
+      player1: { x: 20, y: 150 },
+      player2: { x: 560, y: 150 }
+    },
+    ball: { x: 300, y: 200, speedX: 5, speedY: 5 },
+    scores: { player1: 0, player2: 0 }
   };
 
   fastify.get('/game', { websocket: true }, (connection, req) => {
     try {
       const playerId = Math.random().toString(36).substring(2, 10);
-      const playerNumber = Object.keys(gameState.players).length + 1;
+      const playerNumber = !fastify.websocketGames.find(c => c.playerNumber === 1) ? 1 : 2;
 
-      if (playerNumber > 2) {
+      if (fastify.websocketGames.length >= 2) {
         connection.socket.send(JSON.stringify({ type: "error", message: "Sala llena" }));
         connection.socket.close();
         return;
       }
 
-      gameState.players[playerId] = { x: playerNumber === 1 ? 20 : 560, y: 150 };
+      connection.playerNumber = playerNumber;
+      connection.playerId = playerId;
 
       fastify.websocketGames.push(connection);
       fastify.log.info(`Jugador ${playerNumber} conectado: ${playerId}`);
@@ -32,11 +36,14 @@ async function gameRoutes(fastify, options) {
       connection.socket.on('message', (message) => {
         const data = JSON.parse(message);
 
-        if (data.type === "move" && gameState.players[playerId]) {
-          gameState.players[playerId].y = data.y;
+        if (data.type === "move") {
+          console.log(`Received move from player ${connection.playerNumber}: y=${data.y}`);
+          const pn = connection.playerNumber;
+          if (pn === 1 || pn === 2) {
+            gameState.players[`player${pn}`].y = data.y;
+          }
         }
 
-        // Un jugador escribe "jugar" → inicia el juego
         if (data.type === "start" && data.message === "jugar" && !gameState.running) {
           gameState.running = true;
           startGame();
@@ -45,7 +52,6 @@ async function gameRoutes(fastify, options) {
 
       connection.socket.on('close', () => {
         fastify.websocketGames = fastify.websocketGames.filter(client => client !== connection);
-        delete gameState.players[playerId];
         fastify.log.info(`Jugador desconectado: ${playerId}`);
       });
 
@@ -54,10 +60,9 @@ async function gameRoutes(fastify, options) {
     }
   });
 
-  // Función que inicia el juego y lo actualiza
   function startGame() {
     function updateGame() {
-      if (!gameState.running) return; // Si el juego no está en marcha, salir
+      if (!gameState.running) return;
 
       gameState.ball.x += gameState.ball.speedX;
       gameState.ball.y += gameState.ball.speedY;
@@ -66,8 +71,8 @@ async function gameRoutes(fastify, options) {
         gameState.ball.speedY *= -1;
       }
 
-      Object.keys(gameState.players).forEach(playerId => {
-        const player = gameState.players[playerId];
+      ["player1", "player2"].forEach(playerKey => {
+        const player = gameState.players[playerKey];
 
         if (
           (gameState.ball.x <= player.x + 10 && gameState.ball.x >= player.x) ||
@@ -95,13 +100,12 @@ async function gameRoutes(fastify, options) {
         }
       });
 
-      setTimeout(updateGame, 1000 / 30);
+      setTimeout(updateGame, 1000 / 60);
     }
 
     updateGame();
   }
 
-  // Verificar si el juego ha terminado (un jugador llega a 4 puntos)
   function checkGameOver() {
     if (gameState.scores.player1 >= 4) {
       endGame("Jugador 1 gana!");
@@ -110,24 +114,21 @@ async function gameRoutes(fastify, options) {
     }
   }
 
-  // Detener el juego y notificar a los clientes
   function endGame(winnerMessage) {
     gameState.running = false;
-    
+
     fastify.websocketGames.forEach(client => {
       if (client.socket.readyState === client.socket.OPEN) {
         client.socket.send(JSON.stringify({ type: "end", message: winnerMessage }));
       }
     });
 
-    // Reiniciar el estado del juego
     gameState.ball = { x: 300, y: 200, speedX: 5, speedY: 5 };
     gameState.scores = { player1: 0, player2: 0 };
   }
 
-  // Reiniciar la pelota en el centro después de un punto
   function resetBall() {
-    if (!gameState.running) return; // Evita reiniciar si el juego terminó
+    if (!gameState.running) return;
 
     gameState.ball.x = 300;
     gameState.ball.y = 200;
