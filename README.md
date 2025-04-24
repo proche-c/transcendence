@@ -60,13 +60,13 @@ flowchart LR
 |        | ❌     |          |Major module: Multiplayer (more than 2 players in the same game). |
 |        | ❌     |          |Major module: Add another game with user history and matchmaking. |
 |        | ❌     |          |Minor module: Game customization options. |
-|        | ❌     |🐰        |Major module: Live chat. |
+| 1      | 💻     |🐰        |Major module: Live chat. |
 
 ### AI-Algo  
 | Points | Status | Student | Module |
 |--------|--------|----------|--------|
 |        | ❌     |          | Major module: Introduce an AI opponent. |
-|        | ❌     | 🐱       | Minor module: User and game stats dashboards. |
+|        | ❌     |    🐶    | Minor module: User and game stats dashboards. |
 
 ### Cybersecurity  
 | Points | Status | Student |Module |
@@ -90,8 +90,8 @@ flowchart LR
 ### Accessibility  
 | Points | Status | Student | Module |
 |--------|--------|----------|--------|
-|        | ❌     |           | Minor module: Support on all devices. |
-|        | ❌     |           | Minor module: Expanding browser compatibility. |
+|  0.5   | 💻     |   🐶      | Minor module: Support on all devices. |
+|  0.5   | 💻     |   🐶        | Minor module: Expanding browser compatibility. |
 |        | ❌     |  🐰       | Minor module: Supports multiple languages. |
 |        | ❌     |           | Minor module: Add accessibility features for visually impaired users. |
 |        | ❌     |           | Minor module: Server-Side Rendering (SSR) integration. |
@@ -103,7 +103,7 @@ flowchart LR
 |        | ❌     |         | Major module: Enabling Pong gameplay via CLI against web users with API integration. |
 
 ### **Total**  
-**5.0**  
+**7.0**  
 
 
 
