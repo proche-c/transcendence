@@ -12,7 +12,6 @@ echo "Checking for the SQLite database file..."
 mkdir -p "$DB_DIR"
 chmod 777 "$DB_DIR"  # Permisos temporalmente amplios
 
-# If the database file does not exist, create and initialize it
 if [ ! -f "$DB_PATH" ]; then
     echo "Creating new database..."
     touch "$DB_PATH"

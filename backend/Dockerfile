@@ -13,7 +13,6 @@ WORKDIR /home/node/app
 # Copiar archivos de paquete
 COPY --chown=node:node package*.json ./
 
-# Switch to node user for installing dependencies
 USER node
 
 # Install dependencies
@@ -39,9 +38,6 @@ RUN mkdir -p /home/node/app/sqlite_data && \
     chown -R node:node /home/node/app/sqlite_data
 
 USER node
-RUN npm list @fastify/jwt || npm install @fastify/jwt
-RUN npm list bcrypt || npm install bcrypt
-RUN npm install fastify-passport @fastify/oauth2 fastify-secure-session 
 
 EXPOSE 8000
 ENTRYPOINT ["/home/node/app/entrypoint.sh"]
