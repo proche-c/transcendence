@@ -1,29 +1,32 @@
 #!/bin/sh
 set -e
 
-# Define application and database paths
 APP_DIR="/home/node/app"
 DB_DIR="$APP_DIR/sqlite_data"
 DB_PATH="$DB_DIR/database.sqlite"
-INIT_SQL="$APP_DIR/backend/init.sql"
+INIT_SQL="$APP_DIR/init.sql"
 
-echo "${YELLOW}Checking for the SQLite database file...${RESET}"
+echo "Checking for the SQLite database file..."
+
+# Crear directorio y asignar permisos
 mkdir -p "$DB_DIR"
+chmod 777 "$DB_DIR"  # Permisos temporalmente amplios
 
 # If the database file does not exist, create and initialize it
 if [ ! -f "$DB_PATH" ]; then
+    echo "Creating new database..."
     touch "$DB_PATH"
     chmod 666 "$DB_PATH"
-    echo "${YELLOW}Initializing SQLite (Normal Mode)${RESET}"
+
     if [ -f "$INIT_SQL" ]; then
+        echo "Initializing database..."
         sqlite3 "$DB_PATH" < "$INIT_SQL"
     else
-        echo "${RED}Initialization file not found at backend/init.sql!${RESET}"
+        echo "ERROR: init.sql not found!"
         exit 1
     fi
 else
-    echo "${GREEN}SQLite database already exists.${RESET}"
+    echo "Using existing database."
 fi
 
-# Execute the CMD provided in the Dockerfile
 exec "$@"

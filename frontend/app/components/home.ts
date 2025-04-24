@@ -15,13 +15,16 @@ class HomeComponent extends HTMLElement {
         style.href = "./app/tailwind.css";
 
         this.shadowRoot.innerHTML = `
-            <div class="bg-black flex items-center justify-center overflow-hidden m-2 rounded-lg shadow-lg">
-                <img src="./app/assets/start2.png" class="p-1">
+        <section class="h-screen">
+            <div class="container h-full px-6 py-24">
+                <div class="flex h-full flex-wrap items-center justify-center lg:justify-between">
+                    <div class="mb-12 md:mb-0 md:w-8/12 lg:w-6/12">
+                        <img src="./app/assets/chica.svg" class="w-full"/>
+                    </div>
+                    <div id="dataContainer"></div>
+                </div>
             </div>
-            <div class="p-2">
-                <h1 class="font-sans text-center font-bold text-purple-900 text-2xl">WELCOME TO PONG!</h1>
-            </div>
-            <div id="dataContainer"></div>
+        </section>
         `;
 
         this.dataContainer = this.shadowRoot.querySelector("#dataContainer");
