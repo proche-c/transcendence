@@ -1,5 +1,5 @@
 // Fastify server using Node.js that manages an API listening on port 8000
-const dotenv = require('dotenv').config({ path: '../.env' }); // Load environment variables from a .env file into process.env
+const dotenv = require('dotenv').config(); // Load environment variables from a .env file into process.env
 const fastify = require('fastify')({ logger: true }); // Loading Fastify framework with logging enabled
 const sqlite3 = require('sqlite3').verbose(); // SQLite3 library
 const fs = require('fs'); // File system library
