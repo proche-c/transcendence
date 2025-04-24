@@ -99,17 +99,15 @@ class PlayComponent extends HTMLElement {
     setupLocalGame() {
         const canvas = this.shadowRoot.querySelector('canvas');
         const ctx = canvas.getContext('2d');
-        // Estado del juego local
         const gameState = {
             players: {
                 player1: { x: 30, y: 200 },
-                player2: { x: 740, y: 200 } // Ajustamos la posición de las palas
+                player2: { x: 740, y: 200 }
             },
-            ball: { x: 400, y: 250, speedX: 3, speedY: 3 },
+            ball: { x: 400, y: 250, speedX: 5, speedY: 5 },
             scores: { player1: 0, player2: 0 },
             running: true
         };
-        // Estado de las teclas presionadas
         const keysPressed = {};
         window.addEventListener('keydown', (e) => {
             keysPressed[e.key.toLowerCase()] = true;
@@ -121,39 +119,43 @@ class PlayComponent extends HTMLElement {
             if (!gameState.running)
                 return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // Movimiento fluido de las palas
+            // Movimiento palas
             if (keysPressed['w']) {
                 gameState.players.player1.y = Math.max(0, gameState.players.player1.y - 6);
             }
             if (keysPressed['s']) {
-                gameState.players.player1.y = Math.min(420, gameState.players.player1.y + 6); // Ajustamos el límite inferior de la pala
+                gameState.players.player1.y = Math.min(420, gameState.players.player1.y + 6);
             }
             if (keysPressed['arrowup']) {
                 gameState.players.player2.y = Math.max(0, gameState.players.player2.y - 6);
             }
             if (keysPressed['arrowdown']) {
-                gameState.players.player2.y = Math.min(420, gameState.players.player2.y + 6); // Ajustamos el límite inferior de la pala
+                gameState.players.player2.y = Math.min(420, gameState.players.player2.y + 6);
             }
-            // Actualización del juego
+            // Movimiento pelota
             gameState.ball.x += gameState.ball.speedX;
             gameState.ball.y += gameState.ball.speedY;
-            // Rebotes en bordes superior e inferior
-            if (gameState.ball.y <= 0) {
-                gameState.ball.speedY *= -1; // Rebote en el borde superior
+            // Rebote en bordes
+            if (gameState.ball.y <= 0 || gameState.ball.y >= 500) {
+                gameState.ball.speedY *= -1;
             }
-            else if (gameState.ball.y >= 500) {
-                gameState.ball.speedY *= -1; // Rebote en el borde inferior
-            }
-            // Colisiones con las palas
+            // Colisión con palas y ángulo según zona de impacto
             Object.keys(gameState.players).forEach(playerKey => {
                 const player = gameState.players[playerKey];
-                if (gameState.ball.x <= player.x + 10 && gameState.ball.x >= player.x - 10) {
+                const isPlayer1 = playerKey === 'player1';
+                const collisionX = isPlayer1
+                    ? gameState.ball.x <= player.x + 10 && gameState.ball.x >= player.x
+                    : gameState.ball.x >= player.x - 10 && gameState.ball.x <= player.x;
+                if (collisionX) {
                     if (gameState.ball.y >= player.y && gameState.ball.y <= player.y + 80) {
                         gameState.ball.speedX *= -1;
+                        const relativeIntersectY = (player.y + 40) - gameState.ball.y;
+                        const normalized = relativeIntersectY / 40;
+                        gameState.ball.speedY = -normalized * 6; // Ajusta este factor si quieres más inclinación
                     }
                 }
             });
-            // Puntuación
+            // Gol
             if (gameState.ball.x <= 0) {
                 gameState.scores.player2 += 1;
                 resetBall();
@@ -166,11 +168,9 @@ class PlayComponent extends HTMLElement {
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(gameState.players.player1.x, gameState.players.player1.y, 10, 80);
             ctx.fillRect(gameState.players.player2.x, gameState.players.player2.y, 10, 80);
-            // Pelota
             ctx.beginPath();
             ctx.arc(gameState.ball.x, gameState.ball.y, 8, 0, Math.PI * 2);
             ctx.fill();
-            // Marcador
             ctx.font = '24px Arial';
             ctx.fillText(`${gameState.scores.player1}`, 150, 30);
             ctx.fillText(`${gameState.scores.player2}`, 650, 30);
@@ -179,8 +179,8 @@ class PlayComponent extends HTMLElement {
         const resetBall = () => {
             gameState.ball.x = 400;
             gameState.ball.y = 250;
-            gameState.ball.speedX = gameState.ball.speedX > 0 ? -3 : 3;
-            gameState.ball.speedY = 3;
+            gameState.ball.speedX = gameState.ball.speedX > 0 ? -10 : 10;
+            gameState.ball.speedY = 0; // inicial paralelo al eje horizontal
         };
         draw();
     }
