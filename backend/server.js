@@ -144,7 +144,7 @@ fastify.post('/register', async (request, reply) => {
 
 // User login with JWT
 fastify.post('/login', async (request, reply) => {
-    const { email, password } = request.body;
+    const { email, password, twofa_token } = request.body;
     if (!email || !password) {
         return reply.status(400).send({ message: 'All fields are required' });
     }
@@ -160,23 +160,49 @@ fastify.post('/login', async (request, reply) => {
             return reply.status(401).send({ message: 'Incorrect password' });
         }
 
+        // --- Check if 2FA en enabled
+        if (user.is_twofa_enabled) {
+            if (!twofa_token) {
+                return reply.status(401).send({ message: '2FA token required' });
+            }
+
+            const verified = speakeasy.totp.verify({
+                secret: user.twofa_secret,
+                encoding: 'base32',
+                token: twofa_token,
+            });
+
+            if (!verified) {
+                return reply.status(401).send({ message: 'Invalid 2FA token' });
+            }
+        }
+
+        //if password and 2FA (if enabled) are ok, JWT creation
         const token = fastify.jwt.sign(
             { userId: user.id, username: user.username },
             { expiresIn: '1h'}
         );
 
 
-        // Added by paula to save token in cookies, saver way
+        // Check if 2FA is activated for this user
+        const isTwoFAEnabled = user.is_twofa_enabled === 1;
+
+
+        // send the token in the cookie and in the answer
         reply.setCookie("token", token, {
             httpOnly: false,
-            secure: true, // true si usas HTTPSmake sta
+            secure: true, // true if HTTPS
             sameSite: "none",
             domain: "localhost",
             path: "/",
             expires: new Date(Date.now() + 60 * 70 * 1000), // Expira en 1 hora
             // O usa Max-Age en segundos:
             maxAge: 60 * 70, // 1 hora
-        }).send({ message: 'Login successful',});
+        });
+
+        return reply.send({ message: isTwoFAEnabled ? '2FA required' : '2FA not enabled',
+            token,
+            twofa_required: isTwoFAEnabled });
 
     } catch (err) {
         return reply.status(500).send({ message: 'Error processing request', error: err.message });
