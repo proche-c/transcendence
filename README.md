@@ -51,7 +51,7 @@ flowchart LR
 | Points | Status | Student | Module |
 |--------|--------|----------|--------|
 | 1      | ✅     | 🐱        | Major module: Standard user management, authentication, users across tournaments. |
-| 1      | 💻     | 🐱        | Major module: Implementing a remote authentication. |
+| 1      | ✅     | 🐱        | Major module: Implementing a remote authentication. |
 
 ### Gameplay and User Experience  
 | Points | Status | Student |Module |
@@ -73,7 +73,7 @@ flowchart LR
 |--------|--------|----------|-------|
 |        | ❌     |           | Major module: Implement WAF/ModSecurity with a hardened configuration and HashiCorp Vault for secrets management. |
 |        | ❌     |           |Minor module: GDPR compliance options with user anonymization, local data management, and Account Deletion. |
-| 1      | 💻     | 🐱        |Major module: Implement Two-Factor Authentication (2FA) and JWT. |
+| 1      | ✅     | 🐱        |Major module: Implement Two-Factor Authentication (2FA) and JWT. |
 
 ### DevOps  
 | Points | Status | Student | Module |
