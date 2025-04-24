@@ -10,6 +10,7 @@ const oauthPlugin = require('@fastify/oauth2'); // OAuth2 for authentication
 const cors = require('@fastify/cors'); // CORS plugin
 const speakeasy = require('speakeasy'); // Two-factor authentication library
 const qrcode = require('qrcode'); // QR code generation library
+const { z } = require('zod'); // Zod for schema validation
 // const authMiddleware = require('./authMiddleware')(dbGetAsync);
 
 const fastifyWebsocket = require('@fastify/websocket');
@@ -122,10 +123,32 @@ fastify.register(chatRoutes, {
 
 // User registration route
 fastify.post('/register', async (request, reply) => {
-    const { username, email, password } = request.body;
+    const registerSchema = z.object({
+    username: z.string().min(3, 'Username must be at least 3 characters').max(30, 'Username must be at most 30 characters'),
+    email: z.string().email('Invalid email format'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+});
     if (!username || !email || !password) {
         return reply.status(400).send({ message: 'All fields are required' });
     }
+
+    let validated;
+    try {
+        validated = registerSchema.parse(request.body);
+    } catch (err) {
+        // Map Zod errors to a cleaner format
+        const fieldErrors = err.errors.map(e => ({
+            field: e.path[0],
+            message: e.message
+        }));
+
+        return reply.status(400).send({
+            message: 'Validation failed',
+            errors: fieldErrors
+        });
+    }
+    
+    const { username, email, password } = validated;
 
     try {
         const row = await dbGetAsync('SELECT * FROM users WHERE email = ? OR username = ?', [email, username]);
@@ -144,10 +167,21 @@ fastify.post('/register', async (request, reply) => {
 
 // User login with JWT
 fastify.post('/login', async (request, reply) => {
-    const { email, password, twofa_token } = request.body;
-    if (!email || !password) {
-        return reply.status(400).send({ message: 'All fields are required' });
+    const loginSchema = z.object({
+        email: z.string().email(),
+        password: z.string(),
+        twofa_token: z.string().optional()
+    });
+
+    let validated;
+
+    try {
+        validated = loginSchema.parse(request.body);
+    } catch (err) {
+        return reply.status(400).send({ message: 'Invalid input', error: err.errors });
     }
+
+    const { email, password, twofa_token } = validated;
 
     try {
         const user = await dbGetAsync('SELECT * FROM users WHERE email = ?', [email]);
@@ -184,13 +218,9 @@ fastify.post('/login', async (request, reply) => {
         );
 
 
-        // Check if 2FA is activated for this user
-        const isTwoFAEnabled = user.is_twofa_enabled === 1;
-
-
         // send the token in the cookie and in the answer
         reply.setCookie("token", token, {
-            httpOnly: false,
+            httpOnly: true, // true if you want to prevent client-side JS from reading the cookie
             secure: true, // true if HTTPS
             sameSite: "none",
             domain: "localhost",
@@ -202,7 +232,7 @@ fastify.post('/login', async (request, reply) => {
 
         return reply.send({ message: isTwoFAEnabled ? '2FA required' : '2FA not enabled',
             token,
-            twofa_required: isTwoFAEnabled });
+            twofa_required: user.is_twofa_enabled === 1 });
 
     } catch (err) {
         return reply.status(500).send({ message: 'Error processing request', error: err.message });

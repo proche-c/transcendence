@@ -35,15 +35,23 @@ class RegisterComponent extends HTMLElement {
                     <label for="email" class="font-semibold text-sm text-gray-400 pb-1 block">E-mail</label>
                     <input id="email" type="text"
                         class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+    <p class="text-sm text-red-500 mt-1" id="emailError"></p> <!-- Message d'erreur pour l'email -->
+    
                     <label for="username" class="font-semibold text-sm text-gray-400 pb-1 block">Username</label>
                     <input id="username" type="text"
                         class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>                    
+    <p class="text-sm text-red-500 mt-1" id="usernameError"></p> <!-- Message d'erreur pour le nom d'utilisateur -->
+    
                     <label for="password" class="font-semibold text-sm text-gray-400 pb-1 block">Password</label>
                     <input id="password" type="password"
                         class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+    <p class="text-sm text-red-500 mt-1" id="passwordError"></p> <!-- Message d'erreur pour le mot de passe -->
+                    
                     <label for="password2" class="font-semibold text-sm text-gray-400 pb-1 block">Confirm Password</label>
                     <input id="password2" type="password"
                         class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+    <p class="text-sm text-red-500 mt-1" id="password2Error"></p> <!-- Message d'erreur pour la confirmation du mot de passe -->            
+        
                 </div>
                 <div class="mt-5">
                     <button id="register"
@@ -68,7 +76,7 @@ class RegisterComponent extends HTMLElement {
         this.addEventListeners();
     }
     addEventListeners() {
-        var _a;
+        var _a, _b;
         (_a = this.registerButton) === null || _a === void 0 ? void 0 : _a.addEventListener("click", (event) => __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c, _d;
             event.preventDefault();
@@ -76,25 +84,67 @@ class RegisterComponent extends HTMLElement {
             const user = ((_b = this.userInput) === null || _b === void 0 ? void 0 : _b.value) || "";
             const password = ((_c = this.passwordInput) === null || _c === void 0 ? void 0 : _c.value) || "";
             const password2 = ((_d = this.password2Input) === null || _d === void 0 ? void 0 : _d.value) || "";
-            if (email && user && password && password2) {
-                if (password === password2) {
-                    yield this.postData(email, user, password);
-                }
-                else {
-                    this.errorMsg.textContent = "Password doesn't match";
-                    this.resetValues();
-                }
+            // Validation des champs avant envoi
+            if (this.validateEmail() && this.validateUsername() && this.validatePassword() && this.validatePasswordMatch()) {
+                yield this.postData(email, user, password);
             }
             else {
-                this.errorMsg.textContent = "All fields are required";
+                this.errorMsg.textContent = "Please fix the errors"; // Afficher un message d'erreur générique
             }
         }));
+        // Validation en temps réel pour l'email
+        (_b = this.emailInput) === null || _b === void 0 ? void 0 : _b.addEventListener("input", () => this.validateEmail());
+    }
+    validateEmail() {
+        var _a, _b, _c, _d, _e, _f;
+        const value = ((_a = this.emailInput) === null || _a === void 0 ? void 0 : _a.value) || "";
+        const emailError = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.querySelector("#emailError");
+        const regex = /^\S+@\S+\.\S+$/;
+        if (!regex.test(value)) {
+            emailError.textContent = "Invalid email format"; // Afficher le message d'erreur
+            (_c = this.emailInput) === null || _c === void 0 ? void 0 : _c.classList.add("border-red-500");
+            (_d = this.emailInput) === null || _d === void 0 ? void 0 : _d.classList.remove("border-blue-500");
+            return false;
+        }
+        else {
+            emailError.textContent = "";
+            (_e = this.emailInput) === null || _e === void 0 ? void 0 : _e.classList.remove("border-red-500");
+            (_f = this.emailInput) === null || _f === void 0 ? void 0 : _f.classList.add("border-blue-500");
+            return true;
+        }
+    }
+    validateUsername() {
+        var _a;
+        const value = ((_a = this.userInput) === null || _a === void 0 ? void 0 : _a.value) || "";
+        if (value.length < 3) {
+            this.errorMsg.textContent = "Username must be at least 3 characters long";
+            return false;
+        }
+        return true;
+    }
+    validatePassword() {
+        var _a;
+        const value = ((_a = this.passwordInput) === null || _a === void 0 ? void 0 : _a.value) || "";
+        if (value.length < 6) {
+            this.errorMsg.textContent = "Password must be at least 6 characters long";
+            return false;
+        }
+        return true;
+    }
+    validatePasswordMatch() {
+        var _a, _b;
+        const password = ((_a = this.passwordInput) === null || _a === void 0 ? void 0 : _a.value) || "";
+        const password2 = ((_b = this.password2Input) === null || _b === void 0 ? void 0 : _b.value) || "";
+        if (password !== password2) {
+            this.errorMsg.textContent = "Passwords do not match";
+            return false;
+        }
+        return true;
     }
     postData(email, user, password) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = { "username": user, "email": email, "password": password };
             try {
-                // Esta url sera el endponit que configure el servidor
                 const response = yield fetch("http://localhost:8000/register", {
                     method: "POST",
                     body: JSON.stringify(data),
@@ -102,11 +152,6 @@ class RegisterComponent extends HTMLElement {
                 });
                 this.response = yield response.json();
                 console.log("Se ha enviado la peticion");
-                // location.hash = "#profile"; // Cambiar la vista
-                // Aqui el backend hará las validaciones de email y password y me enviara un error
-                // en caso de que haya algun problema
-                // Si la autenticacion es valida, el backend creara un token jwt y lo guardara en las cookies
-                console.log(response);
                 if (response.ok) {
                     location.hash = "#";
                 }
