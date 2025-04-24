@@ -4,7 +4,9 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
   avatar TEXT DEFAULT 'default_avatar.png',  -- Avatar par défaut
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  twofa_secret TEXT,
+  is_twofa_enabled INTEGER DEFAULT 0
 );
 
 

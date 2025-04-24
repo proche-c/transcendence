@@ -1,4 +1,5 @@
 // Fastify server using Node.js that manages an API listening on port 8000
+const dotenv = require('dotenv').config({ path: '../.env' }); // Load environment variables from a .env file into process.env
 const fastify = require('fastify')({ logger: true }); // Loading Fastify framework with logging enabled
 const sqlite3 = require('sqlite3').verbose(); // SQLite3 library
 const fs = require('fs'); // File system library
@@ -7,6 +8,8 @@ const bcrypt = require('bcrypt'); // Bcrypt for password hashing
 const jwt = require('@fastify/jwt'); // JWT for authentication
 const oauthPlugin = require('@fastify/oauth2'); // OAuth2 for authentication
 const cors = require('@fastify/cors'); // CORS plugin
+const speakeasy = require('speakeasy'); // Two-factor authentication library
+const qrcode = require('qrcode'); // QR code generation library
 // const authMiddleware = require('./authMiddleware')(dbGetAsync);
 
 const fastifyWebsocket = require('@fastify/websocket');
@@ -141,7 +144,7 @@ fastify.post('/register', async (request, reply) => {
 
 // User login with JWT
 fastify.post('/login', async (request, reply) => {
-    const { email, password } = request.body;
+    const { email, password, twofa_token } = request.body;
     if (!email || !password) {
         return reply.status(400).send({ message: 'All fields are required' });
     }
@@ -157,23 +160,49 @@ fastify.post('/login', async (request, reply) => {
             return reply.status(401).send({ message: 'Incorrect password' });
         }
 
+        // --- Check if 2FA en enabled
+        if (user.is_twofa_enabled) {
+            if (!twofa_token) {
+                return reply.status(401).send({ message: '2FA token required' });
+            }
+
+            const verified = speakeasy.totp.verify({
+                secret: user.twofa_secret,
+                encoding: 'base32',
+                token: twofa_token,
+            });
+
+            if (!verified) {
+                return reply.status(401).send({ message: 'Invalid 2FA token' });
+            }
+        }
+
+        //if password and 2FA (if enabled) are ok, JWT creation
         const token = fastify.jwt.sign(
             { userId: user.id, username: user.username },
             { expiresIn: '1h'}
         );
 
 
-        // Added by paula to save token in cookies, saver way
+        // Check if 2FA is activated for this user
+        const isTwoFAEnabled = user.is_twofa_enabled === 1;
+
+
+        // send the token in the cookie and in the answer
         reply.setCookie("token", token, {
             httpOnly: false,
-            secure: true, // true si usas HTTPSmake sta
+            secure: true, // true if HTTPS
             sameSite: "none",
             domain: "localhost",
             path: "/",
             expires: new Date(Date.now() + 60 * 70 * 1000), // Expira en 1 hora
             // O usa Max-Age en segundos:
             maxAge: 60 * 70, // 1 hora
-        }).send({ message: 'Login successful',});
+        });
+
+        return reply.send({ message: isTwoFAEnabled ? '2FA required' : '2FA not enabled',
+            token,
+            twofa_required: isTwoFAEnabled });
 
     } catch (err) {
         return reply.status(500).send({ message: 'Error processing request', error: err.message });
@@ -237,6 +266,7 @@ fastify.register(oauthPlugin, {
     callbackUri: 'http://localhost:8000/auth/google/callback'
 });
 
+// Google callback route
 fastify.get('/auth/google/callback', async (request, reply) => {
     try {
         const token = await fastify.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(request);
@@ -268,6 +298,48 @@ fastify.get('/check-auth', async (request, reply) => {
     } catch (error) {
         return reply.status(401).send({ message: "Invalid or expired token" });
     }
+});
+
+// Two-factor authentication route
+fastify.post('/2fa/setup', { preHandler: [fastify.authenticate] }, async (request, reply) => {
+    const userId = request.user.userId;
+
+    const secret = speakeasy.generateSecret({
+        name: `PongApp (${request.user.username})`, // Name printed on Google Authenticator
+    });
+
+    await dbRunAsync('UPDATE users SET twofa_secret = ?, is_twofa_enabled = 1 WHERE id = ?', [secret.base32, userId]);
+
+    const qrCode = await qrcode.toDataURL(secret.otpauth_url);
+
+    return reply.send({
+        message: '2FA setup',
+        qrCode,
+        secret: secret.base32, // to hide in production
+    });
+});
+
+// Verify 2FA code
+fastify.post('/2fa/verify', { preHandler: [fastify.authenticate] }, async (request, reply) => {
+    const { token } = request.body;
+    const userId = request.user.userId;
+
+    const user = await dbGetAsync('SELECT twofa_secret FROM users WHERE id = ?', [userId]);
+    if (!user || !user.twofa_secret) {
+        return reply.status(400).send({ message: '2FA not set up' });
+    }
+
+    const verified = speakeasy.totp.verify({
+        secret: user.twofa_secret,
+        encoding: 'base32',
+        token,
+    });
+
+    if (!verified) {
+        return reply.status(401).send({ message: 'Invalid 2FA code' });
+    }
+
+    return reply.send({ message: '2FA verified successfully' });
 });
 
 // Start the server
