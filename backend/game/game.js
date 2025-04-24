@@ -44,7 +44,7 @@ async function gameRoutes(fastify, options) {
           }
         }
 
-        if (data.type === "start" && data.message === "jugar" && !gameState.running) {
+        if (data.type === "start" && data.message === "jugar" && !gameState.running && playerNumber == 2) {
           gameState.running = true;
           startGame();
         }
