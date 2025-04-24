@@ -1,6 +1,6 @@
 class PlayComponent extends HTMLElement {
     private gameMode: 'local' | 'online' | null = null;
-    
+
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
@@ -20,14 +20,14 @@ class PlayComponent extends HTMLElement {
                     gap: 20px;
                     background: white;
                 }
-                
+
                 .title {
                     font-size: 2.5rem;
                     color: #0a1f4d;
                     margin-bottom: 30px;
                     font-family: 'Arial', sans-serif;
                 }
-                
+
                 .mode-button {
                     padding: 15px 30px;
                     font-size: 1.2rem;
@@ -41,7 +41,7 @@ class PlayComponent extends HTMLElement {
                     text-align: center;
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
                 }
-                
+
                 .mode-button:hover {
                     background: #0a1f4d;
                     transform: translateY(-3px);
@@ -54,20 +54,20 @@ class PlayComponent extends HTMLElement {
                 <button class="mode-button" id="onlineBtn">Online Multiplayer</button>
             </div>
         `;
-        
+
         this.setupMenuListeners();
     }
 
     private setupMenuListeners(): void {
         const localBtn = this.shadowRoot?.getElementById('localBtn');
         const onlineBtn = this.shadowRoot?.getElementById('onlineBtn');
-        
+
         localBtn?.addEventListener('click', () => {
             this.gameMode = 'local';
             this.renderGame();
             this.setupLocalGame();
         });
-        
+
         onlineBtn?.addEventListener('click', () => {
             this.gameMode = 'online';
             this.renderGame();
@@ -96,108 +96,122 @@ class PlayComponent extends HTMLElement {
                     font-family: 'Arial', sans-serif;
                 }
             </style>
-            <canvas id="pong" width="600" height="400"></canvas>
+            <canvas id="pong" width="800" height="500"></canvas> <!-- Aumentamos el tamaño aquí -->
         `;
     }
 
     private setupLocalGame(): void {
-		const canvas = this.shadowRoot!.querySelector('canvas')!;
-		const ctx = canvas.getContext('2d')!;
-		
-		// Definimos un tipo para el estado del juego
-		type GameState = {
-			players: {
-				player1: { x: number; y: number };
-				player2: { x: number; y: number };
-			};
-			ball: { x: number; y: number; speedX: number; speedY: number };
-			scores: { player1: number; player2: number };
-			running: boolean;
-		};
-	
-		// Estado del juego local
-		const gameState: GameState = {
-			players: {
-				player1: { x: 20, y: 150 },
-				player2: { x: 560, y: 150 }
-			},
-			ball: { x: 300, y: 200, speedX: 3, speedY: 3 },
-			scores: { player1: 0, player2: 0 },
-			running: true
-		};
-	
-		// Controles para ambos jugadores en la misma pantalla
-		window.addEventListener('keydown', (e) => {
-			const key = e.key.toLowerCase();
-			
-			// Player1 (flechas)
-			if (key === "arrowup") gameState.players.player2.y = Math.max(0, gameState.players.player2.y - 40);
-			if (key === "arrowdown") gameState.players.player2.y = Math.min(320, gameState.players.player2.y + 40);
-			
-			// Player2 (W/S)
-			if (key === "w") gameState.players.player1.y = Math.max(0, gameState.players.player1.y - 40);
-			if (key === "s") gameState.players.player1.y = Math.min(320, gameState.players.player1.y + 40);
-		});
-	
-		const draw = () => {
-			if (!gameState.running) return;
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			
-			// Actualización del juego
-			gameState.ball.x += gameState.ball.speedX;
-			gameState.ball.y += gameState.ball.speedY;
-	
-			// Rebotes en bordes superior e inferior
-			if (gameState.ball.y <= 0 || gameState.ball.y >= 400) {
-				gameState.ball.speedY *= -1;
-			}
-	
-			// Colisiones con palas - solución al error TypeScript
-			(Object.keys(gameState.players) as Array<keyof typeof gameState.players>).forEach(playerKey => {
-				const player = gameState.players[playerKey];
-				if (gameState.ball.x <= player.x + 10 && gameState.ball.x >= player.x - 10) {
-					if (gameState.ball.y >= player.y && gameState.ball.y <= player.y + 80) {
-						gameState.ball.speedX *= -1;
-					}
-				}
-			});
-	
-			// Puntuación
-			if (gameState.ball.x <= 0) {
-				gameState.scores.player2 += 1;
-				resetBall();
-			} else if (gameState.ball.x >= 600) {
-				gameState.scores.player1 += 1;
-				resetBall();
-			}
-	
-			// Dibujado
-			ctx.fillStyle = '#ffffff';
-			ctx.fillRect(gameState.players.player1.x, gameState.players.player1.y, 10, 80);
-			ctx.fillRect(gameState.players.player2.x, gameState.players.player2.y, 10, 80);
-			
-			// Pelota
-			ctx.beginPath();
-			ctx.arc(gameState.ball.x, gameState.ball.y, 8, 0, Math.PI * 2);
-			ctx.fill();
-			
-			// Marcador
-			ctx.font = '24px Arial';
-			ctx.fillText(`${gameState.scores.player1}`, 150, 30);
-			ctx.fillText(`${gameState.scores.player2}`, 450, 30);
-	
-			requestAnimationFrame(draw);
-		};
-	
-		const resetBall = () => {
-			gameState.ball.x = 300;
-			gameState.ball.y = 200;
-			gameState.ball.speedX = gameState.ball.speedX > 0 ? -3 : 3;
-			gameState.ball.speedY = 5;
-		};
-	
-		draw();
-	}
+        const canvas = this.shadowRoot!.querySelector('canvas')!;
+        const ctx = canvas.getContext('2d')!;
+
+        // Definimos un tipo para el estado del juego
+        type GameState = {
+            players: {
+                player1: { x: number; y: number };
+                player2: { x: number; y: number };
+            };
+            ball: { x: number; y: number; speedX: number; speedY: number };
+            scores: { player1: number; player2: number };
+            running: boolean;
+        };
+
+        // Estado del juego local
+        const gameState: GameState = {
+            players: {
+                player1: { x: 30, y: 200 }, // Ajustamos la posición de las palas
+                player2: { x: 740, y: 200 } // Ajustamos la posición de las palas
+            },
+            ball: { x: 400, y: 250, speedX: 3, speedY: 3 },
+            scores: { player1: 0, player2: 0 },
+            running: true
+        };
+
+        // Estado de las teclas presionadas
+        const keysPressed: { [key: string]: boolean } = {};
+
+        window.addEventListener('keydown', (e) => {
+            keysPressed[e.key.toLowerCase()] = true;
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keysPressed[e.key.toLowerCase()] = false;
+        });
+
+        const draw = () => {
+            if (!gameState.running) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Movimiento fluido de las palas
+            if (keysPressed['w']) {
+                gameState.players.player1.y = Math.max(0, gameState.players.player1.y - 6);
+            }
+            if (keysPressed['s']) {
+                gameState.players.player1.y = Math.min(420, gameState.players.player1.y + 6); // Ajustamos el límite inferior de la pala
+            }
+            if (keysPressed['arrowup']) {
+                gameState.players.player2.y = Math.max(0, gameState.players.player2.y - 6);
+            }
+            if (keysPressed['arrowdown']) {
+                gameState.players.player2.y = Math.min(420, gameState.players.player2.y + 6); // Ajustamos el límite inferior de la pala
+            }
+
+            // Actualización del juego
+            gameState.ball.x += gameState.ball.speedX;
+            gameState.ball.y += gameState.ball.speedY;
+
+            // Rebotes en bordes superior e inferior
+            if (gameState.ball.y <= 0) {
+                gameState.ball.speedY *= -1; // Rebote en el borde superior
+            } else if (gameState.ball.y >= 500) {
+                gameState.ball.speedY *= -1; // Rebote en el borde inferior
+            }
+
+            // Colisiones con las palas
+            (Object.keys(gameState.players) as Array<keyof typeof gameState.players>).forEach(playerKey => {
+                const player = gameState.players[playerKey];
+                if (gameState.ball.x <= player.x + 10 && gameState.ball.x >= player.x - 10) {
+                    if (gameState.ball.y >= player.y && gameState.ball.y <= player.y + 80) {
+                        gameState.ball.speedX *= -1;
+                    }
+                }
+            });
+
+            // Puntuación
+            if (gameState.ball.x <= 0) {
+                gameState.scores.player2 += 1;
+                resetBall();
+            } else if (gameState.ball.x >= 800) {
+                gameState.scores.player1 += 1;
+                resetBall();
+            }
+
+            // Dibujado
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(gameState.players.player1.x, gameState.players.player1.y, 10, 80);
+            ctx.fillRect(gameState.players.player2.x, gameState.players.player2.y, 10, 80);
+
+            // Pelota
+            ctx.beginPath();
+            ctx.arc(gameState.ball.x, gameState.ball.y, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Marcador
+            ctx.font = '24px Arial';
+            ctx.fillText(`${gameState.scores.player1}`, 150, 30);
+            ctx.fillText(`${gameState.scores.player2}`, 650, 30);
+
+            requestAnimationFrame(draw);
+        };
+
+        const resetBall = () => {
+            gameState.ball.x = 400;
+            gameState.ball.y = 250;
+            gameState.ball.speedX = gameState.ball.speedX > 0 ? -3 : 3;
+            gameState.ball.speedY = 3;
+        };
+
+        draw();
+    }
 
     private setupOnlineGame(): void {
         // Tu implementación original del juego online

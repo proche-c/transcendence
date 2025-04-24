@@ -20,14 +20,14 @@ class PlayComponent extends HTMLElement {
                     gap: 20px;
                     background: white;
                 }
-                
+
                 .title {
                     font-size: 2.5rem;
                     color: #0a1f4d;
                     margin-bottom: 30px;
                     font-family: 'Arial', sans-serif;
                 }
-                
+
                 .mode-button {
                     padding: 15px 30px;
                     font-size: 1.2rem;
@@ -41,7 +41,7 @@ class PlayComponent extends HTMLElement {
                     text-align: center;
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
                 }
-                
+
                 .mode-button:hover {
                     background: #0a1f4d;
                     transform: translateY(-3px);
@@ -93,7 +93,7 @@ class PlayComponent extends HTMLElement {
                     font-family: 'Arial', sans-serif;
                 }
             </style>
-            <canvas id="pong" width="600" height="400"></canvas>
+            <canvas id="pong" width="800" height="500"></canvas> <!-- Aumentamos el tamaño aquí -->
         `;
     }
     setupLocalGame() {
@@ -102,39 +102,49 @@ class PlayComponent extends HTMLElement {
         // Estado del juego local
         const gameState = {
             players: {
-                player1: { x: 20, y: 150 },
-                player2: { x: 560, y: 150 }
+                player1: { x: 30, y: 200 },
+                player2: { x: 740, y: 200 } // Ajustamos la posición de las palas
             },
-            ball: { x: 300, y: 200, speedX: 3, speedY: 3 },
+            ball: { x: 400, y: 250, speedX: 3, speedY: 3 },
             scores: { player1: 0, player2: 0 },
             running: true
         };
-        // Controles para ambos jugadores en la misma pantalla
+        // Estado de las teclas presionadas
+        const keysPressed = {};
         window.addEventListener('keydown', (e) => {
-            const key = e.key.toLowerCase();
-            // Player1 (flechas)
-            if (key === "arrowup")
-                gameState.players.player2.y = Math.max(0, gameState.players.player2.y - 40);
-            if (key === "arrowdown")
-                gameState.players.player2.y = Math.min(320, gameState.players.player2.y + 40);
-            // Player2 (W/S)
-            if (key === "w")
-                gameState.players.player1.y = Math.max(0, gameState.players.player1.y - 40);
-            if (key === "s")
-                gameState.players.player1.y = Math.min(320, gameState.players.player1.y + 40);
+            keysPressed[e.key.toLowerCase()] = true;
+        });
+        window.addEventListener('keyup', (e) => {
+            keysPressed[e.key.toLowerCase()] = false;
         });
         const draw = () => {
             if (!gameState.running)
                 return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Movimiento fluido de las palas
+            if (keysPressed['w']) {
+                gameState.players.player1.y = Math.max(0, gameState.players.player1.y - 6);
+            }
+            if (keysPressed['s']) {
+                gameState.players.player1.y = Math.min(420, gameState.players.player1.y + 6); // Ajustamos el límite inferior de la pala
+            }
+            if (keysPressed['arrowup']) {
+                gameState.players.player2.y = Math.max(0, gameState.players.player2.y - 6);
+            }
+            if (keysPressed['arrowdown']) {
+                gameState.players.player2.y = Math.min(420, gameState.players.player2.y + 6); // Ajustamos el límite inferior de la pala
+            }
             // Actualización del juego
             gameState.ball.x += gameState.ball.speedX;
             gameState.ball.y += gameState.ball.speedY;
             // Rebotes en bordes superior e inferior
-            if (gameState.ball.y <= 0 || gameState.ball.y >= 400) {
-                gameState.ball.speedY *= -1;
+            if (gameState.ball.y <= 0) {
+                gameState.ball.speedY *= -1; // Rebote en el borde superior
             }
-            // Colisiones con palas - solución al error TypeScript
+            else if (gameState.ball.y >= 500) {
+                gameState.ball.speedY *= -1; // Rebote en el borde inferior
+            }
+            // Colisiones con las palas
             Object.keys(gameState.players).forEach(playerKey => {
                 const player = gameState.players[playerKey];
                 if (gameState.ball.x <= player.x + 10 && gameState.ball.x >= player.x - 10) {
@@ -148,7 +158,7 @@ class PlayComponent extends HTMLElement {
                 gameState.scores.player2 += 1;
                 resetBall();
             }
-            else if (gameState.ball.x >= 600) {
+            else if (gameState.ball.x >= 800) {
                 gameState.scores.player1 += 1;
                 resetBall();
             }
@@ -163,14 +173,14 @@ class PlayComponent extends HTMLElement {
             // Marcador
             ctx.font = '24px Arial';
             ctx.fillText(`${gameState.scores.player1}`, 150, 30);
-            ctx.fillText(`${gameState.scores.player2}`, 450, 30);
+            ctx.fillText(`${gameState.scores.player2}`, 650, 30);
             requestAnimationFrame(draw);
         };
         const resetBall = () => {
-            gameState.ball.x = 300;
-            gameState.ball.y = 200;
+            gameState.ball.x = 400;
+            gameState.ball.y = 250;
             gameState.ball.speedX = gameState.ball.speedX > 0 ? -3 : 3;
-            gameState.ball.speedY = 5;
+            gameState.ball.speedY = 3;
         };
         draw();
     }
