@@ -47,10 +47,8 @@ async function chatRoutes(fastify, options) {
 
   fastify.get('/', { websocket: true }, async (connection, req) => {
     try {
-      //const token = req.cookies.token;
-      // these are for testing
-      const query = new URLSearchParams(req.url.split('?')[1]);
-      const token = req.cookies?.token || query.get('token');
+      const token = req.cookies.token;
+      //const query = new URLSearchParams(req.url.split('?')[1]);
 
       if (!token) {
         fastify.log.warn('WebSocket connection rejected: no token');
