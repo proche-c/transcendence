@@ -34,8 +34,9 @@ class RegisterComponent extends HTMLElement {
                 <div class="mt-5">
                     <label for="email" class="font-semibold text-sm text-gray-400 pb-1 block">E-mail</label>
                     <input id="email" type="text"
-                        class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
-    <p class="text-sm text-red-500 mt-1" id="emailError"></p> <!-- Message d'erreur pour l'email -->
+                        class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+                        <p class="text-sm text-red-500 mb-4" id="emailError"></p> <!-- Erreur juste en dessous -->
+    <p class="text-sm text-red-500 " id="emailError"></p> <!-- Message d'erreur pour l'email -->
     
                     <label for="username" class="font-semibold text-sm text-gray-400 pb-1 block">Username</label>
                     <input id="username" type="text"
@@ -101,7 +102,7 @@ class RegisterComponent extends HTMLElement {
         const emailError = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.querySelector("#emailError");
         const regex = /^\S+@\S+\.\S+$/;
         if (!regex.test(value)) {
-            emailError.textContent = "Invalid email format"; // Afficher le message d'erreur
+            emailError.textContent = "Invalid email format"; // Print the error message
             (_c = this.emailInput) === null || _c === void 0 ? void 0 : _c.classList.add("border-red-500");
             (_d = this.emailInput) === null || _d === void 0 ? void 0 : _d.classList.remove("border-blue-500");
             return false;

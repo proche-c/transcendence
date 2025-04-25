@@ -122,122 +122,109 @@ fastify.register(chatRoutes, {
 });
 
 // User registration route
-fastify.post('/register', async (request, reply) => {
-    const registerSchema = z.object({
-    username: z.string().min(3, 'Username must be at least 3 characters').max(30, 'Username must be at most 30 characters'),
-    email: z.string().email('Invalid email format'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
-});
+fastify.post("/register", async (request, reply) => {
+    const { username, email, password } = request.body;
     if (!username || !email || !password) {
-        return reply.status(400).send({ message: 'All fields are required' });
+      return reply.status(400).send({ message: "All fields are required" });
     }
-
-    let validated;
+  
     try {
-        validated = registerSchema.parse(request.body);
+      const row = await dbGetAsync(
+        "SELECT * FROM users WHERE email = ? OR username = ?",
+        [email, username],
+      );
+      if (row) {
+        return reply
+          .status(400)
+          .send({ message: "Username or email already exists" });
+      }
+  
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const result = await dbRunAsync(
+        "INSERT INTO users (username, email, password_hash, avatar) VALUES (?, ?, ?, ?)",
+        [username, email, hashedPassword, "avatars/default.jpg"],
+      );
+  
+      return reply
+        .status(201)
+        .send({ message: "User created", userId: result.lastID });
     } catch (err) {
-        // Map Zod errors to a cleaner format
-        const fieldErrors = err.errors.map(e => ({
-            field: e.path[0],
-            message: e.message
-        }));
-
-        return reply.status(400).send({
-            message: 'Validation failed',
-            errors: fieldErrors
-        });
+      return reply
+        .status(500)
+        .send({ message: "Error processing request", error: err.message });
     }
-    
-    const { username, email, password } = validated;
-
-    try {
-        const row = await dbGetAsync('SELECT * FROM users WHERE email = ? OR username = ?', [email, username]);
-        if (row) {
-            return reply.status(400).send({ message: 'Username or email already exists' });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const result = await dbRunAsync('INSERT INTO users (username, email, password_hash, avatar) VALUES (?, ?, ?, ?)', [username, email, hashedPassword, "avatars/default.jpg"]);
-
-        return reply.status(201).send({ message: 'User created', userId: result.lastID });
-    } catch (err) {
-        return reply.status(500).send({ message: 'Error processing request', error: err.message });
-    }
-});
+  });
 
 // User login with JWT
-fastify.post('/login', async (request, reply) => {
-    const loginSchema = z.object({
-        email: z.string().email(),
-        password: z.string(),
-        twofa_token: z.string().optional()
-    });
-
-    let validated;
-
-    try {
-        validated = loginSchema.parse(request.body);
-    } catch (err) {
-        return reply.status(400).send({ message: 'Invalid input', error: err.errors });
+fastify.post("/login", async (request, reply) => {
+    const { email, password, twofa_token } = request.body;
+    if (!email || !password) {
+      return reply.status(400).send({ message: "All fields are required" });
     }
-
-    const { email, password, twofa_token } = validated;
-
+  
     try {
-        const user = await dbGetAsync('SELECT * FROM users WHERE email = ?', [email]);
-        if (!user) {
-            return reply.status(404).send({ message: 'User not found' });
+      const user = await dbGetAsync("SELECT * FROM users WHERE email = ?", [
+        email,
+      ]);
+      if (!user) {
+        return reply.status(404).send({ message: "User not found" });
+      }
+  
+      const match = await bcrypt.compare(password, user.password_hash);
+      if (!match) {
+        return reply.status(401).send({ message: "Incorrect password" });
+      }
+  
+      // --- Check if 2FA en enabled
+      if (user.is_twofa_enabled) {
+        if (!twofa_token) {
+          return reply.status(401).send({ message: "2FA token required" });
         }
-
-        const match = await bcrypt.compare(password, user.password_hash);
-        if (!match) {
-            return reply.status(401).send({ message: 'Incorrect password' });
-        }
-
-        // --- Check if 2FA en enabled
-        if (user.is_twofa_enabled) {
-            if (!twofa_token) {
-                return reply.status(401).send({ message: '2FA token required' });
-            }
-
-            const verified = speakeasy.totp.verify({
-                secret: user.twofa_secret,
-                encoding: 'base32',
-                token: twofa_token,
-            });
-
-            if (!verified) {
-                return reply.status(401).send({ message: 'Invalid 2FA token' });
-            }
-        }
-
-        //if password and 2FA (if enabled) are ok, JWT creation
-        const token = fastify.jwt.sign(
-            { userId: user.id, username: user.username },
-            { expiresIn: '1h'}
-        );
-
-
-        // send the token in the cookie and in the answer
-        reply.setCookie("token", token, {
-            httpOnly: true, // true if you want to prevent client-side JS from reading the cookie
-            secure: true, // true if HTTPS
-            sameSite: "none",
-            domain: "localhost",
-            path: "/",
-            expires: new Date(Date.now() + 60 * 70 * 1000), // Expira en 1 hora
-            // O usa Max-Age en segundos:
-            maxAge: 60 * 70, // 1 hora
+  
+        const verified = speakeasy.totp.verify({
+          secret: user.twofa_secret,
+          encoding: "base32",
+          token: twofa_token,
         });
-
-        return reply.send({ message: isTwoFAEnabled ? '2FA required' : '2FA not enabled',
-            token,
-            twofa_required: user.is_twofa_enabled === 1 });
-
+  
+        if (!verified) {
+          return reply.status(401).send({ message: "Invalid 2FA token" });
+        }
+      }
+  
+      //if password and 2FA (if enabled) are ok, JWT creation
+      const token = fastify.jwt.sign(
+        { userId: user.id, username: user.username },
+        { expiresIn: "1h" },
+      );
+  
+      // Check if 2FA is activated for this user
+      const isTwoFAEnabled = user.is_twofa_enabled === 1;
+  
+      // send the token in the cookie and in the answer
+      reply.setCookie("token", token, {
+        httpOnly: false,
+        secure: true, // true if HTTPS
+        sameSite: "none",
+        domain: "localhost",
+        path: "/",
+        expires: new Date(Date.now() + 60 * 70 * 1000), // Expira en 1 hora
+        // O usa Max-Age en segundos:
+        maxAge: 60 * 70, // 1 hora
+      });
+  
+      return reply.send({
+        message: isTwoFAEnabled ? "2FA required" : "2FA not enabled",
+        token,
+        twofa_required: isTwoFAEnabled,
+      });
     } catch (err) {
-        return reply.status(500).send({ message: 'Error processing request', error: err.message });
+      return reply
+        .status(500)
+        .send({ message: "Error processing request", error: err.message });
     }
-});
+  });
+
 
 fastify.get('/profile', { preHandler: authMiddleware}, async (request, reply) => {
     const data = {
@@ -371,6 +358,15 @@ fastify.post('/2fa/verify', { preHandler: [fastify.authenticate] }, async (reque
 
     return reply.send({ message: '2FA verified successfully' });
 });
+
+fastify.get('/users', async (request, reply) => {
+    try {
+        const users = await dbAllAsync('SELECT id, username, email, avatar FROM users');
+        return reply.send(users);
+    }
+    catch (error) {
+        return reply.status(500).send({ message: 'Error getting users', error: error.message });
+    }});
 
 // Start the server
 const start = async () => {

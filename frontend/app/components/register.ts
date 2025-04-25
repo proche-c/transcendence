@@ -6,6 +6,8 @@ class RegisterComponent extends HTMLElement {
     private registerButton: HTMLElement | null = null;
     private errorMsg: HTMLElement | null = null;
     private response: Promise<Response> | null = null;
+    private debounceTimer: number | null = null; // Timer to not call the function too often
+
 
     constructor() {
         super();
@@ -27,13 +29,14 @@ class RegisterComponent extends HTMLElement {
                 <div class="mt-5">
                     <label for="email" class="font-semibold text-sm text-gray-400 pb-1 block">E-mail</label>
                     <input id="email" type="text"
-                        class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
-    <p class="text-sm text-red-500 mt-1" id="emailError"></p> <!-- Message d'erreur pour l'email -->
+                        class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+                        <p class="text-sm text-red-500 mb-4" id="emailError"></p>
+ 
     
                     <label for="username" class="font-semibold text-sm text-gray-400 pb-1 block">Username</label>
                     <input id="username" type="text"
                         class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>                    
-    <p class="text-sm text-red-500 mt-1" id="usernameError"></p> <!-- Message d'erreur pour le nom d'utilisateur -->
+    <p class="text-sm text-red-500 mb-4" id="usernameError"></p> <!-- Message d'erreur pour le nom d'utilisateur -->
     
                     <label for="password" class="font-semibold text-sm text-gray-400 pb-1 block">Password</label>
                     <input id="password" type="password"
@@ -81,16 +84,26 @@ class RegisterComponent extends HTMLElement {
             const password = this.passwordInput?.value || "";
             const password2 = this.password2Input?.value || "";
 
-            // Validation des champs avant envoi
+            // Fileds validation before sending the request
             if (this.validateEmail() && this.validateUsername() && this.validatePassword() && this.validatePasswordMatch()) {
                 await this.postData(email, user, password);
             } else {
-                this.errorMsg!.textContent = "Please fix the errors"; // Afficher un message d'erreur générique
+                this.errorMsg!.textContent = "Please fix the errors"; // main error message
             }
         });
 
-        // Validation en temps réel pour l'email
+        // Real time fields validation
         this.emailInput?.addEventListener("input", () => this.validateEmail());
+        this.userInput?.addEventListener("input", () => {
+            this.validateUsername();
+            if (this.debounceTimer) clearTimeout(this.debounceTimer);  
+            this.debounceTimer = window.setTimeout(() => {
+                this.checkUsernameAvailability();
+            }, 400);
+        });
+        
+        
+
     }
 
     private validateEmail(): boolean {
@@ -98,26 +111,62 @@ class RegisterComponent extends HTMLElement {
         const emailError = this.shadowRoot?.querySelector("#emailError") as HTMLElement;
         const regex = /^\S+@\S+\.\S+$/;
         if (!regex.test(value)) {
-            emailError.textContent = "Invalid email format"; // Afficher le message d'erreur
-            this.emailInput?.classList.add("border-red-500");
-            this.emailInput?.classList.remove("border-blue-500");
+            emailError.textContent = "Invalid email format"; // Print the error message
             return false;
         } else {
             emailError.textContent = "";
-            this.emailInput?.classList.remove("border-red-500");
-            this.emailInput?.classList.add("border-blue-500");
+
             return true;
         }
     }
 
     private validateUsername(): boolean {
         const value = this.userInput?.value || "";
+        const usernameError = this.shadowRoot?.querySelector("#usernameError") as HTMLElement;
+    
         if (value.length < 3) {
-            this.errorMsg!.textContent = "Username must be at least 3 characters long";
+            usernameError.textContent = "Username must be at least 3 characters long";
             return false;
+        } 
+        else {
+            usernameError.textContent = "";
+            return true;
         }
-        return true;
     }
+
+    private async checkUsernameAvailability() {
+        const username = this.userInput?.value || "";
+        const usernameError = this.shadowRoot?.querySelector("#usernameError") as HTMLElement;
+    
+        if (username.length < 3) return; // ne vérifie que si longueur ok
+    
+        try {
+            const response = await fetch(`http://localhost:8000/check-username?username=${encodeURIComponent(username)}`);
+            const data = await response.json();
+    
+            if (!data.available) {
+                usernameError.textContent = "Username is already taken";
+            } else {
+                usernameError.textContent = "";
+            }
+        } catch (err) {
+            console.error("Erreur lors de la vérification du username", err);
+        }
+    }
+
+    private checkPasswordStrength(): boolean {
+        const value = this.passwordInput?.value || "";
+        const passwordError = this.shadowRoot?.querySelector("#passwordError") as HTMLElement;
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/; // At least 6 characters, 1 uppercase, 1 lowercase, 1 number
+        if (!regex.test(value)) {
+            passwordError.textContent = "Password must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, and one number";
+            return false;
+        } else {
+            passwordError.textContent = "";
+            return true;
+        }
+    }
+    
 
     private validatePassword(): boolean {
         const value = this.passwordInput?.value || "";

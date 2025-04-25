@@ -42,6 +42,7 @@ class LoginComponent extends HTMLElement {
                 <div class="flex justify-center items-center">
                     <div>
                     <button class="flex items-center justify-center py-2 px-10 bg-white hover:bg-gray-200 focus:ring-blue-500 focus:ring-offset-blue-200 text-gray-700 w-full transition ease-in duration-200 text-center text-sm font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon" class="w-5 h-5 mr-2" />
                         <span class="ml-8">Sign in with Google</span>
                     </button>
                     </div>
@@ -54,7 +55,7 @@ class LoginComponent extends HTMLElement {
                 </div>
                 <div class="flex items-center justify-between mt-4">
                     <span class="w-1/5 border-b dark:border-gray-600 md:w-1/4"></span>
-                    <button id="register" class="text-xs text-gray-500 uppercase dark:text-gray-400 hover:underline">
+                    <button id="register" class="text-2xl text-gray-500 uppercase dark:text-gray-400 hover:underline">
                         or sign up
                     </button>
                     <span class="w-1/5 border-b dark:border-gray-600 md:w-1/4"></span>
