@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 class ChatComponent extends HTMLElement {
     constructor() {
         super();
@@ -9,6 +18,7 @@ class ChatComponent extends HTMLElement {
         this.messageInput = null;
         this.sendButton = null;
         this.socket = null;
+        this.response = null;
         this.attachShadow({ mode: "open" });
         this.connect();
         this.render();
@@ -24,6 +34,22 @@ class ChatComponent extends HTMLElement {
             this.addMessageToMessages(event.data);
             this.addMessageToList(event.data);
         };
+    }
+    getUsers() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                // Esta url sera el endponit que configure el servidor
+                const response = yield fetch("http://localhost:8000/users", {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                });
+                this.response = yield response.json();
+            }
+            catch (error) {
+                console.log("error en la peticion");
+            }
+        });
     }
     render() {
         if (!this.shadowRoot)
@@ -52,6 +78,7 @@ class ChatComponent extends HTMLElement {
         this.messagesBox = this.shadowRoot.querySelector("#messages");
         this.messageInput = this.shadowRoot.querySelector("#message");
         this.sendButton = this.shadowRoot.querySelector("#send");
+        this.getUsers();
         this.addEventListeners();
     }
     addEventListeners() {
