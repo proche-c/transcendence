@@ -18,6 +18,7 @@ class RegisterComponent extends HTMLElement {
         this.registerButton = null;
         this.errorMsg = null;
         this.response = null;
+        this.debounceTimer = null; // Timer to not call the function too often
         this.attachShadow({ mode: "open" });
         this.render();
     }
@@ -35,13 +36,13 @@ class RegisterComponent extends HTMLElement {
                     <label for="email" class="font-semibold text-sm text-gray-400 pb-1 block">E-mail</label>
                     <input id="email" type="text"
                         class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
-                        <p class="text-sm text-red-500 mb-4" id="emailError"></p> <!-- Erreur juste en dessous -->
-    <p class="text-sm text-red-500 " id="emailError"></p> <!-- Message d'erreur pour l'email -->
+                        <p class="text-sm text-red-500 mb-4" id="emailError"></p>
+ 
     
                     <label for="username" class="font-semibold text-sm text-gray-400 pb-1 block">Username</label>
                     <input id="username" type="text"
                         class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>                    
-    <p class="text-sm text-red-500 mt-1" id="usernameError"></p> <!-- Message d'erreur pour le nom d'utilisateur -->
+    <p class="text-sm text-red-500 mb-4" id="usernameError"></p> <!-- Message d'erreur pour le nom d'utilisateur -->
     
                     <label for="password" class="font-semibold text-sm text-gray-400 pb-1 block">Password</label>
                     <input id="password" type="password"
@@ -77,7 +78,7 @@ class RegisterComponent extends HTMLElement {
         this.addEventListeners();
     }
     addEventListeners() {
-        var _a, _b;
+        var _a, _b, _c;
         (_a = this.registerButton) === null || _a === void 0 ? void 0 : _a.addEventListener("click", (event) => __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c, _d;
             event.preventDefault();
@@ -85,43 +86,87 @@ class RegisterComponent extends HTMLElement {
             const user = ((_b = this.userInput) === null || _b === void 0 ? void 0 : _b.value) || "";
             const password = ((_c = this.passwordInput) === null || _c === void 0 ? void 0 : _c.value) || "";
             const password2 = ((_d = this.password2Input) === null || _d === void 0 ? void 0 : _d.value) || "";
-            // Validation des champs avant envoi
+            // Fileds validation before sending the request
             if (this.validateEmail() && this.validateUsername() && this.validatePassword() && this.validatePasswordMatch()) {
                 yield this.postData(email, user, password);
             }
             else {
-                this.errorMsg.textContent = "Please fix the errors"; // Afficher un message d'erreur générique
+                this.errorMsg.textContent = "Please fix the errors"; // main error message
             }
         }));
-        // Validation en temps réel pour l'email
+        // Real time fields validation
         (_b = this.emailInput) === null || _b === void 0 ? void 0 : _b.addEventListener("input", () => this.validateEmail());
+        (_c = this.userInput) === null || _c === void 0 ? void 0 : _c.addEventListener("input", () => {
+            this.validateUsername();
+            if (this.debounceTimer)
+                clearTimeout(this.debounceTimer);
+            this.debounceTimer = window.setTimeout(() => {
+                this.checkUsernameAvailability();
+            }, 400);
+        });
     }
     validateEmail() {
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _b;
         const value = ((_a = this.emailInput) === null || _a === void 0 ? void 0 : _a.value) || "";
         const emailError = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.querySelector("#emailError");
         const regex = /^\S+@\S+\.\S+$/;
         if (!regex.test(value)) {
             emailError.textContent = "Invalid email format"; // Print the error message
-            (_c = this.emailInput) === null || _c === void 0 ? void 0 : _c.classList.add("border-red-500");
-            (_d = this.emailInput) === null || _d === void 0 ? void 0 : _d.classList.remove("border-blue-500");
             return false;
         }
         else {
             emailError.textContent = "";
-            (_e = this.emailInput) === null || _e === void 0 ? void 0 : _e.classList.remove("border-red-500");
-            (_f = this.emailInput) === null || _f === void 0 ? void 0 : _f.classList.add("border-blue-500");
             return true;
         }
     }
     validateUsername() {
-        var _a;
+        var _a, _b;
         const value = ((_a = this.userInput) === null || _a === void 0 ? void 0 : _a.value) || "";
+        const usernameError = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.querySelector("#usernameError");
         if (value.length < 3) {
-            this.errorMsg.textContent = "Username must be at least 3 characters long";
+            usernameError.textContent = "Username must be at least 3 characters long";
             return false;
         }
-        return true;
+        else {
+            usernameError.textContent = "";
+            return true;
+        }
+    }
+    checkUsernameAvailability() {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
+            const username = ((_a = this.userInput) === null || _a === void 0 ? void 0 : _a.value) || "";
+            const usernameError = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.querySelector("#usernameError");
+            if (username.length < 3)
+                return; // ne vérifie que si longueur ok
+            try {
+                const response = yield fetch(`http://localhost:8000/check-username?username=${encodeURIComponent(username)}`);
+                const data = yield response.json();
+                if (!data.available) {
+                    usernameError.textContent = "Username is already taken";
+                }
+                else {
+                    usernameError.textContent = "";
+                }
+            }
+            catch (err) {
+                console.error("Erreur lors de la vérification du username", err);
+            }
+        });
+    }
+    checkPasswordStrength() {
+        var _a, _b;
+        const value = ((_a = this.passwordInput) === null || _a === void 0 ? void 0 : _a.value) || "";
+        const passwordError = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.querySelector("#passwordError");
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/; // At least 6 characters, 1 uppercase, 1 lowercase, 1 number
+        if (!regex.test(value)) {
+            passwordError.textContent = "Password must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, and one number";
+            return false;
+        }
+        else {
+            passwordError.textContent = "";
+            return true;
+        }
     }
     validatePassword() {
         var _a;
