@@ -119,7 +119,7 @@ CREATE TABLE IF NOT EXISTS chatroom_messages (
   FOREIGN KEY (sender_id) REFERENCES users(id)
 );
 
-CREATE TABLE blocked_users (
+CREATE TABLE IF NOT EXISTS blocked_users (
   blocker_id INTEGER,
   blocked_id INTEGER,
   PRIMARY KEY (blocker_id, blocked_id),

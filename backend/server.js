@@ -110,12 +110,7 @@ const dbRunAsync = (query, params) => {
 };
 
 const authMiddleware = require("./authMiddleware")(dbGetAsync, fastify);
-const userRoutes = require("./users"); 
-fastify.register(userRoutes, {
-  prefix: "/users",
-  db,
-  dbAllAsync,
-})
+
 // Register the chat plugin
 const chatRoutes = require("./chat");
 fastify.register(chatRoutes, {
@@ -124,7 +119,6 @@ fastify.register(chatRoutes, {
   dbGetAsync, //promisified DB getter
   dbRunAsync, //  promisified DB runner
   dbAllAsync,
-  bcrypt,
 });
 
 // User registration route
@@ -218,6 +212,7 @@ fastify.post("/login", async (request, reply) => {
       // O usa Max-Age en segundos:
       maxAge: 60 * 70, // 1 hora
     });
+
     return reply.send({
       message: isTwoFAEnabled ? "2FA required" : "2FA not enabled",
       token,

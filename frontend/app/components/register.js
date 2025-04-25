@@ -37,7 +37,7 @@ class RegisterComponent extends HTMLElement {
                         class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
                     <label for="username" class="font-semibold text-sm text-gray-400 pb-1 block">Username</label>
                     <input id="username" type="text"
-                        class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>                    
+                        class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
                     <label for="password" class="font-semibold text-sm text-gray-400 pb-1 block">Password</label>
                     <input id="password" type="password"
                         class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
@@ -81,6 +81,8 @@ class RegisterComponent extends HTMLElement {
                     yield this.postData(email, user, password);
                 }
                 else {
+                    console.log(password);
+                    console.log(password2);
                     this.errorMsg.textContent = "Password doesn't match";
                     this.resetValues();
                 }
@@ -92,7 +94,7 @@ class RegisterComponent extends HTMLElement {
     }
     postData(email, user, password) {
         return __awaiter(this, void 0, void 0, function* () {
-            const data = { "username": user, "email": email, "password": password };
+            const data = { username: user, email: email, password: password };
             try {
                 // Esta url sera el endponit que configure el servidor
                 const response = yield fetch("http://localhost:8000/register", {
