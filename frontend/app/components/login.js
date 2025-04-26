@@ -104,7 +104,7 @@ class LoginComponent extends HTMLElement {
         return __awaiter(this, void 0, void 0, function* () {
             const data = { "email": email, "password": password };
             try {
-                // Esta url sera el endponit que configure el servidor
+                // Esta url sera el endpoint que configure el servidor
                 const response = yield fetch("http://localhost:8000/login", {
                     method: "POST",
                     body: JSON.stringify(data),

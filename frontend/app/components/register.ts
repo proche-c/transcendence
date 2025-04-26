@@ -35,7 +35,7 @@ class RegisterComponent extends HTMLElement {
     
                     <label for="username" class="font-semibold text-sm text-gray-400 pb-1 block">Username</label>
                     <input id="username" type="text"
-                        class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>                    
+                        class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>                    
     <p class="text-sm text-red-500 mb-4" id="usernameError"></p> <!-- Message d'erreur pour le nom d'utilisateur -->
     
                     <label for="password" class="font-semibold text-sm text-gray-400 pb-1 block">Password</label>
@@ -93,14 +93,22 @@ class RegisterComponent extends HTMLElement {
         });
 
         // Real time fields validation
-        this.emailInput?.addEventListener("input", () => this.validateEmail());
+        this.emailInput?.addEventListener("input", () => {
+            this.validateEmail();
+            if (this.debounceTimer) clearTimeout(this.debounceTimer);
+            this.debounceTimer = window.setTimeout(() => {
+                this.checkEmailAvailability();
+            }, 400);
+        });
         this.userInput?.addEventListener("input", () => {
-            this.validateUsername();
+            const isValid = this.validateUsername();
+            if (!isValid) return;        
             if (this.debounceTimer) clearTimeout(this.debounceTimer);  
             this.debounceTimer = window.setTimeout(() => {
                 this.checkUsernameAvailability();
             }, 400);
         });
+        
         
         
 
@@ -120,39 +128,90 @@ class RegisterComponent extends HTMLElement {
         }
     }
 
+    private async checkEmailAvailability() {
+        const email = this.emailInput?.value || "";
+        const emailError = this.shadowRoot?.querySelector("#emailError") as HTMLElement;
+    
+        if (!this.validateEmail()) return; // If the email is not valid, do not check availability
+    
+        try {
+            // Appel à l'API pour vérifier la disponibilité de l'email
+            const response = await fetch(`http://localhost:8000/check-email?email=${encodeURIComponent(email)}`);
+            
+            // Vérifier si la réponse est correcte
+            if (!response.ok) {
+                emailError.textContent = "Server error, please try again later.";
+                return;
+            }
+            
+            const data = await response.json();
+            
+            // Si la clé "available" existe et est false, cela signifie que l'email est déjà pris
+            if (data && data.available) {
+                emailError.textContent = "Email is already taken";
+            } else {
+                emailError.textContent = ""; // Aucun problème, email disponible
+            }
+        } catch (err) {
+            // Gérer les erreurs réseau ou autres
+            console.error("Validation of email hasn't worked", err);
+            emailError.textContent = "Network error, please try again.";
+        }
+    }
+
     private validateUsername(): boolean {
         const value = this.userInput?.value || "";
         const usernameError = this.shadowRoot?.querySelector("#usernameError") as HTMLElement;
     
+        // len check
         if (value.length < 3) {
-            usernameError.textContent = "Username must be at least 3 characters long";
+            usernameError.textContent = "Must be at least 3 characters long";
             return false;
-        } 
-        else {
-            usernameError.textContent = "";
-            return true;
         }
+    
+        //special characters check
+        const validUsernameRegex = /^[a-zA-Z0-9]+$/;
+        if (!validUsernameRegex.test(value)) {
+            usernameError.textContent = "Only letters and numbers";
+            return false;
+        }
+    
+        usernameError.textContent = "";
+        return true;
     }
+    
 
     private async checkUsernameAvailability() {
         const username = this.userInput?.value || "";
         const usernameError = this.shadowRoot?.querySelector("#usernameError") as HTMLElement;
     
-        if (username.length < 3) return; // ne vérifie que si longueur ok
-    
+        if (username.length < 3) return; 
+        
         try {
+            // Appel à l'API pour vérifier la disponibilité du nom d'utilisateur
             const response = await fetch(`http://localhost:8000/check-username?username=${encodeURIComponent(username)}`);
+            
+            // Vérifier si la réponse est correcte
+            if (!response.ok) {
+                usernameError.textContent = "Server error, please try again later.";
+                return;
+            }
+            
             const data = await response.json();
-    
-            if (!data.available) {
+            
+            // Si la clé "available" existe et est false, cela signifie que le nom est déjà pris
+            if (data && data.available) {
                 usernameError.textContent = "Username is already taken";
             } else {
-                usernameError.textContent = "";
+                usernameError.textContent = ""; // Aucun problème, nom d'utilisateur disponible
             }
         } catch (err) {
-            console.error("Erreur lors de la vérification du username", err);
+            // Gérer les erreurs réseau ou autres
+            console.error("Validation of username hasn't worked", err);
+            usernameError.textContent = "Network error, please try again.";
         }
     }
+    
 
     private checkPasswordStrength(): boolean {
         const value = this.passwordInput?.value || "";

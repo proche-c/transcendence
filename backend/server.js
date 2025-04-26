@@ -368,6 +368,36 @@ fastify.get('/users', async (request, reply) => {
         return reply.status(500).send({ message: 'Error getting users', error: error.message });
     }});
 
+// Check if a username already exists
+fastify.get('/check-username', async (request, reply) => {
+    const { username } = request.query;
+    if (!username) {
+        return reply.status(400).send({ message: 'Username is required' });
+    }
+
+    try {
+        const user = await dbGetAsync('SELECT * FROM users WHERE username = ?', [username]);
+        return reply.send({ available: !!user });
+    } catch (err) {
+        return reply.status(500).send({ message: 'Error checking username', error: err.message });
+    }
+});
+
+// Check if an email already exists
+fastify.get('/check-email', async (request, reply) => {
+    const { email } = request.query;
+    if (!email) {
+        return reply.status(400).send({ message: 'Email is required' });
+    }
+
+    try {
+        const user = await dbGetAsync('SELECT * FROM users WHERE email = ?', [email]);
+        return reply.send({ available: !!user });
+    } catch (err) {
+        return reply.status(500).send({ message: 'Error checking email', error: err.message });
+    }
+});
+
 // Start the server
 const start = async () => {
     try {

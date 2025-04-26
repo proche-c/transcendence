@@ -24,7 +24,7 @@ fclean: clean
 	@docker system prune -af
 
 sleep:
-	sleep 2
+	sleep 3
 
 re: fclean sleep start
 
