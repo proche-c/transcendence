@@ -32,7 +32,7 @@ class RegisterComponent extends HTMLElement {
         <div class="relative py-3 sm:max-w-xl sm:mx-auto w-full">
         <div class="relative px-4 py-10 bg-black mx-8 md:mx-0 shadow rounded-3xl sm:p-10">
             <div class="max-w-md mx-auto text-white">
-                <div class="mt-5">
+                <div class="mt-1">
                     <label for="email" class="font-semibold text-sm text-gray-400 pb-1 block">E-mail</label>
                     <input id="email" type="text"
                         class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
@@ -42,17 +42,17 @@ class RegisterComponent extends HTMLElement {
                     <label for="username" class="font-semibold text-sm text-gray-400 pb-1 block">Username</label>
                     <input id="username" type="text"
                         class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>                    
-    <p class="text-sm text-red-500 mb-4" id="usernameError"></p> <!-- Message d'erreur pour le nom d'utilisateur -->
+                        <p class="text-sm text-red-500 mb-4" id="usernameError"></p>
     
                     <label for="password" class="font-semibold text-sm text-gray-400 pb-1 block">Password</label>
                     <input id="password" type="password"
-                        class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
-    <p class="text-sm text-red-500 mt-1" id="passwordError"></p> <!-- Message d'erreur pour le mot de passe -->
+                        class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+                        <p class="text-sm text-red-500 mb-4" id="passwordError"></p>
                     
                     <label for="password2" class="font-semibold text-sm text-gray-400 pb-1 block">Confirm Password</label>
                     <input id="password2" type="password"
-                        class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
-    <p class="text-sm text-red-500 mt-1" id="password2Error"></p> <!-- Message d'erreur pour la confirmation du mot de passe -->            
+                        class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+                        <p class="text-sm text-red-500" id="password2Error"></p> <!-- Message d'erreur pour la confirmation du mot de passe -->            
         
                 </div>
                 <div class="mt-5">
@@ -78,7 +78,7 @@ class RegisterComponent extends HTMLElement {
         this.addEventListeners();
     }
     addEventListeners() {
-        var _a, _b, _c;
+        var _a, _b, _c, _d, _e, _f;
         (_a = this.registerButton) === null || _a === void 0 ? void 0 : _a.addEventListener("click", (event) => __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c, _d;
             event.preventDefault();
@@ -86,8 +86,8 @@ class RegisterComponent extends HTMLElement {
             const user = ((_b = this.userInput) === null || _b === void 0 ? void 0 : _b.value) || "";
             const password = ((_c = this.passwordInput) === null || _c === void 0 ? void 0 : _c.value) || "";
             const password2 = ((_d = this.password2Input) === null || _d === void 0 ? void 0 : _d.value) || "";
-            // Fileds validation before sending the request
-            if (this.validateEmail() && this.validateUsername() && this.validatePassword() && this.validatePasswordMatch()) {
+            // Fields validation before sending the request
+            if (this.validateEmail() && this.validateUsername() && this.validatePasswordMatch()) {
                 yield this.postData(email, user, password);
             }
             else {
@@ -113,7 +113,24 @@ class RegisterComponent extends HTMLElement {
                 this.checkUsernameAvailability();
             }, 400);
         });
+        (_d = this.passwordInput) === null || _d === void 0 ? void 0 : _d.addEventListener("input", () => {
+            this.checkPasswordStrength();
+        });
+        (_e = this.password2Input) === null || _e === void 0 ? void 0 : _e.addEventListener("input", () => {
+            this.validatePasswordMatch();
+        });
+        // Enter key event
+        (_f = this.shadowRoot) === null || _f === void 0 ? void 0 : _f.addEventListener("keydown", (event) => {
+            var _a;
+            // Explicitly cast the event to KeyboardEvent
+            const keyboardEvent = event;
+            if (keyboardEvent.key === "Enter") {
+                keyboardEvent.preventDefault();
+                (_a = this.registerButton) === null || _a === void 0 ? void 0 : _a.click();
+            }
+        });
     }
+    // email validation
     validateEmail() {
         var _a, _b;
         const value = ((_a = this.emailInput) === null || _a === void 0 ? void 0 : _a.value) || "";
@@ -159,6 +176,7 @@ class RegisterComponent extends HTMLElement {
             }
         });
     }
+    // username validation
     validateUsername() {
         var _a, _b;
         const value = ((_a = this.userInput) === null || _a === void 0 ? void 0 : _a.value) || "";
@@ -193,7 +211,6 @@ class RegisterComponent extends HTMLElement {
                     return;
                 }
                 const data = yield response.json();
-                // Si la clé "available" existe et est false, cela signifie que le nom est déjà pris
                 if (data && data.available) {
                     usernameError.textContent = "Username is already taken";
                 }
@@ -208,13 +225,18 @@ class RegisterComponent extends HTMLElement {
             }
         });
     }
+    // password1 validation
     checkPasswordStrength() {
         var _a, _b;
         const value = ((_a = this.passwordInput) === null || _a === void 0 ? void 0 : _a.value) || "";
         const passwordError = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.querySelector("#passwordError");
-        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/; // At least 6 characters, 1 uppercase, 1 lowercase, 1 number
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/; // Min 6 chars, 1 upper, 1 lower, 1 number
+        if (!value) {
+            passwordError.textContent = ""; // Si champ vide, pas d'erreur affichée
+            return false;
+        }
         if (!regex.test(value)) {
-            passwordError.textContent = "Password must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, and one number";
+            passwordError.textContent = "Min 6 chars, 1 upper, 1 lower and 1 num";
             return false;
         }
         else {
@@ -222,23 +244,17 @@ class RegisterComponent extends HTMLElement {
             return true;
         }
     }
-    validatePassword() {
-        var _a;
-        const value = ((_a = this.passwordInput) === null || _a === void 0 ? void 0 : _a.value) || "";
-        if (value.length < 6) {
-            this.errorMsg.textContent = "Password must be at least 6 characters long";
-            return false;
-        }
-        return true;
-    }
+    // password2 validation
     validatePasswordMatch() {
-        var _a, _b;
+        var _a, _b, _c;
         const password = ((_a = this.passwordInput) === null || _a === void 0 ? void 0 : _a.value) || "";
         const password2 = ((_b = this.password2Input) === null || _b === void 0 ? void 0 : _b.value) || "";
+        const password2Error = (_c = this.shadowRoot) === null || _c === void 0 ? void 0 : _c.querySelector("#password2Error");
         if (password !== password2) {
-            this.errorMsg.textContent = "Passwords do not match";
+            password2Error.textContent = "Passwords do not match";
             return false;
         }
+        password2Error.textContent = "";
         return true;
     }
     postData(email, user, password) {
@@ -263,16 +279,6 @@ class RegisterComponent extends HTMLElement {
                 console.log("error en la peticion");
             }
         });
-    }
-    resetValues() {
-        if (this.emailInput)
-            this.emailInput.value = "";
-        if (this.userInput)
-            this.userInput.value = "";
-        if (this.passwordInput)
-            this.passwordInput.value = "";
-        if (this.password2Input)
-            this.password2Input.value = "";
     }
 }
 customElements.define("pong-register", RegisterComponent);

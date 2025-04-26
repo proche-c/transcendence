@@ -4,6 +4,7 @@ class RegisterComponent extends HTMLElement {
     private passwordInput: HTMLInputElement | null = null;
     private password2Input: HTMLInputElement | null = null;
     private registerButton: HTMLElement | null = null;
+    private registerForm: HTMLFormElement | null = null;
     private errorMsg: HTMLElement | null = null;
     private response: Promise<Response> | null = null;
     private debounceTimer: number | null = null; // Timer to not call the function too often
@@ -24,42 +25,42 @@ class RegisterComponent extends HTMLElement {
 
         this.shadowRoot.innerHTML = `
         <div class="relative py-3 sm:max-w-xl sm:mx-auto w-full">
-        <div class="relative px-4 py-10 bg-black mx-8 md:mx-0 shadow rounded-3xl sm:p-10">
-            <div class="max-w-md mx-auto text-white">
-                <div class="mt-5">
-                    <label for="email" class="font-semibold text-sm text-gray-400 pb-1 block">E-mail</label>
-                    <input id="email" type="text"
-                        class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
-                        <p class="text-sm text-red-500 mb-4" id="emailError"></p>
- 
-    
-                    <label for="username" class="font-semibold text-sm text-gray-400 pb-1 block">Username</label>
-                    <input id="username" type="text"
-                        class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>                    
-    <p class="text-sm text-red-500 mb-4" id="usernameError"></p> <!-- Message d'erreur pour le nom d'utilisateur -->
-    
-                    <label for="password" class="font-semibold text-sm text-gray-400 pb-1 block">Password</label>
-                    <input id="password" type="password"
-                        class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
-    <p class="text-sm text-red-500 mt-1" id="passwordError"></p> <!-- Message d'erreur pour le mot de passe -->
-                    
-                    <label for="password2" class="font-semibold text-sm text-gray-400 pb-1 block">Confirm Password</label>
-                    <input id="password2" type="password"
-                        class="border rounded-lg px-3 py-2 mt-1 mb-5 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
-    <p class="text-sm text-red-500 mt-1" id="password2Error"></p> <!-- Message d'erreur pour la confirmation du mot de passe -->            
-        
-                </div>
-                <div class="mt-5">
-                    <button id="register"
-                        class="py-2 px-4 bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg">
-                        Register
-                    </button>
-                </div>
-                <div class="text-red-600">
-                    <p id="error"> </p>
+            <div class="relative px-4 py-10 bg-black mx-8 md:mx-0 shadow rounded-3xl sm:p-10">
+                <div class="max-w-md mx-auto text-white">
+                    <form id="registerForm">
+                        <div class="mt-1">
+                            <label for="email" class="font-semibold text-sm text-gray-400 pb-1 block">E-mail</label>
+                            <input id="email" type="text"
+                                class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+                            <p class="text-sm text-red-500 mb-4" id="emailError"></p>
+
+                            <label for="username" class="font-semibold text-sm text-gray-400 pb-1 block">Username</label>
+                            <input id="username" type="text"
+                                class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>                    
+                            <p class="text-sm text-red-500 mb-4" id="usernameError"></p>
+
+                            <label for="password" class="font-semibold text-sm text-gray-400 pb-1 block">Password</label>
+                            <input id="password" type="password"
+                                class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+                            <p class="text-sm text-red-500 mb-4" id="passwordError"></p>
+                            
+                            <label for="password2" class="font-semibold text-sm text-gray-400 pb-1 block">Confirm Password</label>
+                            <input id="password2" type="password"
+                                class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+                            <p class="text-sm text-red-500" id="password2Error"></p>
+                        </div>
+                        <div class="mt-5">
+                            <button id="register" type="submit"
+                                class="py-2 px-4 bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg">
+                                Register
+                            </button>
+                        </div>
+                    </form>
+                    <div class="text-red-600 mt-2">
+                        <p id="error"></p>
+                    </div>
                 </div>
             </div>
-        </div>
         </div>
         `;
 
@@ -70,13 +71,14 @@ class RegisterComponent extends HTMLElement {
         this.passwordInput = this.shadowRoot.querySelector("#password") as HTMLInputElement;
         this.password2Input = this.shadowRoot.querySelector("#password2") as HTMLInputElement;
         this.registerButton = this.shadowRoot.querySelector("#register");
+        this.registerForm = this.shadowRoot.querySelector("#registerForm") as HTMLFormElement;
         this.errorMsg = this.shadowRoot.querySelector("#error") as HTMLElement;
 
         this.addEventListeners();
     }
 
     private addEventListeners(): void {
-        this.registerButton?.addEventListener("click", async (event) => {
+        this.registerForm?.addEventListener("submit", async (event) => {
             event.preventDefault();
 
             const email = this.emailInput?.value || "";
@@ -84,8 +86,8 @@ class RegisterComponent extends HTMLElement {
             const password = this.passwordInput?.value || "";
             const password2 = this.password2Input?.value || "";
 
-            // Fileds validation before sending the request
-            if (this.validateEmail() && this.validateUsername() && this.validatePassword() && this.validatePasswordMatch()) {
+            // Fields validation before sending the request
+            if (this.validateEmail() && this.validateUsername() && this.validatePasswordMatch()) {
                 await this.postData(email, user, password);
             } else {
                 this.errorMsg!.textContent = "Please fix the errors"; // main error message
@@ -108,11 +110,16 @@ class RegisterComponent extends HTMLElement {
                 this.checkUsernameAvailability();
             }, 400);
         });
+        this.passwordInput?.addEventListener("input", () => {
+            this.checkPasswordStrength();
+        });
+        this.password2Input?.addEventListener("input", () => {
+            this.validatePasswordMatch();
+        });
         
-        
-        
-
     }
+
+    // email validation
 
     private validateEmail(): boolean {
         const value = this.emailInput?.value || "";
@@ -159,6 +166,8 @@ class RegisterComponent extends HTMLElement {
         }
     }
 
+    // username validation
+
     private validateUsername(): boolean {
         const value = this.userInput?.value || "";
         const usernameError = this.shadowRoot?.querySelector("#usernameError") as HTMLElement;
@@ -199,7 +208,6 @@ class RegisterComponent extends HTMLElement {
             
             const data = await response.json();
             
-            // Si la clé "available" existe et est false, cela signifie que le nom est déjà pris
             if (data && data.available) {
                 usernameError.textContent = "Username is already taken";
             } else {
@@ -212,13 +220,20 @@ class RegisterComponent extends HTMLElement {
         }
     }
     
+    // password1 validation
 
     private checkPasswordStrength(): boolean {
         const value = this.passwordInput?.value || "";
         const passwordError = this.shadowRoot?.querySelector("#passwordError") as HTMLElement;
-        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/; // At least 6 characters, 1 uppercase, 1 lowercase, 1 number
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/; // Min 6 chars, 1 upper, 1 lower, 1 number
+    
+        if (!value) {
+            passwordError.textContent = ""; // Si champ vide, pas d'erreur affichée
+            return false;
+        }
+    
         if (!regex.test(value)) {
-            passwordError.textContent = "Password must be at least 6 characters long and contain at least one uppercase letter, one lowercase letter, and one number";
+            passwordError.textContent = "Min 6 chars, 1 upper, 1 lower and 1 num";
             return false;
         } else {
             passwordError.textContent = "";
@@ -226,25 +241,21 @@ class RegisterComponent extends HTMLElement {
         }
     }
     
-
-    private validatePassword(): boolean {
-        const value = this.passwordInput?.value || "";
-        if (value.length < 6) {
-            this.errorMsg!.textContent = "Password must be at least 6 characters long";
-            return false;
-        }
-        return true;
-    }
-
+    // password2 validation
+    
     private validatePasswordMatch(): boolean {
         const password = this.passwordInput?.value || "";
         const password2 = this.password2Input?.value || "";
+        const password2Error = this.shadowRoot?.querySelector("#password2Error") as HTMLElement;
+    
         if (password !== password2) {
-            this.errorMsg!.textContent = "Passwords do not match";
+            password2Error.textContent = "Passwords do not match";
             return false;
         }
+        password2Error.textContent = "";
         return true;
     }
+    
 
     private async postData(email: string, user: string, password: string) {
         const data = { "username": user, "email": email, "password": password };
@@ -270,6 +281,7 @@ class RegisterComponent extends HTMLElement {
         }
     }
 
+    /*
     private resetValues() {
         if (this.emailInput)
             this.emailInput.value = "";
@@ -279,7 +291,7 @@ class RegisterComponent extends HTMLElement {
             this.passwordInput.value = "";
         if (this.password2Input)
             this.password2Input.value = "";
-    }
+    }*/
 }
 
 customElements.define("pong-register", RegisterComponent);
