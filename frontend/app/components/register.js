@@ -16,6 +16,7 @@ class RegisterComponent extends HTMLElement {
         this.passwordInput = null;
         this.password2Input = null;
         this.registerButton = null;
+        this.registerForm = null;
         this.errorMsg = null;
         this.response = null;
         this.debounceTimer = null; // Timer to not call the function too often
@@ -30,42 +31,44 @@ class RegisterComponent extends HTMLElement {
         style.href = "./app/tailwind.css";
         this.shadowRoot.innerHTML = `
         <div class="relative py-3 sm:max-w-xl sm:mx-auto w-full">
-        <div class="relative px-4 py-10 bg-black mx-8 md:mx-0 shadow rounded-3xl sm:p-10">
-            <div class="max-w-md mx-auto text-white">
-                <div class="mt-1">
-                    <label for="email" class="font-semibold text-sm text-gray-400 pb-1 block">E-mail</label>
-                    <input id="email" type="text"
-                        class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
-                        <p class="text-sm text-red-500 mb-4" id="emailError"></p>
- 
-    
-                    <label for="username" class="font-semibold text-sm text-gray-400 pb-1 block">Username</label>
-                    <input id="username" type="text"
-                        class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>                    
-                        <p class="text-sm text-red-500 mb-4" id="usernameError"></p>
-    
-                    <label for="password" class="font-semibold text-sm text-gray-400 pb-1 block">Password</label>
-                    <input id="password" type="password"
-                        class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
-                        <p class="text-sm text-red-500 mb-4" id="passwordError"></p>
-                    
-                    <label for="password2" class="font-semibold text-sm text-gray-400 pb-1 block">Confirm Password</label>
-                    <input id="password2" type="password"
-                        class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
-                        <p class="text-sm text-red-500" id="password2Error"></p> <!-- Message d'erreur pour la confirmation du mot de passe -->            
-        
-                </div>
-                <div class="mt-5">
-                    <button id="register"
-                        class="py-2 px-4 bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg">
-                        Register
-                    </button>
-                </div>
-                <div class="text-red-600">
-                    <p id="error"> </p>
+            <div class="relative px-4 pt-5 pb-5 bg-black mx-8 md:mx-0 shadow rounded-2xl sm:px-8">
+
+                <div class="max-w-md mx-auto text-white">
+                    <form id="registerForm">
+                        <div class="mt-1">
+                            <label for="email" class="font-semibold text-sm text-gray-400 pb-1 block">E-mail</label>
+                            <input id="email" type="text"
+                                class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+                            <p class="text-sm text-red-500 mb-2" id="emailError"></p>
+
+                            <label for="username" class="font-semibold text-sm text-gray-400 pb-1 block">Username</label>
+                            <input id="username" type="text"
+                                class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>                    
+                            <p class="text-sm text-red-500 mb-2" id="usernameError"></p>
+
+                            <label for="password" class="font-semibold text-sm text-gray-400 pb-1 block">Password</label>
+                            <input id="password" type="password"
+                                class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+                            <p class="text-sm text-red-500 mb-2" id="passwordError"></p>
+                            
+                            <label for="password2" class="font-semibold text-sm text-gray-400 pb-1 block">Confirm Password</label>
+                            <input id="password2" type="password"
+                                class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+                            <p class="text-sm text-red-500" id="password2Error"></p>
+                        </div>
+
+                        <div class="mt-5">
+                            <button id="register" type="submit"
+                                class="py-2 px-4 bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg">
+                                Register
+                            </button>
+                        </div>
+                    </form>
+                    <div class="text-red-500 text-sm mt-1">
+                        <p id="error"></p>
+                    </div>
                 </div>
             </div>
-        </div>
         </div>
         `;
         this.shadowRoot.appendChild(style);
@@ -74,12 +77,13 @@ class RegisterComponent extends HTMLElement {
         this.passwordInput = this.shadowRoot.querySelector("#password");
         this.password2Input = this.shadowRoot.querySelector("#password2");
         this.registerButton = this.shadowRoot.querySelector("#register");
+        this.registerForm = this.shadowRoot.querySelector("#registerForm");
         this.errorMsg = this.shadowRoot.querySelector("#error");
         this.addEventListeners();
     }
     addEventListeners() {
-        var _a, _b, _c, _d, _e, _f;
-        (_a = this.registerButton) === null || _a === void 0 ? void 0 : _a.addEventListener("click", (event) => __awaiter(this, void 0, void 0, function* () {
+        var _a, _b, _c, _d, _e;
+        (_a = this.registerForm) === null || _a === void 0 ? void 0 : _a.addEventListener("submit", (event) => __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c, _d;
             event.preventDefault();
             const email = ((_a = this.emailInput) === null || _a === void 0 ? void 0 : _a.value) || "";
@@ -91,7 +95,7 @@ class RegisterComponent extends HTMLElement {
                 yield this.postData(email, user, password);
             }
             else {
-                this.errorMsg.textContent = "Please fix the errors"; // main error message
+                this.errorMsg.textContent = "Fix the errors first"; // main error message
             }
         }));
         // Real time fields validation
@@ -118,16 +122,6 @@ class RegisterComponent extends HTMLElement {
         });
         (_e = this.password2Input) === null || _e === void 0 ? void 0 : _e.addEventListener("input", () => {
             this.validatePasswordMatch();
-        });
-        // Enter key event
-        (_f = this.shadowRoot) === null || _f === void 0 ? void 0 : _f.addEventListener("keydown", (event) => {
-            var _a;
-            // Explicitly cast the event to KeyboardEvent
-            const keyboardEvent = event;
-            if (keyboardEvent.key === "Enter") {
-                keyboardEvent.preventDefault();
-                (_a = this.registerButton) === null || _a === void 0 ? void 0 : _a.click();
-            }
         });
     }
     // email validation
