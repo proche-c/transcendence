@@ -19,6 +19,9 @@ const fastifyCookie = require("@fastify/cookie");
 
 fastify.register(fastifyCookie);
 
+
+
+
 //********************TO SERVE STATIC FILES(AVATAR IMGS)******************** */
 
 const fastifyStatic = require("@fastify/static");
@@ -31,11 +34,19 @@ fastify.register(fastifyStatic, {
   prefix: "/static/",
 });
 
+
+
+
+
 /***************************** Register CORS middleware **********************/
-fastify.register(cors, {
-  origin: ["https://localhost:8443", "http://localhost:5500/frontend/"], // Especifica el origen permitido
-  credentials: true, // Permite el envío de cookies y cabeceras de autenticación
+fastify.register(cors, { 
+    origin: ["https://localhost:8443", "http://localhost:5500/frontend/"], // Especifica el origen permitido
+    credentials: true // Permite el envío de cookies y cabeceras de autenticación
 });
+
+
+
+
 
 // Register JWT with a secret key
 fastify.register(jwt, { secret: "supersecretkey" });
@@ -206,6 +217,14 @@ fastify.post("/login", async (request, reply) => {
       .send({ message: "Error processing request", error: err.message });
   }
 });
+
+
+
+
+
+/************************** ENDPOINTS TO BUILD PROFILE*************** */
+
+// endpoint to get Data for profile, missing some parameters like total maatches, won matches... needed on BBDD
 
 /************************** ENDPOINTS TO BUILD PROFILE*************** */
 

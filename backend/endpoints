@@ -1,0 +1,34 @@
+// EDIT PROFILE //
+"http://localhost:8000/edit-profile"
+
+I'll send 2 parameters:
+    1. username:
+        - if it's  an empty string -> do nothing
+        - If it's not an empty string -> check if username already exists:
+            - if it exists -> send an error
+            - if it does not -> change username on DDBB and reply front
+    2. Avatar:
+        - if it's  an empty file -> do nothing
+        - If it's not an empty file ->
+            - generate name
+            - save file to avatars
+            - change rote on BBDD
+            - send front new route
+
+// FRIENDS //
+"http://localhost:8000/friends"
+
+GET -> send front all friends
+
+POST -> I'll send 1 parameter: username
+    - if user doesn't exist -> send front an error
+    - if user exist -> add to friends and send reply to front
+
+// PUBLIC PROFILE //
+"http://localhost:8000/public-profile"
+
+I'll send 1 parameter: username
+    - if user doesn't exist -> send front an error
+    - if user exist -> send public profile to front
+
+

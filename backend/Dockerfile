@@ -1,35 +1,43 @@
-FROM node:20-slim
+# Usamos versión específica de Node.js
+FROM node:18-alpine
 
-# Install system dependencies for native builds and SQLite
-RUN apt-get update && \
-    apt-get install -y sqlite3 build-essential python3 python3-distutils
+# Instalamos sqlite3 (en Alpine se usa apk)
+RUN apk add --no-cache sqlite
 
-# Create app directory
-RUN mkdir -p /home/node/app && chown -R node:node /home/node/app
+# Crear directorio con permisos adecuados
+RUN mkdir -p /home/node/app && \
+    chown -R node:node /home/node/app
+
 WORKDIR /home/node/app
 
-# Copy package files
+# Copiar archivos de paquete
 COPY --chown=node:node package*.json ./
 
-# Use node user
+# Instalar dependencias como usuario node
 USER node
-
-# Install dependencies
 RUN npm install
 
-# Copy rest of the code
+RUN npm list @fastify/jwt || npm install @fastify/jwt
+RUN npm list bcrypt || npm install bcrypt
+RUN npm install fastify-passport @fastify/oauth2 fastify-secure-session 
+RUN npm install dotenv
+RUN npm install @fastify/static
+RUN npm install @fastify/multipart
+RUN npm install pump
+RUN npm install uuid
+
+# Copiar el resto de archivos
 COPY --chown=node:node . .
 
-# Switch to root to copy entrypoint
+# Configurar entrypoint
 USER root
 COPY --chown=node:node entrypoint.sh /home/node/app/entrypoint.sh
 RUN chmod +x /home/node/app/entrypoint.sh
 
-# SQLite data dir
+# Permisos para SQLite
 RUN mkdir -p /home/node/app/sqlite_data && \
     chown -R node:node /home/node/app/sqlite_data
 
-# Back to node user
 USER node
 
 EXPOSE 8000

@@ -19,6 +19,7 @@ class ChatComponent extends HTMLElement {
         this.messageInput = null;
         this.sendButton = null;
         this.socket = null;
+        this.response = null;
         this.attachShadow({ mode: "open" });
         this.connect();
         this.render();
@@ -34,6 +35,22 @@ class ChatComponent extends HTMLElement {
             this.addMessageToMessages(event.data);
             this.addMessageToList(event.data);
         };
+    }
+    getUsers() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                // Esta url sera el endponit que configure el servidor
+                const response = yield fetch("http://localhost:8000/users", {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                });
+                this.response = yield response.json();
+            }
+            catch (error) {
+                console.log("error en la peticion");
+            }
+        });
     }
     render() {
         if (!this.shadowRoot)

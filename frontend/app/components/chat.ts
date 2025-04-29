@@ -21,6 +21,20 @@ interface Chat {
 }
 
 class ChatComponent extends HTMLElement {
+	private messages: Array<Data> = [];
+	private chats: Array<Chat> = [];
+	private globalChat: Array<Data> = [];
+	private messagesBox: HTMLElement | null = null;
+	private messageInput:  HTMLInputElement | null = null;
+	private sendButton: HTMLElement | null = null;
+	private socket: WebSocket | null = null;
+	private response: Promise<Response> | null = null;
+	constructor() {
+		super();
+		this.attachShadow({mode: "open"});
+		this.connect();
+		this.render();
+	}
   private response: any | null = null;
   private messages: Array<Data> = [];
   private chats: Array<Chat> = [];
@@ -49,11 +63,28 @@ class ChatComponent extends HTMLElement {
     };
   }
 
-  private render(): void {
-    if (!this.shadowRoot) return;
-    const style = document.createElement("link");
-    style.rel = "stylesheet";
-    style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
+	private async getUsers() {
+
+        try {
+            // Esta url sera el endponit que configure el servidor
+            const response = await fetch("http://localhost:8000/users", {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+            });
+
+            this.response = await response.json();
+        } catch (error: any) {
+            console.log("error en la peticion");
+        }
+    }
+
+	private render(): void {
+		if(!this.shadowRoot)
+			return;
+		const style = document.createElement("link");
+		style.rel = "stylesheet";
+		style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
 
     this.shadowRoot.innerHTML = `
             <pong-header></pong-header>
@@ -73,17 +104,12 @@ class ChatComponent extends HTMLElement {
 				</div>
 		`;
 
-    this.shadowRoot.appendChild(style);
-    this.messagesBox = this.shadowRoot.querySelector(
-      "#messages",
-    ) as HTMLElement;
-    this.messageInput = this.shadowRoot.querySelector(
-      "#message",
-    ) as HTMLInputElement;
-    this.sendButton = this.shadowRoot.querySelector("#send") as HTMLElement;
-    this.getUsers();
-    this.addEventListeners();
-  }
+		this.shadowRoot.appendChild(style);
+		this.messagesBox = this.shadowRoot.querySelector("#messages") as HTMLElement;
+		this.messageInput = this.shadowRoot.querySelector("#message") as HTMLInputElement;
+		this.sendButton = this.shadowRoot.querySelector("#send") as HTMLElement;
+		this.getUsers();
+		this.addEventListeners();
 
   private async getUsers() {
     try {
