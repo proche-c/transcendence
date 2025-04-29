@@ -7,6 +7,8 @@ const bcrypt = require("bcrypt"); // Bcrypt for password hashing
 const jwt = require("@fastify/jwt"); // JWT for authentication
 const oauthPlugin = require("@fastify/oauth2"); // OAuth2 for authentication
 const cors = require("@fastify/cors"); // CORS plugin
+const crypto = require('crypto');
+const pump = require('pump');
 // const authMiddleware = require('./authMiddleware')(dbGetAsync);
 
 const fastifyWebsocket = require("@fastify/websocket");
@@ -235,6 +237,39 @@ fastify.get(
     return reply.send({ user: data });
   },
 );
+
+fastify.post('/edit-profile', { preHandler: authMiddleware }, async (request, reply) => {
+  try {
+    const userId = request.user.id;
+    const data = await request.file(); //contains the fields edited + file(avatar) + filename
+    const { fields } = data; 
+    const username = fields.username?.value;
+    
+    if (username && username.trim() !== '') {
+      const existingUser = await dbGetAsync('SELECT id FROM users WHERE username = ?', [username.trim()]);
+      if (existingUser) {
+        return reply.status(400).send({ message: 'Username already exists' });
+      }
+      await dbRunAsync('UPDATE users SET username = ? WHERE id = ?', [username.trim(), userId]);
+    }
+
+    if (data && data.file && data.filename) {
+      const ext = path.extname(data.filename); //getting the extention
+      const fileName = crypto.randomBytes(16).toString('hex') + ext; //generating a random name
+      const uploadPath = path.join(uploadssPath, fileName);
+
+      await pump(data.file, fs.createWriteStream(uploadPath));
+
+      const avatarPath = `/static/${fileName}`; 
+      await dbRunAsync('UPDATE users SET avatar = ? WHERE id = ?', [avatarPath, userId]);
+    }
+
+    return reply.send({ message: 'Profile updated successfully.' });
+  } catch (error) {
+    fastify.log.error(error);
+    return reply.status(500).send({ message: 'Error updating profile' });
+  }
+});
 
 //Endpoint to update profile avatar, new avatar image must be stored in the server
 const multipart = require("@fastify/multipart");

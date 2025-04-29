@@ -20,10 +20,6 @@ type 11(mute in the chat): destinatary, chatroom_name
 type 12(unmute in the chat): destinatary, chatroom_name
 */
 
-/* TO DO
-
- */
-
 const {
   handleChatrooms,
   handleJoinChannel,
@@ -356,8 +352,6 @@ async function handleBlockUser(connection, data, dbGetAsync, dbRunAsync, fastify
 
   fastify.log.info(`[WebSocket: block] ${connection.username} blocked ${data.destinatary}`);
 }
-
-
 
 
 async function handleUnblockUser(connection, data, dbGetAsync, dbRunAsync, fastify) {
