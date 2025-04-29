@@ -9,23 +9,17 @@ const oauthPlugin = require("@fastify/oauth2"); // OAuth2 for authentication
 const cors = require("@fastify/cors"); // CORS plugin
 const crypto = require('crypto');
 const pump = require('pump');
+const multipart = require("@fastify/multipart");
+const { v4: uuidv4 } = require("uuid");
 // const authMiddleware = require('./authMiddleware')(dbGetAsync);
-
 const fastifyWebsocket = require("@fastify/websocket");
-
 fastify.register(fastifyWebsocket);
-
 const fastifyCookie = require("@fastify/cookie");
-
 fastify.register(fastifyCookie);
-
-
-
 
 //********************TO SERVE STATIC FILES(AVATAR IMGS)******************** */
 
 const fastifyStatic = require("@fastify/static");
-
 const uploadssPath = path.join(__dirname, "uploads");
 console.log("Serving statics from: ", uploadssPath);
 
@@ -34,19 +28,11 @@ fastify.register(fastifyStatic, {
   prefix: "/static/",
 });
 
-
-
-
-
 /***************************** Register CORS middleware **********************/
 fastify.register(cors, { 
     origin: ["https://localhost:8443", "http://localhost:5500/frontend/"], // Especifica el origen permitido
     credentials: true // Permite el envío de cookies y cabeceras de autenticación
 });
-
-
-
-
 
 // Register JWT with a secret key
 fastify.register(jwt, { secret: "supersecretkey" });
@@ -226,9 +212,6 @@ fastify.post("/login", async (request, reply) => {
 
 // endpoint to get Data for profile, missing some parameters like total maatches, won matches... needed on BBDD
 
-/************************** ENDPOINTS TO BUILD PROFILE*************** */
-
-// endpoint to get Data for profile, missing some parameters like total maatches, won matches... needed on BBDD
 
 fastify.get(
   "/profile",
@@ -244,19 +227,7 @@ fastify.get(
 );
 
 // Endpoint to get Data for edit-profile, avatar and username are the parameters user may modified
-
-fastify.get(
-  "/edit-profile",
-  { preHandler: authMiddleware },
-  async (request, reply) => {
-    const data = {
-      username: request.user.username,
-      avatar: request.user.avatar,
-    };
-    return reply.send({ user: data });
-  },
-);
-
+fastify.register(multipart);
 fastify.post('/edit-profile', { preHandler: authMiddleware }, async (request, reply) => {
   try {
     const userId = request.user.id;
@@ -290,37 +261,6 @@ fastify.post('/edit-profile', { preHandler: authMiddleware }, async (request, re
   }
 });
 
-//Endpoint to update profile avatar, new avatar image must be stored in the server
-const multipart = require("@fastify/multipart");
-const pump = require("pump");
-const { v4: uuidv4 } = require("uuid");
-
-fastify.register(multipart);
-
-fastify.post(
-  "/upload-avatar",
-  { preHandler: authMiddleware },
-  async (request, reply) => {
-    try {
-      console.log("ENTRO EN UPLOAD AVATAR");
-      const data = await request.file();
-      const ext = path.extname(data.filename);
-      const fileName = `${uuidv4()}${ext}`;
-      const filePath = path.join(uploadssPath, fileName);
-
-      await pump(data.file, fs.createWriteStream(filePath));
-      const userId = request.user.userId;
-      const avatarPath = `/avatars/${fileName}`;
-      const result = await dbRunAsync(
-        "UPDATE users SET avatar = ? WHERE id = ?",
-        [avatarPath, userId],
-      );
-    } catch (err) {
-      console.error("Error uploading avatar:", err);
-      return reply.status(500).send({ message: "Error uploading avatar" });
-    }
-  },
-);
 
 // Get tournaments
 fastify.get("/tournaments", async (request, reply) => {
