@@ -1,35 +1,36 @@
-FROM node:20-slim
+# THIS IS THE DOCKERFILE THAT WORKS FOR ME(ANNA) ON MY MAC, BUT ITS ONLY FOR TESTING
+FROM node:20-alpine
 
-# Install system dependencies for native builds and SQLite
-RUN apt-get update && \
-    apt-get install -y sqlite3 build-essential python3 python3-distutils
+# Install build tools for native modules
+RUN apk add --no-cache python3 make g++ sqlite
 
-# Create app directory
+# Create app directory with correct permissions
 RUN mkdir -p /home/node/app && chown -R node:node /home/node/app
 WORKDIR /home/node/app
 
-# Copy package files
-COPY --chown=node:node package*.json ./
-
-# Use node user
+# Switch to node user early
 USER node
+
+# Copy package files first
+COPY --chown=node:node package*.json ./
 
 # Install dependencies
 RUN npm install
 
-# Copy rest of the code
+# Copy rest of the application
 COPY --chown=node:node . .
 
-# Switch to root to copy entrypoint
+# Optional: force reinstall problematic native deps after copying (sometimes needed)
+# RUN npm rebuild sodium-native
+
+# Set up entrypoint
 USER root
 COPY --chown=node:node entrypoint.sh /home/node/app/entrypoint.sh
 RUN chmod +x /home/node/app/entrypoint.sh
 
-# SQLite data dir
-RUN mkdir -p /home/node/app/sqlite_data && \
-    chown -R node:node /home/node/app/sqlite_data
+# SQLite data folder permissions
+RUN mkdir -p /home/node/app/sqlite_data && chown -R node:node /home/node/app/sqlite_data
 
-# Back to node user
 USER node
 
 EXPOSE 8000
