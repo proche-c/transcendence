@@ -1,3 +1,6 @@
+const oauthPlugin = require('@fastify/oauth2');
+
+
 module.exports = async function (fastify, options) {
 
     // Google OAuth2 configuration

@@ -7,7 +7,7 @@ const fs = require('fs'); // File system library
 const path = require('path'); // Path library
 //const bcrypt = require('bcrypt'); // Bcrypt for password hashing
 const jwt = require('@fastify/jwt'); // JWT for authentication
-const oauthPlugin = require('@fastify/oauth2'); // OAuth2 for authentication
+//const oauthPlugin = require('@fastify/oauth2'); // OAuth2 for authentication
 const cors = require('@fastify/cors'); // CORS plugin
 const speakeasy = require('speakeasy'); // Two-factor authentication library
 const qrcode = require('qrcode'); // QR code generation library
@@ -124,6 +124,8 @@ fastify.register(chatRoutes, {
 
 fastify.register(require('./login'), { dbGetAsync });
 fastify.register(require('./register'), { dbGetAsync, dbRunAsync });
+fastify.register(require('./googleAuth'));
+
 
 
 
@@ -168,32 +170,6 @@ fastify.post('/tournaments', async (request, reply) => {
         return reply.status(500).send({ message: 'Error creating tournament', error: error.message });
     }
 });
-
-// Google OAuth2 configuration
-fastify.register(oauthPlugin, {
-    name: 'googleOAuth2',
-    scope: ['profile', 'email'],
-    credentials: {
-        client: {
-            id: process.env.GOOGLE_CLIENT_ID,
-            secret: process.env.GOOGLE_CLIENT_SECRET
-        },
-        auth: oauthPlugin.GOOGLE_CONFIGURATION
-    },
-    startRedirectPath: '/login/google',
-    callbackUri: 'http://localhost:8000/auth/google/callback'
-});
-
-// Google callback route
-fastify.get('/auth/google/callback', async (request, reply) => {
-    try {
-        const token = await fastify.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(request);
-        return reply.send({ token });
-    } catch (err) {
-        return reply.status(500).send({ message: 'Google authentication failed', error: err.message });
-    }
-});
-
 
 //Added by paula to verify authentication througt frontend request
 fastify.get('/check-auth', async (request, reply) => {
