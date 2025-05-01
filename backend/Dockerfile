@@ -20,16 +20,17 @@ RUN npm install
 # Copy rest of the application
 COPY --chown=node:node . .
 
-# Optional: force reinstall problematic native deps after copying (sometimes needed)
-# RUN npm rebuild sodium-native
-
 # Set up entrypoint
 USER root
 COPY --chown=node:node entrypoint.sh /home/node/app/entrypoint.sh
 RUN chmod +x /home/node/app/entrypoint.sh
 
 # SQLite data folder permissions
-RUN mkdir -p /home/node/app/sqlite_data && chown -R node:node /home/node/app/sqlite_data
+RUN mkdir -p /home/node/app/sqlite_data \
+  && chown -R node:node /home/node/app/sqlite_data \
+  && touch /home/node/app/sqlite_data/database.sqlite \
+  && chown node:node /home/node/app/sqlite_data/database.sqlite \
+  && chmod 664 /home/node/app/sqlite_data/database.sqlite
 
 USER node
 

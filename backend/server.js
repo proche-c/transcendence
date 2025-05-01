@@ -7,7 +7,7 @@ const jwt = require("@fastify/jwt"); // JWT for authentication
 const fastifyWebsocket = require("@fastify/websocket");
 const fastifyCookie = require("@fastify/cookie");
 const fastifyStatic = require("@fastify/static");
-const dbPath = "./sqlite_data/database.sqlite";
+const dbPath = "/home/node/app/sqlite_data/database.sqlite"; //!!!IMPORTANT (THIS IS THE ONE IN COMPOSE FILE)
 
 fastify.register(fastifyCookie);
 fastify.register(fastifyWebsocket);
@@ -99,6 +99,7 @@ fastify.register(userRoutes, {
   db,
   dbAllAsync,
   dbGetAsync,
+  dbRunAsync,
 });
 
 const chatRoutes = require("./chat");
