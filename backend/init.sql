@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
   avatar TEXT DEFAULT 'default_avatar.png',  -- Avatar par défaut
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  twofa_secret TEXT,
+  is_twofa_enabled INTEGER DEFAULT 0
 );
 
 
@@ -61,6 +62,8 @@ CREATE TABLE IF NOT EXISTS auth_providers (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+/*-----------------CHAT TABLES---------------------*/
 
 CREATE TABLE IF NOT EXISTS messages (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -20,10 +20,6 @@ type 11(mute in the chat): destinatary, chatroom_name
 type 12(unmute in the chat): destinatary, chatroom_name
 */
 
-/* TO DO
-
- */
-
 const {
   handleChatrooms,
   handleJoinChannel,
@@ -36,10 +32,9 @@ const {
   handleKickUser
 } = require('./chatroomHandler');
 
-
 async function chatRoutes(fastify, options) {
   const bcrypt = options.bcrypt;
-  const db = options.db; // getting the db passed from server.js
+  const db = options.db; 
   const dbGetAsync = options.dbGetAsync;
   const dbRunAsync = options.dbRunAsync;
   const dbAllAsync = options.dbAllAsync;
@@ -48,14 +43,11 @@ async function chatRoutes(fastify, options) {
   fastify.get('/', { websocket: true }, async (connection, req) => {
     try {
       const token = req.cookies.token;
-      //const query = new URLSearchParams(req.url.split('?')[1]);
-
       if (!token) {
         fastify.log.warn('WebSocket connection rejected: no token');
         connection.close();
         return;
       }
-
       let payload;
       try {
         payload = fastify.jwt.verify(token);
@@ -64,15 +56,12 @@ async function chatRoutes(fastify, options) {
         connection.close();
         return;
       }
-
       const { userId, username } = payload;
-      // Attaching user data to the connection
       connection.userId = userId;
       connection.username = username;
-
       userSockets.set(userId, connection);
       fastify.log.info(`User ${username} connected via WebSocket`);
-
+      
       connection.on('message', async (rawMessage) => {
         let data;
         try {
@@ -124,11 +113,11 @@ async function chatRoutes(fastify, options) {
             break;
           case 13:
             await handleKickUser(connection, data, dbGetAsync, dbRunAsync,fastify, userSockets)
+            break; 
           default:
             connection.send(JSON.stringify({ type: data.type, message: "Unknown message type" }));    
         }
       });
-      // Handling disconnection
       connection.on('close', () => {
         userSockets.delete(userId);
         fastify.log.info(`User ${username} disconnected`);
@@ -163,7 +152,6 @@ async function handleGlobalMessages(connection, userSockets, data, fastify) {
       }));
     }
   });
-
   fastify.log.info(`[WebSocket] Broadcasted message from ${connection.username}`);
 }
 
@@ -187,9 +175,7 @@ async function handleDMs(connection, data, dbGetAsync, dbRunAsync, userSockets, 
     return;
   }  
   const recipient = await dbGetAsync('SELECT id FROM users WHERE username = ?', [data.destinatary]);
-  
   const isBlocked = await dbGetAsync('SELECT 1 FROM blocked_users WHERE blocker_id = ? AND blocked_id = ?', [recipient.id, connection.userId]);
-  
   if (isBlocked) {
     connection.send(JSON.stringify({
       type: data.type,
@@ -200,7 +186,6 @@ async function handleDMs(connection, data, dbGetAsync, dbRunAsync, userSockets, 
     return;
   }
   
-
   if (!recipient) {
     connection.send(JSON.stringify({
       type: data.type,
@@ -216,7 +201,6 @@ async function handleDMs(connection, data, dbGetAsync, dbRunAsync, userSockets, 
  
   let chat = await dbGetAsync(
     'SELECT id FROM chats WHERE user1_id = ? AND user2_id = ?', [user1_id, user2_id]);
-  
   if (!chat) {
     await dbRunAsync(
       'INSERT INTO chats (user1_id, user2_id) VALUES (?, ?)',
@@ -227,11 +211,9 @@ async function handleDMs(connection, data, dbGetAsync, dbRunAsync, userSockets, 
       [user1_id, user2_id]
     );
   }
-
   await dbRunAsync(
     'INSERT INTO messages (chat_id, sender_id, message, type) VALUES (?, ?, ?, ?)',
     [chat.id, connection.userId, data.message, 1] );
-
   const recipientSocket = userSockets.get(recipient.id);
   if (recipientSocket && recipientSocket.readyState === recipientSocket.OPEN) {
     recipientSocket.send(JSON.stringify({
@@ -263,9 +245,7 @@ async function handleInvite(connection, data, dbGetAsync, userSockets, fastify) 
     return;
   }
   const recipient = await dbGetAsync('SELECT id FROM users WHERE username = ?', [data.destinatary]);
-  
   const isBlocked = await dbGetAsync( 'SELECT 1 FROM blocked_users WHERE blocker_id = ? AND blocked_id = ?', [recipient.id, connection.userId]);
-  
   if (isBlocked) {
     connection.send(JSON.stringify({
       type: data.type,
@@ -286,7 +266,6 @@ async function handleInvite(connection, data, dbGetAsync, userSockets, fastify) 
     fastify.log.warn(`[INVITE ERROR] User '${data.destinatary}' not found.`)
     return;
   }
-
   const recipientSocket = userSockets.get(recipient.id);
   if (recipientSocket && recipientSocket.readyState === recipientSocket.OPEN) {
     recipientSocket.send(JSON.stringify({
@@ -315,7 +294,6 @@ async function handleBlockUser(connection, data, dbGetAsync, dbRunAsync, fastify
     }));
     return;
   }
-
   const recipient = await dbGetAsync('SELECT id FROM users WHERE username = ?', [data.destinatary]);
   if (!recipient) {
     connection.send(JSON.stringify({
@@ -327,12 +305,10 @@ async function handleBlockUser(connection, data, dbGetAsync, dbRunAsync, fastify
     fastify.log.warn(`[BLOCK ERROR] User '${data.destinatary}' not found.`);
     return;
   }
-
   const alreadyBlocked = await dbGetAsync(
     'SELECT 1 FROM blocked_users WHERE blocker_id = ? AND blocked_id = ?',
     [connection.userId, recipient.id]
   );
-
   if (alreadyBlocked) {
     connection.send(JSON.stringify({
       type: data.type,
@@ -341,12 +317,9 @@ async function handleBlockUser(connection, data, dbGetAsync, dbRunAsync, fastify
     }));
     return;
   }
-
   await dbRunAsync(
     "INSERT INTO blocked_users (blocker_id, blocked_id) VALUES (?, ?)",
-    [connection.userId, recipient.id]
-  );
-
+    [connection.userId, recipient.id]);
   connection.send(JSON.stringify({
     type: data.type,
     message: `You blocked ${data.destinatary} successfully`,
@@ -356,9 +329,6 @@ async function handleBlockUser(connection, data, dbGetAsync, dbRunAsync, fastify
 
   fastify.log.info(`[WebSocket: block] ${connection.username} blocked ${data.destinatary}`);
 }
-
-
-
 
 async function handleUnblockUser(connection, data, dbGetAsync, dbRunAsync, fastify) {
   if (!data.destinatary) {
@@ -371,7 +341,6 @@ async function handleUnblockUser(connection, data, dbGetAsync, dbRunAsync, fasti
     return;
   }
   const recipient = await dbGetAsync('SELECT id FROM users WHERE username = ?', [data.destinatary]);
-
   if (!recipient) {
     connection.send(JSON.stringify({
       type: data.type,
@@ -382,26 +351,21 @@ async function handleUnblockUser(connection, data, dbGetAsync, dbRunAsync, fasti
     fastify.log.warn(`[UNBLOCK ERROR] User '${data.destinatary}' not found.`);
     return;
   }
-
   const blocked = await dbGetAsync('SELECT * FROM blocked_users WHERE blocker_id = ? AND blocked_id = ?', [connection.userId, recipient.id]);
-
   if (!blocked) {
     connection.send(JSON.stringify({
       type: data.type,
       message: `${data.destinatary} is not blocked.`,
-      sender: "system"
     }));
     return;
   }
-
   await dbRunAsync('DELETE FROM blocked_users WHERE blocker_id = ? AND blocked_id = ?',[connection.userId, recipient.id]);
-
   connection.send(JSON.stringify({
     type: data.type,
     message: `You unblocked ${data.destinatary} successfully`,
     sender: connection.username,
     destinatary: data.destinatary
   }));
-
   fastify.log.info(`[WebSocket: unblock] ${connection.username} unblocked ${data.destinatary}`);
 }
+
