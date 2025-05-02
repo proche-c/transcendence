@@ -1,5 +1,4 @@
 // Fastify server using Node.js that manages an API listening on port 8000
-
 const dotenv = require('dotenv').config(); // Load environment variables from a .env file into process.env
 const fastify = require('fastify')({ logger: true }); // Loading Fastify framework with logging enabled
 const sqlite3 = require('sqlite3').verbose(); // SQLite3 library
@@ -14,227 +13,262 @@ const qrcode = require('qrcode'); // QR code generation library
 //const { z } = require('zod'); // Zod for schema validation
 // const authMiddleware = require('./authMiddleware')(dbGetAsync);
 
-const fastifyWebsocket = require('@fastify/websocket');
+const fastifyWebsocket = require("@fastify/websocket");
 
 fastify.register(fastifyWebsocket);
 
-const fastifyCookie = require('@fastify/cookie');
+const fastifyCookie = require("@fastify/cookie");
 
 fastify.register(fastifyCookie);
 
 //********************TO SERVE STATIC FILES(AVATAR IMGS)******************** */
 
-const fastifyStatic = require('@fastify/static');
+const fastifyStatic = require("@fastify/static");
 
-const uploadssPath = path.join(__dirname, 'uploads');
+const uploadssPath = path.join(__dirname, "uploads");
 console.log("Serving statics from: ", uploadssPath);
 
 fastify.register(fastifyStatic, {
-    root: uploadssPath,
-    prefix: '/static/',
+  root: uploadssPath,
+  prefix: "/static/",
 });
-
 
 // Register CORS middleware
-fastify.register(cors, { 
-    origin: ["https://localhost:8443", "http://localhost:5500/frontend/"], // Especifica el origen permitido
-    credentials: true // Permite el envío de cookies y cabeceras de autenticación
+fastify.register(cors, {
+  origin: [
+    "https://127.0.0.1:8443",
+    "https://localhost:8443",
+    "http://localhost:5500/frontend/",
+  ], // Especifica el origen permitido
+  credentials: true, // Permite el envío de cookies y cabeceras de autenticación
 });
 
-
 // Register JWT with a secret key
-fastify.register(jwt, { secret: 'supersecretkey' });
+fastify.register(jwt, { secret: "supersecretkey" });
 
 // Decorate Fastify with an authentication middleware
 fastify.decorate("authenticate", async (request, reply) => {
-    try {
-        await request.jwtVerify();
-    } catch (err) {
-        return reply.status(401).send({ message: 'Unauthorized' });
-    }
+  try {
+    await request.jwtVerify();
+  } catch (err) {
+    return reply.status(401).send({ message: "Unauthorized" });
+  }
 });
 
 // Define a simple route
-fastify.get('/', async (request, reply) => {
-    return { message: 'Pong!' };
+fastify.get("/", async (request, reply) => {
+  return { message: "Pong!" };
 });
 
 // Route to the SQLite database
 const dbPath = "./sqlite_data/database.sqlite";
 const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        console.error('Database opening failed:', err.message);
-    } else {
-        console.log('Connected to database');
+  if (err) {
+    console.error("Database opening failed:", err.message);
+  } else {
+    console.log("Connected to database");
 
-        // Initialize database
-        try {
-            const initSQL = fs.readFileSync(path.join(__dirname, 'init.sql'), 'utf8');
-            db.exec(initSQL, (err) => {
-                if (err) {
-                    console.error('Error executing init.sql:', err.message);
-                } else {
-                    console.log('Database initialized');
-                    const seedSQL = fs.readFileSync(path.join(__dirname, 'seeds.sql'), 'utf8');
-                    db.exec(seedSQL, (err) => {
-                        if (err) console.error('Error executing seeds.sql:', err.message);
-                        else console.log('Database seeded');
-                    });
-                }
-            });
-        } catch (fileError) {
-            console.error('Error reading SQL files:', fileError.message);
+    // Initialize database
+    try {
+      const initSQL = fs.readFileSync(path.join(__dirname, "init.sql"), "utf8");
+      db.exec(initSQL, (err) => {
+        if (err) {
+          console.error("Error executing init.sql:", err.message);
+        } else {
+          console.log("Database initialized");
+          const seedSQL = fs.readFileSync(
+            path.join(__dirname, "seeds.sql"),
+            "utf8",
+          );
+          db.exec(seedSQL, (err) => {
+            if (err) console.error("Error executing seeds.sql:", err.message);
+            else console.log("Database seeded");
+          });
         }
+      });
+    } catch (fileError) {
+      console.error("Error reading SQL files:", fileError.message);
     }
+  }
 });
 
 // Promisified functions for database queries
 const dbGetAsync = (query, params) => {
-    return new Promise((resolve, reject) => {
-        db.get(query, params, (err, row) => (err ? reject(err) : resolve(row)));
-    });
+  return new Promise((resolve, reject) => {
+    db.get(query, params, (err, row) => (err ? reject(err) : resolve(row)));
+  });
 };
 
 const dbAllAsync = (query, params = []) => {
-    return new Promise((resolve, reject) => {
-        db.all(query, params, (err, rows) => (err ? reject(err) : resolve(rows)));
-    });
+  return new Promise((resolve, reject) => {
+    db.all(query, params, (err, rows) => (err ? reject(err) : resolve(rows)));
+  });
 };
 
 const dbRunAsync = (query, params) => {
-    return new Promise((resolve, reject) => {
-        db.run(query, params, function (err) {
-            if (err) reject(err);
-            resolve(this);
-        });
+  return new Promise((resolve, reject) => {
+    db.run(query, params, function (err) {
+      if (err) reject(err);
+      resolve(this);
     });
+  });
 };
 
-const authMiddleware = require('./authMiddleware')(dbGetAsync, fastify);
+const authMiddleware = require("./authMiddleware")(dbGetAsync, fastify);
 
-// Register the chat plugin 
-const chatRoutes = require('./chat');
+// Register the chat plugin
+const chatRoutes = require("./chat");
 fastify.register(chatRoutes, {
-  prefix: '/chat',
-  db,            // SQLite connection
-  dbGetAsync,    //promisified DB getter
-  dbRunAsync,     //  promisified DB runner
-  dbAllAsync
+  prefix: "/chat",
+  db, // SQLite connection
+  dbGetAsync, //promisified DB getter
+  dbRunAsync, //  promisified DB runner
+  dbAllAsync,
 });
+
 
 fastify.register(require('./login'), { dbGetAsync });
 fastify.register(require('./register'), { dbGetAsync, dbRunAsync });
 fastify.register(require('./googleAuth'));
 
-
-
-
-fastify.get('/profile', { preHandler: authMiddleware}, async (request, reply) => {
+fastify.get(
+  "/profile",
+  { preHandler: authMiddleware },
+  async (request, reply) => {
     const data = {
-        username: request.user.username,
-        email: request.user.email,
-        avatar: request.user.avatar
-    }
-    return reply.send({ user: data});
-})
+      username: request.user.username,
+      email: request.user.email,
+      avatar: request.user.avatar,
+    };
+    return reply.send({ user: data });
+  },
+);
 
-fastify.get('/edit-profile', { preHandler: authMiddleware}, async (request, reply) => {
+fastify.get(
+  "/edit-profile",
+  { preHandler: authMiddleware },
+  async (request, reply) => {
     const data = {
-        username: request.user.username,
-        avatar: request.user.avatar
-    }
-    return reply.send({ user: data});
-})
+      username: request.user.username,
+      avatar: request.user.avatar,
+    };
+    return reply.send({ user: data });
+  },
+);
 
 // Get tournaments
-fastify.get('/tournaments', async (request, reply) => {
-    try {
-        const tournaments = await dbAllAsync('SELECT * FROM tournaments');
-        return reply.send(tournaments);
-    } catch (error) {
-        return reply.status(500).send({ message: 'Error getting tournaments', error: error.message });
-    }
+fastify.get("/tournaments", async (request, reply) => {
+  try {
+    const tournaments = await dbAllAsync("SELECT * FROM tournaments");
+    return reply.send(tournaments);
+  } catch (error) {
+    return reply
+      .status(500)
+      .send({ message: "Error getting tournaments", error: error.message });
+  }
 });
 
 // Create tournament
-fastify.post('/tournaments', async (request, reply) => {
-    const { name, start_date } = request.body;
-    if (!name || !start_date) {
-        return reply.status(400).send({ message: 'Name and start date are required' });
-    }
+fastify.post("/tournaments", async (request, reply) => {
+  const { name, start_date } = request.body;
+  if (!name || !start_date) {
+    return reply
+      .status(400)
+      .send({ message: "Name and start date are required" });
+  }
 
-    try {
-        const result = await dbRunAsync('INSERT INTO tournaments (name, start_date) VALUES (?, ?)', [name, start_date]);
-        return reply.status(201).send({ message: 'Tournament created', tournamentId: result.lastID });
-    } catch (error) {
-        return reply.status(500).send({ message: 'Error creating tournament', error: error.message });
-    }
+  try {
+    const result = await dbRunAsync(
+      "INSERT INTO tournaments (name, start_date) VALUES (?, ?)",
+      [name, start_date],
+    );
+    return reply
+      .status(201)
+      .send({ message: "Tournament created", tournamentId: result.lastID });
+  } catch (error) {
+    return reply
+      .status(500)
+      .send({ message: "Error creating tournament", error: error.message });
+  }
 });
 
 //Added by paula to verify authentication througt frontend request
-fastify.get('/check-auth', async (request, reply) => {
-    try {
-        const token = request.cookies.token; // Leer la cookie del request
-        console.log("**Cookies in check-auth:");
-        console.log(token);
-        if (!token) {
-            return reply.status(401).send({ message: "Not authenticated" });
-        }
-
-        // Verificar el JWT
-        const decoded = await fastify.jwt.verify(token);
-
-        return reply.send({ 
-            message: "Authenticated", 
-            user: decoded // Enviar datos del usuario autenticado
-        });
-
-    } catch (error) {
-        return reply.status(401).send({ message: "Invalid or expired token" });
+fastify.get("/check-auth", async (request, reply) => {
+  try {
+    const token = request.cookies.token; // Leer la cookie del request
+    console.log("**Cookies in check-auth:");
+    console.log(token);
+    if (!token) {
+      return reply.status(401).send({ message: "Not authenticated" });
     }
+
+    // Verificar el JWT
+    const decoded = await fastify.jwt.verify(token);
+
+    return reply.send({
+      message: "Authenticated",
+      user: decoded, // Enviar datos del usuario autenticado
+    });
+  } catch (error) {
+    return reply.status(401).send({ message: "Invalid or expired token" });
+  }
 });
 
 // Two-factor authentication route
-fastify.post('/2fa/setup', { preHandler: [fastify.authenticate] }, async (request, reply) => {
+fastify.post(
+  "/2fa/setup",
+  { preHandler: [fastify.authenticate] },
+  async (request, reply) => {
     const userId = request.user.userId;
 
     const secret = speakeasy.generateSecret({
-        name: `PongApp (${request.user.username})`, // Name printed on Google Authenticator
+      name: `PongApp (${request.user.username})`, // Name printed on Google Authenticator
     });
 
-    await dbRunAsync('UPDATE users SET twofa_secret = ?, is_twofa_enabled = 1 WHERE id = ?', [secret.base32, userId]);
+    await dbRunAsync(
+      "UPDATE users SET twofa_secret = ?, is_twofa_enabled = 1 WHERE id = ?",
+      [secret.base32, userId],
+    );
 
     const qrCode = await qrcode.toDataURL(secret.otpauth_url);
 
     return reply.send({
-        message: '2FA setup',
-        qrCode,
-        secret: secret.base32, // to hide in production
+      message: "2FA setup",
+      qrCode,
+      secret: secret.base32, // to hide in production
     });
-});
+  },
+);
 
 // Verify 2FA code
-fastify.post('/2fa/verify', { preHandler: [fastify.authenticate] }, async (request, reply) => {
+fastify.post(
+  "/2fa/verify",
+  { preHandler: [fastify.authenticate] },
+  async (request, reply) => {
     const { token } = request.body;
     const userId = request.user.userId;
 
-    const user = await dbGetAsync('SELECT twofa_secret FROM users WHERE id = ?', [userId]);
+    const user = await dbGetAsync(
+      "SELECT twofa_secret FROM users WHERE id = ?",
+      [userId],
+    );
     if (!user || !user.twofa_secret) {
-        return reply.status(400).send({ message: '2FA not set up' });
+      return reply.status(400).send({ message: "2FA not set up" });
     }
 
     const verified = speakeasy.totp.verify({
-        secret: user.twofa_secret,
-        encoding: 'base32',
-        token,
+      secret: user.twofa_secret,
+      encoding: "base32",
+      token,
     });
 
     if (!verified) {
-        return reply.status(401).send({ message: 'Invalid 2FA code' });
+      return reply.status(401).send({ message: "Invalid 2FA code" });
     }
 
-    return reply.send({ message: '2FA verified successfully' });
-});
+    return reply.send({ message: "2FA verified successfully" });
+  },
+);
 
 fastify.get('/users', async (request, reply) => {
     try {
@@ -249,13 +283,13 @@ fastify.get('/users', async (request, reply) => {
 
 // Start the server
 const start = async () => {
-    try {
-        await fastify.listen({ port: 8000, host: '0.0.0.0' });
-        console.log('Server is running on http://localhost:8000');
-    } catch (err) {
-        fastify.log.error(err);
-        process.exit(1);
-    }
+  try {
+    await fastify.listen({ port: 8000, host: "0.0.0.0" });
+    console.log("Server is running on http://localhost:8000");
+  } catch (err) {
+    fastify.log.error(err);
+    process.exit(1);
+  }
 };
 
 start();
