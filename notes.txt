@@ -188,4 +188,10 @@ curl -X POST http://localhost:8000/login \
   }'
 
 
+https://localhost:8443/
 
+
+docker exec -it frontend sh
+    tsc
+    npm run css
+    tsc

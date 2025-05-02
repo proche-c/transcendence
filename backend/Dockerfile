@@ -23,6 +23,8 @@ RUN npm install fastify-passport @fastify/oauth2 fastify-secure-session
 RUN npm install dotenv
 RUN npm install @fastify/static
 RUN npm install speakeasy qrcode
+RUN npm install zod 
+# zod is a validation library for TypeScript and JavaScript
 
 # Copiar el resto de archivos
 COPY --chown=node:node . .

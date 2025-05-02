@@ -1,15 +1,16 @@
 // Fastify server using Node.js that manages an API listening on port 8000
-const dotenv = require("dotenv").config(); // Load environment variables from a .env file into process.env
-const fastify = require("fastify")({ logger: true }); // Loading Fastify framework with logging enabled
-const sqlite3 = require("sqlite3").verbose(); // SQLite3 library
-const fs = require("fs"); // File system library
-const path = require("path"); // Path library
-const bcrypt = require("bcrypt"); // Bcrypt for password hashing
-const jwt = require("@fastify/jwt"); // JWT for authentication
-const oauthPlugin = require("@fastify/oauth2"); // OAuth2 for authentication
-const cors = require("@fastify/cors"); // CORS plugin
-const speakeasy = require("speakeasy"); // Two-factor authentication library
-const qrcode = require("qrcode"); // QR code generation library
+const dotenv = require('dotenv').config(); // Load environment variables from a .env file into process.env
+const fastify = require('fastify')({ logger: true }); // Loading Fastify framework with logging enabled
+const sqlite3 = require('sqlite3').verbose(); // SQLite3 library
+const fs = require('fs'); // File system library
+const path = require('path'); // Path library
+//const bcrypt = require('bcrypt'); // Bcrypt for password hashing
+const jwt = require('@fastify/jwt'); // JWT for authentication
+//const oauthPlugin = require('@fastify/oauth2'); // OAuth2 for authentication
+const cors = require('@fastify/cors'); // CORS plugin
+const speakeasy = require('speakeasy'); // Two-factor authentication library
+const qrcode = require('qrcode'); // QR code generation library
+//const { z } = require('zod'); // Zod for schema validation
 // const authMiddleware = require('./authMiddleware')(dbGetAsync);
 
 const fastifyWebsocket = require("@fastify/websocket");
@@ -125,109 +126,10 @@ fastify.register(chatRoutes, {
   dbAllAsync,
 });
 
-// User registration route
-fastify.post("/register", async (request, reply) => {
-  const { username, email, password } = request.body;
-  if (!username || !email || !password) {
-    return reply.status(400).send({ message: "All fields are required" });
-  }
 
-  try {
-    const row = await dbGetAsync(
-      "SELECT * FROM users WHERE email = ? OR username = ?",
-      [email, username],
-    );
-    if (row) {
-      return reply
-        .status(400)
-        .send({ message: "Username or email already exists" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const result = await dbRunAsync(
-      "INSERT INTO users (username, email, password_hash, avatar) VALUES (?, ?, ?, ?)",
-      [username, email, hashedPassword, "avatars/default.jpg"],
-    );
-
-    return reply
-      .status(201)
-      .send({ message: "User created", userId: result.lastID });
-  } catch (err) {
-    return reply
-      .status(500)
-      .send({ message: "Error processing request", error: err.message });
-  }
-});
-
-// User login with JWT
-fastify.post("/login", async (request, reply) => {
-  const { email, password, twofa_token } = request.body;
-  if (!email || !password) {
-    return reply.status(400).send({ message: "All fields are required" });
-  }
-
-  try {
-    const user = await dbGetAsync("SELECT * FROM users WHERE email = ?", [
-      email,
-    ]);
-    if (!user) {
-      return reply.status(404).send({ message: "User not found" });
-    }
-
-    const match = await bcrypt.compare(password, user.password_hash);
-    if (!match) {
-      return reply.status(401).send({ message: "Incorrect password" });
-    }
-
-    // --- Check if 2FA en enabled
-    if (user.is_twofa_enabled) {
-      if (!twofa_token) {
-        return reply.status(401).send({ message: "2FA token required" });
-      }
-
-      const verified = speakeasy.totp.verify({
-        secret: user.twofa_secret,
-        encoding: "base32",
-        token: twofa_token,
-      });
-
-      if (!verified) {
-        return reply.status(401).send({ message: "Invalid 2FA token" });
-      }
-    }
-
-    //if password and 2FA (if enabled) are ok, JWT creation
-    const token = fastify.jwt.sign(
-      { userId: user.id, username: user.username },
-      { expiresIn: "1h" },
-    );
-
-    // Check if 2FA is activated for this user
-    const isTwoFAEnabled = user.is_twofa_enabled === 1;
-
-    // send the token in the cookie and in the answer
-    reply.setCookie("token", token, {
-      httpOnly: false,
-      secure: true, // true if HTTPS
-      sameSite: "none",
-      domain: "localhost",
-      path: "/",
-      expires: new Date(Date.now() + 60 * 70 * 1000), // Expira en 1 hora
-      // O usa Max-Age en segundos:
-      maxAge: 60 * 70, // 1 hora
-    });
-
-    return reply.send({
-      message: isTwoFAEnabled ? "2FA required" : "2FA not enabled",
-      token,
-      twofa_required: isTwoFAEnabled,
-    });
-  } catch (err) {
-    return reply
-      .status(500)
-      .send({ message: "Error processing request", error: err.message });
-  }
-});
+fastify.register(require('./login'), { dbGetAsync });
+fastify.register(require('./register'), { dbGetAsync, dbRunAsync });
+fastify.register(require('./googleAuth'));
 
 fastify.get(
   "/profile",
@@ -287,36 +189,6 @@ fastify.post("/tournaments", async (request, reply) => {
     return reply
       .status(500)
       .send({ message: "Error creating tournament", error: error.message });
-  }
-});
-
-// Google OAuth2 configuration
-fastify.register(oauthPlugin, {
-  name: "googleOAuth2",
-  scope: ["profile", "email"],
-  credentials: {
-    client: {
-      id: process.env.GOOGLE_CLIENT_ID,
-      secret: process.env.GOOGLE_CLIENT_SECRET,
-    },
-    auth: oauthPlugin.GOOGLE_CONFIGURATION,
-  },
-  startRedirectPath: "/login/google",
-  callbackUri: "http://localhost:8000/auth/google/callback",
-});
-
-// Google callback route
-fastify.get("/auth/google/callback", async (request, reply) => {
-  try {
-    const token =
-      await fastify.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(
-        request,
-      );
-    return reply.send({ token });
-  } catch (err) {
-    return reply
-      .status(500)
-      .send({ message: "Google authentication failed", error: err.message });
   }
 });
 
@@ -397,6 +269,17 @@ fastify.post(
     return reply.send({ message: "2FA verified successfully" });
   },
 );
+
+fastify.get('/users', async (request, reply) => {
+    try {
+        const users = await dbAllAsync('SELECT id, username, email, avatar FROM users');
+        return reply.send(users);
+    }
+    catch (error) {
+        return reply.status(500).send({ message: 'Error getting users', error: error.message });
+    }});
+
+
 
 // Start the server
 const start = async () => {
