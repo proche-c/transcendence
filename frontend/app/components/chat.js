@@ -1,7 +1,17 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 class ChatComponent extends HTMLElement {
     constructor() {
         super();
+        this.response = null;
         this.messages = [];
         this.chats = [];
         this.globalChat = [];
@@ -9,6 +19,7 @@ class ChatComponent extends HTMLElement {
         this.messageInput = null;
         this.sendButton = null;
         this.socket = null;
+        this.response = null;
         this.attachShadow({ mode: "open" });
         this.connect();
         this.render();
@@ -24,6 +35,22 @@ class ChatComponent extends HTMLElement {
             this.addMessageToMessages(event.data);
             this.addMessageToList(event.data);
         };
+    }
+    getUsers() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                // Esta url sera el endponit que configure el servidor
+                const response = yield fetch("http://localhost:8000/users", {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                });
+                this.response = yield response.json();
+            }
+            catch (error) {
+                console.log("error en la peticion");
+            }
+        });
     }
     render() {
         if (!this.shadowRoot)
@@ -52,7 +79,25 @@ class ChatComponent extends HTMLElement {
         this.messagesBox = this.shadowRoot.querySelector("#messages");
         this.messageInput = this.shadowRoot.querySelector("#message");
         this.sendButton = this.shadowRoot.querySelector("#send");
+        this.getUsers();
         this.addEventListeners();
+    }
+    getUsers() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const response = yield fetch("http://localhost:8000/users", {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                });
+                const data = yield response.json();
+                this.response = data.user;
+                console.log(data.user);
+            }
+            catch (error) {
+                console.log("Error en la peticion");
+            }
+        });
     }
     addEventListeners() {
         var _a;
@@ -60,7 +105,13 @@ class ChatComponent extends HTMLElement {
             var _a, _b;
             const messageToSend = ((_a = this.messageInput) === null || _a === void 0 ? void 0 : _a.value) || "";
             if (messageToSend) {
-                const msg = { user: "paula", type: 0, destinatary: "", message: messageToSend, chatId: -1 };
+                const msg = {
+                    user: "paula",
+                    type: 0,
+                    destinatary: "",
+                    message: messageToSend,
+                    chatId: -1,
+                };
                 (_b = this.socket) === null || _b === void 0 ? void 0 : _b.send(JSON.stringify(msg));
                 if (this.messageInput)
                     this.messageInput.value = "";
@@ -71,7 +122,13 @@ class ChatComponent extends HTMLElement {
         const datas = data.split(":");
         const user = datas[0];
         const messageToPrint = datas[1];
-        const message = { user: user, type: 0, destinatary: "", message: messageToPrint, chatId: -1 };
+        const message = {
+            user: user,
+            type: 0,
+            destinatary: "",
+            message: messageToPrint,
+            chatId: -1,
+        };
         if (message.type === 0)
             this.globalChat.push(message);
         else {

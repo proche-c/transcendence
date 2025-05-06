@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
   avatar TEXT DEFAULT 'default_avatar.png',  -- Avatar par défaut
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   twofa_secret TEXT,
   is_twofa_enabled INTEGER DEFAULT 0
 );
@@ -64,6 +63,8 @@ CREATE TABLE IF NOT EXISTS auth_providers (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+/*-----------------CHAT TABLES---------------------*/
+
 CREATE TABLE IF NOT EXISTS messages (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   chat_id INTEGER,
@@ -116,4 +117,12 @@ CREATE TABLE IF NOT EXISTS chatroom_messages (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (chatroom_id) REFERENCES chatrooms(id),
   FOREIGN KEY (sender_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS blocked_users (
+  blocker_id INTEGER,
+  blocked_id INTEGER,
+  PRIMARY KEY (blocker_id, blocked_id),
+  FOREIGN KEY (blocker_id) REFERENCES users(id),
+  FOREIGN KEY (blocked_id) REFERENCES users(id)
 );

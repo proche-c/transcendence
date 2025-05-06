@@ -10,20 +10,20 @@ class RegisterComponent extends HTMLElement {
     private debounceTimer: number | null = null; // Timer to not call the function too often
 
 
-    constructor() {
-        super();
-        this.attachShadow({ mode: "open" });
-        this.render();
-    }
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+    this.render();
+  }
 
-    render() {
-        if (!this.shadowRoot) return;
+  render() {
+    if (!this.shadowRoot) return;
 
-        const style = document.createElement("link");
-        style.rel = "stylesheet";
-        style.href = "./app/tailwind.css";
+    const style = document.createElement("link");
+    style.rel = "stylesheet";
+    style.href = "./app/tailwind.css";
 
-        this.shadowRoot.innerHTML = `
+    this.shadowRoot.innerHTML = `
         <div class="relative py-3 sm:max-w-xl sm:mx-auto w-full">
             <div class="relative px-4 pt-5 pb-5 bg-black mx-8 md:mx-0 shadow rounded-2xl sm:px-8">
 
@@ -66,7 +66,7 @@ class RegisterComponent extends HTMLElement {
         </div>
         `;
 
-        this.shadowRoot.appendChild(style);
+    this.shadowRoot.appendChild(style);
 
         this.emailInput = this.shadowRoot.querySelector("#email") as HTMLInputElement;
         this.userInput = this.shadowRoot.querySelector("#username") as HTMLInputElement;
@@ -76,17 +76,17 @@ class RegisterComponent extends HTMLElement {
         this.registerForm = this.shadowRoot.querySelector("#registerForm") as HTMLFormElement;
         this.errorMsg = this.shadowRoot.querySelector("#error") as HTMLElement;
 
-        this.addEventListeners();
-    }
+    this.addEventListeners();
+  }
 
     private addEventListeners(): void {
         this.registerForm?.addEventListener("submit", async (event) => {
             event.preventDefault();
 
-            const email = this.emailInput?.value || "";
-            const user = this.userInput?.value || "";
-            const password = this.passwordInput?.value || "";
-            const password2 = this.password2Input?.value || "";
+      const email = this.emailInput?.value || "";
+      const user = this.userInput?.value || "";
+      const password = this.passwordInput?.value || "";
+      const password2 = this.password2Input?.value || "";
 
             // Fields validation before sending the request
             if (this.validateEmail() && this.validateUsername() && this.validatePasswordMatch()) {

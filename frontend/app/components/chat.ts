@@ -32,6 +32,7 @@ class ChatComponent extends HTMLElement {
 	private messageInput:  HTMLInputElement | null = null;
 	private sendButton: HTMLElement | null = null;
 	private socket: WebSocket | null = null;
+	private response: Promise<Response> | null = null;
 	constructor() {
 		super();
 		this.attachShadow({mode: "open"});
@@ -51,6 +52,22 @@ class ChatComponent extends HTMLElement {
 			this.addMessageToList(event.data);
 		}
 	}
+
+	private async getUsers() {
+
+        try {
+            // Esta url sera el endponit que configure el servidor
+            const response = await fetch("http://localhost:8000/users", {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+            });
+
+            this.response = await response.json();
+        } catch (error: any) {
+            console.log("error en la peticion");
+        }
+    }
 
 	private render(): void {
 		if(!this.shadowRoot)
@@ -81,6 +98,7 @@ class ChatComponent extends HTMLElement {
 		this.messagesBox = this.shadowRoot.querySelector("#messages") as HTMLElement;
 		this.messageInput = this.shadowRoot.querySelector("#message") as HTMLInputElement;
 		this.sendButton = this.shadowRoot.querySelector("#send") as HTMLElement;
+		this.getUsers();
 		this.addEventListeners();
 
 		
