@@ -1,5 +1,3 @@
 sql
 .env
 sqlite_data/
-
-sqlite_data

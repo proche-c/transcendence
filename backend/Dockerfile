@@ -1,45 +1,46 @@
-# Usamos versión específica de Node.js
-FROM node:18-alpine
+FROM node:18-slim
 
-# Instalamos sqlite3 (en Alpine se usa apk)
-RUN apk add --no-cache sqlite
+# Install build tools and Python for node-gyp + sqlite3
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    python3 \
+    sqlite3 \
+    && rm -rf /var/lib/apt/lists/*
 
-# Crear directorio con permisos adecuados
-RUN mkdir -p /home/node/app && \
-    chown -R node:node /home/node/app
-
+# Set up app directory
+RUN mkdir -p /home/node/app && chown -R node:node /home/node/app
 WORKDIR /home/node/app
 
-# Copiar archivos de paquete
+# Copy package files and install dependencies
 COPY --chown=node:node package*.json ./
-
-# Instalar dependencias como usuario node
 USER node
 RUN npm install
 
+# Install specific packages required
 RUN npm list @fastify/jwt || npm install @fastify/jwt
 RUN npm list bcrypt || npm install bcrypt
-RUN npm install fastify-passport @fastify/oauth2 fastify-secure-session 
-RUN npm install dotenv
-RUN npm install @fastify/static
-RUN npm install @fastify/multipart
-RUN npm install pump
-RUN npm install uuid
+RUN npm install \
+    fastify-passport \
+    @fastify/oauth2 \
+    fastify-secure-session \
+    dotenv \
+    @fastify/static \
+    speakeasy \
+    qrcode \
+    zod
 
-# Copiar el resto de archivos
+# Copy remaining source code
 COPY --chown=node:node . .
 
-# Configurar entrypoint
+# Setup entrypoint
 USER root
 COPY --chown=node:node entrypoint.sh /home/node/app/entrypoint.sh
 RUN chmod +x /home/node/app/entrypoint.sh
 
-# Permisos para SQLite
-RUN mkdir -p /home/node/app/sqlite_data && \
-    chown -R node:node /home/node/app/sqlite_data
+# Ensure SQLite dir permissions
+RUN mkdir -p /home/node/app/sqlite_data && chown -R node:node /home/node/app/sqlite_data
 
 USER node
-
 EXPOSE 8000
 ENTRYPOINT ["/home/node/app/entrypoint.sh"]
 CMD ["node", "server.js"]
