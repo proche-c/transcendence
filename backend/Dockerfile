@@ -1,46 +1,45 @@
-FROM node:18-slim
+# Usamos versión específica de Node.js
+FROM node:18-alpine
 
-# Install build tools and Python for node-gyp + sqlite3
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    python3 \
-    sqlite3 \
-    && rm -rf /var/lib/apt/lists/*
+# Instalamos sqlite3 (en Alpine se usa apk)
+RUN apk add --no-cache sqlite
 
-# Set up app directory
-RUN mkdir -p /home/node/app && chown -R node:node /home/node/app
+# Crear directorio con permisos adecuados
+RUN mkdir -p /home/node/app && \
+    chown -R node:node /home/node/app
+
 WORKDIR /home/node/app
 
-# Copy package files and install dependencies
+# Copiar archivos de paquete
 COPY --chown=node:node package*.json ./
+
+# Instalar dependencias como usuario node
 USER node
 RUN npm install
 
-# Install specific packages required
 RUN npm list @fastify/jwt || npm install @fastify/jwt
 RUN npm list bcrypt || npm install bcrypt
-RUN npm install \
-    fastify-passport \
-    @fastify/oauth2 \
-    fastify-secure-session \
-    dotenv \
-    @fastify/static \
-    speakeasy \
-    qrcode \
-    zod
+RUN npm install fastify-passport @fastify/oauth2 fastify-secure-session 
+RUN npm install dotenv
+RUN npm install @fastify/static
+RUN npm install speakeasy qrcode
+RUN npm install zod 
+# zod is a validation library for TypeScript and JavaScript
 
-# Copy remaining source code
+# Copiar el resto de archivos
 COPY --chown=node:node . .
 
-# Setup entrypoint
+# Configurar entrypoint
 USER root
 COPY --chown=node:node entrypoint.sh /home/node/app/entrypoint.sh
 RUN chmod +x /home/node/app/entrypoint.sh
 
-# Ensure SQLite dir permissions
-RUN mkdir -p /home/node/app/sqlite_data && chown -R node:node /home/node/app/sqlite_data
+# Permisos para SQLite
+RUN mkdir -p /home/node/app/sqlite_data && \
+    chown -R node:node /home/node/app/sqlite_data
 
 USER node
+
 EXPOSE 8000
 ENTRYPOINT ["/home/node/app/entrypoint.sh"]
 CMD ["node", "server.js"]
