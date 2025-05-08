@@ -125,10 +125,10 @@ class PlayComponent extends HTMLElement {
         return {
             players: {
                 player1: { x: 30, y: 200 },
-                player2: { x: 740, y: 200 }
+                player2: { x: 740, y: 200 },
             },
             ball: { x: 400, y: 250, speedX: 5, speedY: 5 },
-            scores: { player1: 0, player2: 0 },
+            scores: { player1: 0, player2: 0 }
             running: true
         };
     }
