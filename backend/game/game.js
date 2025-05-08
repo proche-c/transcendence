@@ -3,14 +3,13 @@ async function gameRoutes(fastify, options) {
     fastify.websocketGames = [];
   }
 
-  // Estado del juego con ambos jugadores inicializados
   const gameState = {
     running: false,
     players: {
-      player1: { x: 20, y: 150 },
-      player2: { x: 560, y: 150 }
+      player1: { x: 30, y: 200 },
+      player2: { x: 740, y: 200 }
     },
-    ball: { x: 300, y: 200, speedX: 5, speedY: 5 },
+    ball: { x: 400, y: 250, speedX: 5, speedY: 5 },
     scores: { player1: 0, player2: 0 }
   };
 
@@ -37,7 +36,6 @@ async function gameRoutes(fastify, options) {
         const data = JSON.parse(message);
 
         if (data.type === "move") {
-          console.log(`Received move from player ${connection.playerNumber}: y=${data.y}`);
           const pn = connection.playerNumber;
           if (pn === 1 || pn === 2) {
             gameState.players[`player${pn}`].y = data.y;
@@ -67,28 +65,36 @@ async function gameRoutes(fastify, options) {
       gameState.ball.x += gameState.ball.speedX;
       gameState.ball.y += gameState.ball.speedY;
 
-      if (gameState.ball.y <= 0 || gameState.ball.y >= 400) {
+      // Rebote contra bordes superior/inferior del canvas
+      if (gameState.ball.y <= 0 || gameState.ball.y >= 500) {
         gameState.ball.speedY *= -1;
       }
 
       ["player1", "player2"].forEach(playerKey => {
         const player = gameState.players[playerKey];
 
-        if (
-          (gameState.ball.x <= player.x + 10 && gameState.ball.x >= player.x) ||
-          (gameState.ball.x >= player.x - 10 && gameState.ball.x <= player.x)
-        ) {
-          if (gameState.ball.y >= player.y && gameState.ball.y <= player.y + 80) {
-            gameState.ball.speedX *= -1;
-          }
+        const isPlayer1 = playerKey === "player1";
+        const paddleX = player.x;
+        const ballX = gameState.ball.x;
+
+        const collisionX = isPlayer1
+          ? ballX <= paddleX + 10 && ballX >= paddleX
+          : ballX >= paddleX - 10 && ballX <= paddleX;
+
+        if (collisionX && gameState.ball.y >= player.y && gameState.ball.y <= player.y + 80) {
+          gameState.ball.speedX *= -1;
+          const relativeIntersectY = (player.y + 40) - gameState.ball.y;
+          const normalized = relativeIntersectY / 40;
+          gameState.ball.speedY = -normalized * 6;
         }
       });
 
+      // Gol
       if (gameState.ball.x <= 0) {
         gameState.scores.player2 += 1;
         checkGameOver();
         resetBall();
-      } else if (gameState.ball.x >= 600) {
+      } else if (gameState.ball.x >= 800) {
         gameState.scores.player1 += 1;
         checkGameOver();
         resetBall();
@@ -123,17 +129,17 @@ async function gameRoutes(fastify, options) {
       }
     });
 
-    gameState.ball = { x: 300, y: 200, speedX: 5, speedY: 5 };
+    gameState.ball = { x: 400, y: 250, speedX: 5, speedY: 5 };
     gameState.scores = { player1: 0, player2: 0 };
   }
 
   function resetBall() {
     if (!gameState.running) return;
 
-    gameState.ball.x = 300;
-    gameState.ball.y = 200;
-    gameState.ball.speedX = gameState.ball.speedX > 0 ? -5 : 5;
-    gameState.ball.speedY = 5;
+    gameState.ball.x = 400;
+    gameState.ball.y = 250;
+    gameState.ball.speedX = gameState.ball.speedX > 0 ? -10 : 10;
+    gameState.ball.speedY = 0;
 
     fastify.websocketGames.forEach(client => {
       if (client.socket.readyState === client.socket.OPEN) {
