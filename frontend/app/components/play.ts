@@ -1,13 +1,43 @@
+"use strict";
+
+interface Player {
+    x: number;
+    y: number;
+}
+
+interface Ball {
+    x: number;
+    y: number;
+    speedX: number;
+    speedY: number;
+}
+
+interface GameState {
+    players: {
+        player1: Player;
+        player2: Player;
+    };
+    ball: Ball;
+    scores: {
+        player1: number;
+        player2: number;
+    };
+    running: boolean;
+}
+
 class PlayComponent extends HTMLElement {
-    private gameMode: 'local' | 'online' | null = null;
+    private gameMode: 'local' | 'online' | 'ai' | null = null;
+    private lastAIUpdateTime: number = 0;
+    private aiTargetY: number = 250;
+    private aiKeysPressed: Record<string, boolean> = { 'arrowup': false, 'arrowdown': false };
+    private movingToCenter: boolean = false;
 
     constructor() {
         super();
         this.attachShadow({ mode: "open" });
-        this.renderMenu(); // Muestra el menú inicial del juego al cargar el componente
+        this.renderMenu();
     }
 
-    // Renderiza el menú principal con las opciones de juego
     private renderMenu(): void {
         if (!this.shadowRoot) return;
         this.shadowRoot.innerHTML = `
@@ -53,31 +83,37 @@ class PlayComponent extends HTMLElement {
                 <div class="title">🏓 Pong Game</div>
                 <button class="mode-button" id="localBtn">Local 1vs1</button>
                 <button class="mode-button" id="onlineBtn">Online Multiplayer</button>
+				<button class="mode-button" id="aiBtn">Play vs AI</button>
             </div>
         `;
-        this.setupMenuListeners(); // Añade los listeners a los botones
-    }
-
-    // Configura los eventos de los botones del menú
-    private setupMenuListeners(): void {
+        this.setupMenuListeners();
+	}
+	
+    private setupMenuListeners() {
         const localBtn = this.shadowRoot?.getElementById('localBtn');
         const onlineBtn = this.shadowRoot?.getElementById('onlineBtn');
+        const aiBtn = this.shadowRoot?.getElementById('aiBtn');
 
         localBtn?.addEventListener('click', () => {
             this.gameMode = 'local';
             this.renderGame();
-            this.setupLocalGame(); // Inicia el juego local
+            this.setupLocalGame();
         });
 
         onlineBtn?.addEventListener('click', () => {
             this.gameMode = 'online';
             this.renderGame();
-            this.setupOnlineGame(); // Inicia el juego online
+            this.setupOnlineGame();
+        });
+
+        aiBtn?.addEventListener('click', () => {
+            this.gameMode = 'ai';
+            this.renderGame();
+            this.setupAIGame();
         });
     }
 
-    // Renderiza el lienzo del juego
-    private renderGame(): void {
+	private renderGame(): void {
         if (!this.shadowRoot) return;
         this.shadowRoot.innerHTML = `
             <style>
@@ -102,34 +138,29 @@ class PlayComponent extends HTMLElement {
         `;
     }
 
-    // Configura e inicia la lógica del juego local
-    private setupLocalGame(): void {
-        const canvas = this.shadowRoot!.querySelector('canvas')!;
+    private setupLocalGame() {
+        const canvas = this.shadowRoot?.querySelector('canvas') as HTMLCanvasElement;
         const ctx = canvas.getContext('2d')!;
-        const gameState = this.createInitialGameState(); // Estado inicial del juego
-        const keysPressed: { [key: string]: boolean } = {};
+        const gameState = this.createInitialGameState();
+        const keysPressed: Record<string, boolean> = {};
 
-        window.addEventListener('keydown', (e) => keysPressed[e.key.toLowerCase()] = true);
-        window.addEventListener('keyup', (e) => keysPressed[e.key.toLowerCase()] = false);
+        window.addEventListener('keydown', e => keysPressed[e.key.toLowerCase()] = true);
+        window.addEventListener('keyup', e => keysPressed[e.key.toLowerCase()] = false);
 
         const draw = () => {
             if (!gameState.running) return;
-
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             this.handlePlayerMovement(gameState, keysPressed);
             this.updateBallPosition(gameState);
             this.checkPaddleCollisions(gameState);
-            this.checkScore(gameState, this.resetBall.bind(this, gameState));
+            this.checkScore(gameState, () => this.resetBall(gameState));
             this.renderLocalGame(ctx, gameState);
-
-            requestAnimationFrame(draw); // Loop del juego
+            requestAnimationFrame(draw);
         };
-
-        draw(); // Comienza el juego
+        draw();
     }
 
-    // Crea el estado inicial del juego
-    private createInitialGameState() {
+    private createInitialGameState(): GameState {
         return {
             players: {
                 player1: { x: 30, y: 200 },
@@ -141,89 +172,74 @@ class PlayComponent extends HTMLElement {
         };
     }
 
-    // Mueve los jugadores en función de las teclas presionadas
-    private handlePlayerMovement(gameState: any, keys: { [key: string]: boolean }) {
+    private handlePlayerMovement(gameState: GameState, keys: Record<string, boolean>) {
         if (keys['w']) gameState.players.player1.y = Math.max(0, gameState.players.player1.y - 6);
         if (keys['s']) gameState.players.player1.y = Math.min(420, gameState.players.player1.y + 6);
         if (keys['arrowup']) gameState.players.player2.y = Math.max(0, gameState.players.player2.y - 6);
         if (keys['arrowdown']) gameState.players.player2.y = Math.min(420, gameState.players.player2.y + 6);
     }
 
-    // Actualiza la posición de la pelota y su rebote vertical
-    private updateBallPosition(gameState: any) {
-        gameState.ball.x += gameState.ball.speedX;
-        gameState.ball.y += gameState.ball.speedY;
-
-        if (gameState.ball.y <= 0 || gameState.ball.y >= 500) {
-            gameState.ball.speedY *= -1;
+    private updateBallPosition(gameState: GameState) {
+        const ball = gameState.ball;
+        ball.x += ball.speedX;
+        ball.y += ball.speedY;
+        if (ball.y <= 0 || ball.y >= 500) {
+            ball.speedY *= -1;
         }
     }
 
-    // Verifica colisiones entre la pelota y las palas
-    private checkPaddleCollisions(gameState: any) {
-        (Object.keys(gameState.players) as Array<keyof typeof gameState.players>).forEach(playerKey => {
-            const player = gameState.players[playerKey];
-            const isPlayer1 = playerKey === 'player1';
-
+    private checkPaddleCollisions(gameState: GameState) {
+        Object.entries(gameState.players).forEach(([key, player]) => {
+            const isPlayer1 = key === 'player1';
             const collisionX = isPlayer1
                 ? gameState.ball.x <= player.x + 10 && gameState.ball.x >= player.x
                 : gameState.ball.x >= player.x - 10 && gameState.ball.x <= player.x;
-
             if (collisionX && gameState.ball.y >= player.y && gameState.ball.y <= player.y + 80) {
                 gameState.ball.speedX *= -1;
-                const relativeIntersectY = (player.y + 40) - gameState.ball.y;
-                const normalized = relativeIntersectY / 40;
-                gameState.ball.speedY = -normalized * 6;
+                const intersectY = (player.y + 40) - gameState.ball.y;
+                gameState.ball.speedY = -(intersectY / 40) * 6;
             }
         });
     }
 
-    // Comprueba si alguien ha anotado y reinicia la pelota si es así
-    private checkScore(gameState: any, resetFn: () => void) {
+    private checkScore(gameState: GameState, resetFn: () => void) {
         if (gameState.ball.x <= 0) {
-            gameState.scores.player2 += 1;
+            gameState.scores.player2++;
             resetFn();
         } else if (gameState.ball.x >= 800) {
-            gameState.scores.player1 += 1;
+            gameState.scores.player1++;
             resetFn();
         }
     }
 
-    // Reinicia la posición y velocidad de la pelota
-    private resetBall(gameState: any) {
+    private resetBall(gameState: GameState) {
         gameState.ball.x = 400;
         gameState.ball.y = 250;
         gameState.ball.speedX = gameState.ball.speedX > 0 ? -10 : 10;
         gameState.ball.speedY = 0;
     }
 
-    // Dibuja el estado del juego en modo local
-    private renderLocalGame(ctx: CanvasRenderingContext2D, gameState: any) {
-        ctx.fillStyle = '#ffffff';
+    private renderLocalGame(ctx: CanvasRenderingContext2D, gameState: GameState) {
+        ctx.fillStyle = '#fff';
         ctx.fillRect(gameState.players.player1.x, gameState.players.player1.y, 10, 80);
         ctx.fillRect(gameState.players.player2.x, gameState.players.player2.y, 10, 80);
-
         ctx.beginPath();
         ctx.arc(gameState.ball.x, gameState.ball.y, 8, 0, Math.PI * 2);
         ctx.fill();
-
         ctx.font = '24px Arial';
         ctx.fillText(`${gameState.scores.player1}`, 150, 30);
         ctx.fillText(`${gameState.scores.player2}`, 650, 30);
     }
 
-    // Configura el juego en modo online y comunicación con el servidor WebSocket
-    private setupOnlineGame(): void {
-        const canvas = this.shadowRoot!.querySelector('canvas')!;
+    private setupOnlineGame() {
+        const canvas = this.shadowRoot?.querySelector('canvas') as HTMLCanvasElement;
         const ctx = canvas.getContext('2d')!;
         const socket = new WebSocket('ws://localhost:8000/game');
-
         let playerNumber: number | null = null;
-        let gameState: any = null;
+        let gameState: GameState | null = null;
         let playerY = 150;
 
         socket.onopen = () => socket.send(JSON.stringify({ type: 'start', message: 'jugar' }));
-
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (data.type === 'init') {
@@ -238,15 +254,11 @@ class PlayComponent extends HTMLElement {
         };
 
         window.addEventListener('keydown', (e) => {
+            if (!playerNumber) return;
             const key = e.key.toLowerCase();
-            if (playerNumber === 1 && (key === "arrowup" || key === "arrowdown")) {
-                if (key === "arrowup") playerY = Math.max(0, playerY - 20);
-                if (key === "arrowdown") playerY = Math.min(320, playerY + 20);
-                socket.send(JSON.stringify({ type: 'move', y: playerY }));
-            }
-            if (playerNumber === 2 && (key === "w" || key === "s")) {
-                if (key === "w") playerY = Math.max(0, playerY - 20);
-                if (key === "s") playerY = Math.min(320, playerY + 20);
+            if ((playerNumber === 1 && (key === "arrowup" || key === "arrowdown")) ||
+                (playerNumber === 2 && (key === "w" || key === "s"))) {
+                playerY = Math.max(0, Math.min(320, playerY + (key === "arrowup" || key === "w" ? -20 : 20)));
                 socket.send(JSON.stringify({ type: 'move', y: playerY }));
             }
         });
@@ -254,24 +266,108 @@ class PlayComponent extends HTMLElement {
         const draw = () => {
             if (!gameState) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
             ctx.fillStyle = '#ffffff';
-            Object.values(gameState.players).forEach((p: any) =>
-                ctx.fillRect(p.x, p.y, 10, 80)
-            );
-
+            Object.values(gameState.players).forEach(p => ctx.fillRect(p.x, p.y, 10, 80));
             const ball = gameState.ball;
             ctx.beginPath();
             ctx.arc(ball.x, ball.y, 8, 0, Math.PI * 2);
-            ctx.fillStyle = '#ffffff';
             ctx.fill();
-
             ctx.font = '24px Arial';
             ctx.fillText(`${gameState.scores.player1}`, 150, 30);
             ctx.fillText(`${gameState.scores.player2}`, 450, 30);
-
-            requestAnimationFrame(draw); // Sigue dibujando mientras el juego esté en marcha
+            requestAnimationFrame(draw);
         };
+    }
+
+    private setupAIGame() {
+        const canvas = this.shadowRoot?.querySelector('canvas') as HTMLCanvasElement;
+        const ctx = canvas.getContext('2d')!;
+        const gameState = this.createInitialGameState();
+        const keysPressed: Record<string, boolean> = {};
+
+        window.addEventListener('keydown', (e) => keysPressed[e.key.toLowerCase()] = true);
+        window.addEventListener('keyup', (e) => keysPressed[e.key.toLowerCase()] = false);
+
+        const draw = () => {
+            if (!gameState.running) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (keysPressed['w']) gameState.players.player1.y = Math.max(0, gameState.players.player1.y - 6);
+            if (keysPressed['s']) gameState.players.player1.y = Math.min(420, gameState.players.player1.y + 6);
+
+            this.updateAI(gameState, 0.7);
+            this.updateBallPosition(gameState);
+            this.checkPaddleCollisions(gameState);
+            this.checkScore(gameState, () => this.resetBall(gameState));
+            this.renderLocalGame(ctx, gameState);
+
+            requestAnimationFrame(draw);
+        };
+
+        draw();
+    }
+
+    private predictBallPosition(gameState: GameState): number {
+        const { ball, players } = gameState;
+        if (ball.speedX <= 0) return 250;
+
+        let x = ball.x;
+        let y = ball.y;
+        let dx = ball.speedX;
+        let dy = ball.speedY;
+        const targetX = players.player2.x - 10;
+
+        while (x < targetX) {
+            if ((y <= 0 && dy < 0) || (y >= 500 && dy > 0)) dy = -dy;
+
+            if (x <= players.player1.x + 10 && dx < 0 &&
+                y >= players.player1.y && y <= players.player1.y + 80) {
+                dx = -dx;
+                const relativeIntersect = (players.player1.y + 40) - y;
+                dy = -(relativeIntersect / 40) * 6;
+            }
+
+            x += dx;
+            y += dy;
+        }
+
+        return y;
+    }
+
+    private updateAI(gameState: GameState, difficulty: number) {
+        const now = Date.now();
+        const ball = gameState.ball;
+
+        if (now - this.lastAIUpdateTime > 1000) {
+            this.lastAIUpdateTime = now;
+
+            if (ball.speedX > 0) {
+                const perfectY = this.predictBallPosition(gameState);
+                const error = (1 - difficulty) * 80;
+                this.aiTargetY = perfectY + ((Math.random() * 2 - 1) * error);
+                this.movingToCenter = false;
+            } else {
+                this.aiTargetY = ball.y * (difficulty * 0.8) + 250 * (1 - difficulty * 0.8);
+                this.movingToCenter = true;
+            }
+        }
+
+        const paddle = gameState.players.player2;
+        const centerY = paddle.y + 40;
+        const diff = this.aiTargetY - centerY;
+        const deadZone = 15;
+
+        this.aiKeysPressed = {
+            'arrowup': diff < -deadZone,
+            'arrowdown': diff > deadZone
+        };
+
+        const baseSpeed = 4 + difficulty * 3;
+        const speed = this.movingToCenter ? baseSpeed * 0.6 : baseSpeed;
+
+        if (this.aiKeysPressed['arrowup']) paddle.y = Math.max(0, paddle.y - speed);
+        if (this.aiKeysPressed['arrowdown']) paddle.y = Math.min(420, paddle.y + speed);
     }
 }
 
