@@ -18,6 +18,7 @@ class LoginComponent extends HTMLElement {
         this.inputData = null;
         this.errorMsg = null;
         this.response = null;
+        this.googleButton = null;
         this.attachShadow({ mode: "open" });
         this.render();
     }
@@ -52,7 +53,7 @@ class LoginComponent extends HTMLElement {
     <hr class="border-gray-600 my-5" />
 
     <div class="flex justify-center items-center">
-        <button class="mb-5 flex flex-row items-center justify-center py-2 px-4 bg-white hover:bg-gray-200 focus:ring-blue-500 focus:ring-offset-blue-200 text-gray-700 w-full transition ease-in duration-200 text-center text-sm font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg space-x-3">
+        <button id="google-login" class="mb-5 flex flex-row items-center justify-center py-2 px-4 bg-white hover:bg-gray-200 focus:ring-blue-500 focus:ring-offset-blue-200 text-gray-700 w-full transition ease-in duration-200 text-center text-sm font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg space-x-3">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon" class="w-5 h-5" />
             <span>Sign in with Google</span>
         </button>
@@ -72,6 +73,7 @@ class LoginComponent extends HTMLElement {
         this.inputData = this.shadowRoot.querySelector("#inputData");
         this.registerButton = this.shadowRoot.querySelector("#register");
         this.errorMsg = this.shadowRoot.querySelector("#error");
+        this.googleButton = this.shadowRoot.querySelector("#google-login");
         this.addEventListeners();
     }
     addEventListeners() {
@@ -93,6 +95,16 @@ class LoginComponent extends HTMLElement {
             console.log("he pulsado sign in");
             window.location.hash = "#register";
         });
+        if (this.googleButton) {
+            console.log("Google button found"); // Vérifiez si ce log s'affiche
+            this.googleButton.addEventListener("click", () => {
+                console.log("Google button clicked");
+                window.location.href = "http://localhost:8000/login/google";
+            });
+        }
+        else {
+            console.error("Google button not found");
+        }
     }
     postData(email, password) {
         return __awaiter(this, void 0, void 0, function* () {

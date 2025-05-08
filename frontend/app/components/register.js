@@ -253,7 +253,7 @@ class RegisterComponent extends HTMLElement {
     }
     postData(email, user, password) {
         return __awaiter(this, void 0, void 0, function* () {
-            const data = { username: user, email: email, password: password };
+            const data = { "username": user, "email": email, "password": password };
             try {
                 const response = yield fetch("http://localhost:8000/register", {
                     method: "POST",
