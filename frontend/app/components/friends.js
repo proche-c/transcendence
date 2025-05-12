@@ -98,11 +98,11 @@ class FriendsComponent extends HTMLElement {
                 const avatar = user.avatar;
                 const avatarUrl = `http://localhost:8000/static/${avatar}`;
                 return `
-					<div class="flex m-1">
-						<div class="w-8 h-8 rounded-full overflow-hidden border-4 border-black flex items-center justify-center bg-emerald-200">
+					<div class="flex m-1 ml-3">
+						<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-black flex items-center justify-center bg-emerald-200">
 							<img src="${avatarUrl}" class="w-full h-full object-cover" />
 						</div>
-						<button class="ml-1">${user.username}</button>
+						<button class="user-boton ml-1" data-username="${user.username}">${user.username}</button>
 					</div>
 					`;
             }
@@ -124,13 +124,13 @@ class FriendsComponent extends HTMLElement {
 						</div>
 					</div>
 					<div class="flex grow ml-6 gap-4">
-						<div class=" bg-neutral-50 m-4 rounded-2xl flex flex-col flex-1 max-w-sm">
+						<div class=" bg-neutral-50 m-4 rounded-2xl flex flex-col flex-1 max-w-sm border-2 border-violet-600">
 							<h2 class="text-center border-b-1 border-violet-600 m-2 p-3">Friends</h2>
 							<div class="flex bg-neutral-50 flex-col flex-grow rounded-b-2xl">
 							${friendsButtons}
 							</div>
 						</div>
-						<div class=" bg-neutral-50 m-4 rounded-2xl flex flex-col flex-1 max-w-sm">
+						<div class=" bg-neutral-50 m-4 rounded-2xl flex flex-col flex-1 max-w-sm border-2 border-violet-600">
 							<h2 class="text-center border-b-1 border-violet-600 m-2 p-3">Users</h2>
 							<div class="flex bg-neutral-50 flex-col flex-grow rounded-b-2xl">
 							${usersButtons}
