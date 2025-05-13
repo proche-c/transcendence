@@ -31,4 +31,23 @@ I'll send 1 parameter: username
     - if user doesn't exist -> send front an error
     - if user exist -> send public profile to front
 
+// CHATS //
+
+"http://localhost:8000/chats"
+
+GET-> send all the chat for the user
+
+"http://localhost:8000/chats/user"
+
+GET -> I'll send a username as parameter
+    - if user doesn't exist -> send front an error
+    - if user exist -> send all messages between user(parameter) and user(token)
+
+// CHATROOMS //
+
+"http://localhost:8000/chatrooms"
+
+GET-> send all the chatrooms for the user
+
+
 
