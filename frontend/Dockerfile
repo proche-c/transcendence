@@ -13,5 +13,3 @@ COPY tailwind.config.js ./
 COPY . .
 
 RUN npm install tailwindcss @tailwindcss/cli
-
-CMD ["npm", "run", "dev"]
