@@ -7,10 +7,15 @@
       "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
       "Courier New", monospace;
+    --color-red-500: oklch(63.7% 0.237 25.331);
     --color-red-600: oklch(57.7% 0.245 27.325);
     --color-amber-50: oklch(98.7% 0.022 95.277);
+
+    --color-green-200: oklch(92.5% 0.084 155.995);
+    --color-green-500: oklch(72.3% 0.219 149.579);
+    --color-green-600: oklch(62.7% 0.194 149.214);
     --color-green-700: oklch(52.7% 0.154 150.069);
-    --color-emerald-200: oklch(90.5% 0.093 164.15);
+
     --color-blue-50: oklch(97% 0.014 254.604);
     --color-blue-200: oklch(88.2% 0.059 254.128);
     --color-blue-500: oklch(62.3% 0.214 259.815);
@@ -64,7 +69,10 @@
     --radius-sm: 0.25rem;
     --radius-lg: 0.5rem;
     --radius-2xl: 1rem;
+
     --radius-3xl: 1.5rem;
+
+
     --radius-4xl: 2rem;
     --ease-in: cubic-bezier(0.4, 0, 1, 1);
     --blur-sm: 8px;
@@ -331,6 +339,12 @@
   .mt-8 {
     margin-top: calc(var(--spacing) * 8);
   }
+  .mb-1 {
+    margin-bottom: calc(var(--spacing) * 1);
+  }
+  .mb-2 {
+    margin-bottom: calc(var(--spacing) * 2);
+  }
   .mb-4 {
     margin-bottom: calc(var(--spacing) * 4);
   }
@@ -396,6 +410,9 @@
     width: calc(var(--spacing) * 16);
     height: calc(var(--spacing) * 16);
   }
+  .h-5 {
+    height: calc(var(--spacing) * 5);
+  }
   .h-7\/8 {
     height: calc(7/8 * 100%);
   }
@@ -429,11 +446,11 @@
   .w-1\/4 {
     width: calc(1/4 * 100%);
   }
-  .w-1\/5 {
-    width: calc(1/5 * 100%);
-  }
   .w-3\/4 {
     width: calc(3/4 * 100%);
+  }
+  .w-5 {
+    width: calc(var(--spacing) * 5);
   }
   .w-7\/12 {
     width: calc(7/12 * 100%);
@@ -494,6 +511,9 @@
   .flex-col {
     flex-direction: column;
   }
+  .flex-row {
+    flex-direction: row;
+  }
   .flex-wrap {
     flex-wrap: wrap;
   }
@@ -533,6 +553,13 @@
       --tw-space-x-reverse: 0;
       margin-inline-start: calc(calc(var(--spacing) * 1) * var(--tw-space-x-reverse));
       margin-inline-end: calc(calc(var(--spacing) * 1) * calc(1 - var(--tw-space-x-reverse)));
+
+  .space-x-3 {
+    :where(& > :not(:last-child)) {
+      --tw-space-x-reverse: 0;
+      margin-inline-start: calc(calc(var(--spacing) * 3) * var(--tw-space-x-reverse));
+      margin-inline-end: calc(calc(var(--spacing) * 3) * calc(1 - var(--tw-space-x-reverse)));
+
     }
   }
   .place-self-start {
@@ -549,6 +576,7 @@
   }
   .rounded-3xl {
     border-radius: var(--radius-3xl);
+
   }
   .rounded-4xl {
     border-radius: var(--radius-4xl);
@@ -611,6 +639,9 @@
   .border-gray-300 {
     border-color: var(--color-gray-300);
   }
+  .border-gray-600 {
+    border-color: var(--color-gray-600);
+  }
   .border-purple-900 {
     border-color: var(--color-purple-900);
   }
@@ -656,8 +687,13 @@
   .bg-gray-950 {
     background-color: var(--color-gray-950);
   }
+
   .bg-neutral-50 {
     background-color: var(--color-neutral-50);
+
+  .bg-green-600 {
+    background-color: var(--color-green-600);
+
   }
   .bg-purple-300 {
     background-color: var(--color-purple-300);
@@ -692,6 +728,9 @@
   .p-4 {
     padding: calc(var(--spacing) * 4);
   }
+  .p-8 {
+    padding: calc(var(--spacing) * 8);
+  }
   .px-2 {
     padding-inline: calc(var(--spacing) * 2);
   }
@@ -725,17 +764,20 @@
   .py-4 {
     padding-block: calc(var(--spacing) * 4);
   }
-  .py-10 {
-    padding-block: calc(var(--spacing) * 10);
-  }
   .py-24 {
     padding-block: calc(var(--spacing) * 24);
   }
   .pt-4 {
     padding-top: calc(var(--spacing) * 4);
   }
+  .pt-5 {
+    padding-top: calc(var(--spacing) * 5);
+  }
   .pb-1 {
     padding-bottom: calc(var(--spacing) * 1);
+  }
+  .pb-5 {
+    padding-bottom: calc(var(--spacing) * 5);
   }
   .text-center {
     text-align: center;
@@ -812,6 +854,9 @@
   .text-purple-900 {
     color: var(--color-purple-900);
   }
+  .text-red-500 {
+    color: var(--color-red-500);
+  }
   .text-red-600 {
     color: var(--color-red-600);
   }
@@ -821,12 +866,14 @@
   .text-white {
     color: var(--color-white);
   }
+
   .uppercase {
     text-transform: uppercase;
   }
   .italic {
     font-style: italic;
   }
+
   .opacity-0 {
     opacity: 0%;
   }
@@ -931,6 +978,13 @@
       }
     }
   }
+  .hover\:bg-green-700 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: var(--color-green-700);
+      }
+    }
+  }
   .hover\:bg-white\/80 {
     &:hover {
       @media (hover: hover) {
@@ -952,13 +1006,6 @@
     &:hover {
       @media (hover: hover) {
         color: var(--color-purple-900);
-      }
-    }
-  }
-  .hover\:underline {
-    &:hover {
-      @media (hover: hover) {
-        text-decoration-line: underline;
       }
     }
   }
@@ -989,9 +1036,15 @@
       --tw-ring-color: var(--color-blue-500);
     }
   }
+
   .focus\:ring-violet-900 {
     &:focus {
       --tw-ring-color: var(--color-violet-900);
+
+  .focus\:ring-green-500 {
+    &:focus {
+      --tw-ring-color: var(--color-green-500);
+
     }
   }
   .focus\:ring-offset-2 {
@@ -1003,6 +1056,11 @@
   .focus\:ring-offset-blue-200 {
     &:focus {
       --tw-ring-offset-color: var(--color-blue-200);
+    }
+  }
+  .focus\:ring-offset-green-200 {
+    &:focus {
+      --tw-ring-offset-color: var(--color-green-200);
     }
   }
   .focus\:outline-none {
@@ -1026,9 +1084,9 @@
       padding: calc(var(--spacing) * 6);
     }
   }
-  .sm\:p-10 {
+  .sm\:px-8 {
     @media (width >= 40rem) {
-      padding: calc(var(--spacing) * 10);
+      padding-inline: calc(var(--spacing) * 8);
     }
   }
   .md\:mx-0 {
@@ -1045,11 +1103,6 @@
     @media (width >= 48rem) {
       width: calc(var(--spacing) * 16);
       height: calc(var(--spacing) * 16);
-    }
-  }
-  .md\:w-1\/4 {
-    @media (width >= 48rem) {
-      width: calc(1/4 * 100%);
     }
   }
   .md\:w-8\/12 {
@@ -1107,16 +1160,6 @@
     @media (width >= 64rem) {
       font-size: var(--text-base);
       line-height: var(--tw-leading, var(--text-base--line-height));
-    }
-  }
-  .dark\:border-gray-600 {
-    @media (prefers-color-scheme: dark) {
-      border-color: var(--color-gray-600);
-    }
-  }
-  .dark\:text-gray-400 {
-    @media (prefers-color-scheme: dark) {
-      color: var(--color-gray-400);
     }
   }
 }

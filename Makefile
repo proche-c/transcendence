@@ -23,11 +23,19 @@ clean:
 fclean: clean
 	@docker system prune -af
 
+sleep:
+	sleep 3
+
+re: fclean sleep start
+
 help:
 	@echo "Available commands:"
-	@echo "  make start → Levanta los contenedores"
-	@echo "  make stop  → Detiene los contenedores"
-	@echo "  make clean → Elimina los contenedores"
-	@echo "  make help  → Muestra este mensaje"
+	@echo "  make start → Mount the containers"
+	@echo "  make stop  → Stop the containers"
+	@echo "  make clean → Delete the containers and images"
+	@echo "  make help  → Show this help message"
+	@echo "  make fclean → Delete the containers and images, and remove volumes"
+	@echo "  make re    → Delete the containers and images, and remove volumes, then mount the containers"
+	@echo "  make down  → Stop and remove the containers"
 
-.PHONY: start stop clean help
+.PHONY: start stop clean help re fclean down
