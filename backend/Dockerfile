@@ -19,7 +19,7 @@ RUN npm install
 
 RUN npm list @fastify/jwt || npm install @fastify/jwt
 RUN npm list bcrypt || npm install bcrypt
-RUN npm install fastify-passport @fastify/oauth2 fastify-secure-session 
+# RUN npm install fastify-passport @fastify/oauth2 fastify-secure-session 
 RUN npm install dotenv
 RUN npm install @fastify/static
 RUN npm install speakeasy qrcode
@@ -36,7 +36,10 @@ RUN chmod +x /home/node/app/entrypoint.sh
 
 # Permisos para SQLite
 RUN mkdir -p /home/node/app/sqlite_data && \
-    chown -R node:node /home/node/app/sqlite_data
+    chown -R node:node /home/node/app/sqlite_data \
+    && touch /home/node/app/sqlite_data/database.sqlite \
+    && chown node:node /home/node/app/sqlite_data/database.sqlite \
+    && chmod 664 /home/node/app/sqlite_data/database.sqlite
 
 USER node
 
