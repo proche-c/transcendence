@@ -61,7 +61,7 @@ flowchart LR
    ```sh
    docker compose up --build
    ```
-3. The application will be available at `https://localhost:443/`
+3. The application will be available at `https://localhost:8443/`
 
 ---
 
