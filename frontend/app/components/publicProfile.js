@@ -8,30 +8,35 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-class EditProfileComponent extends HTMLElement {
+class PublicProfileComponent extends HTMLElement {
     constructor() {
         super();
+        this.username = null;
         this.response = null;
         this.attachShadow({ mode: "open" });
+    }
+    connectedCallback() {
+        this.username = this.getAttribute("username");
         this.load();
     }
     load() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("Cargando edit profile");
-            yield this.getEditProfile();
+            console.log("Cargando public profile");
+            yield this.getPublicProfile();
             this.render();
         });
     }
-    getEditProfile() {
+    getPublicProfile() {
         return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            console.log(`Username: ${this.username}`);
             try {
-                const response = yield fetch("http://localhost:8000/profile", {
+                const response = yield fetch(`http://localhost:8000/public-profile?username=${encodeURIComponent((_a = this.username) !== null && _a !== void 0 ? _a : "")}`, {
                     method: "GET",
-                    headers: { "Content-Type": "application/json" },
                     credentials: "include",
                 });
                 const data = yield response.json();
-                this.response = data.user;
+                this.response = data.profile;
                 // console.log(data.user);
             }
             catch (error) {
@@ -77,68 +82,6 @@ class EditProfileComponent extends HTMLElement {
         this.addEventListeners();
     }
     addEventListeners() {
-        var _a, _b, _c, _d, _e, _f;
-        const uploadImg = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelector("#uploadImg");
-        const fileInput = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.querySelector("#fileInput");
-        const avatarImg = (_c = this.shadowRoot) === null || _c === void 0 ? void 0 : _c.querySelector("#avatar");
-        const exitButton = (_d = this.shadowRoot) === null || _d === void 0 ? void 0 : _d.querySelector("#exit");
-        const saveButton = (_e = this.shadowRoot) === null || _e === void 0 ? void 0 : _e.querySelector("#save");
-        const usernameInput = (_f = this.shadowRoot) === null || _f === void 0 ? void 0 : _f.querySelector("#username");
-        if (exitButton) {
-            exitButton.addEventListener("click", () => {
-                this.remove(); // Elimina el componente del DOM
-            });
-        }
-        if (uploadImg && fileInput && avatarImg) {
-            uploadImg.addEventListener("click", () => {
-                fileInput.click();
-            });
-            fileInput.addEventListener("change", (e) => __awaiter(this, void 0, void 0, function* () {
-                var _a;
-                const file = (_a = e.target.files) === null || _a === void 0 ? void 0 : _a[0];
-                if (!file)
-                    return;
-                const validTypes = ["image/jepg", "image/jpg", "image/png"];
-                if (!validTypes.includes(file.type)) {
-                    alert("Only JPG or PNG.");
-                    return;
-                }
-                const tempUrl = URL.createObjectURL(file);
-                avatarImg.src = tempUrl;
-            }));
-        }
-        if (saveButton && fileInput && usernameInput) {
-            saveButton.addEventListener("click", () => __awaiter(this, void 0, void 0, function* () {
-                var _a;
-                let username = usernameInput.value.trim();
-                if (username === this.response.username)
-                    username = "";
-                const file = (_a = fileInput.files) === null || _a === void 0 ? void 0 : _a[0];
-                const formData = new FormData();
-                formData.append("username", username);
-                if (file)
-                    formData.append("avatar", file);
-                try {
-                    const response = yield fetch("http://localhost:8000/edit-profile", {
-                        method: "POST",
-                        body: formData,
-                        credentials: "include",
-                    });
-                    if (response.ok) {
-                        console.log("Avatar uploaded successfully");
-                        this.dispatchEvent(new CustomEvent("profile-updated", { bubbles: true }));
-                        this.remove(); // Elimina el componente edit-profile del DOM
-                    }
-                    else {
-                        const errorData = yield response.json();
-                        console.error(errorData.message || "Error saving changes");
-                    }
-                }
-                catch (error) {
-                    console.error("Error uploading profile", error);
-                }
-            }));
-        }
     }
 }
-customElements.define("pong-edit-profile", EditProfileComponent);
+customElements.define("pong-public-profile", PublicProfileComponent);

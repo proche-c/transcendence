@@ -1,27 +1,32 @@
-class EditProfileComponent extends HTMLElement {
+class PublicProfileComponent extends HTMLElement {
+    private username: string | null = null;
 	private response: any | null = null;
 	constructor() {
 		super();
 		this.attachShadow({mode: "open"});
+	}
+
+	connectedCallback() {
+		this.username = this.getAttribute("username");
 		this.load();
 	}
 
 	private async load() {
-		console.log("Cargando edit profile");
-		await this.getEditProfile();
+		console.log("Cargando public profile");
+		await this.getPublicProfile();
 		this.render();
 	}
 
-	private async getEditProfile() {
+	private async getPublicProfile() {
+        console.log(`Username: ${this.username}`);
 		try {
-            const response = await fetch("http://localhost:8000/profile", {
+            const response = await fetch(`http://localhost:8000/public-profile?username=${encodeURIComponent(this.username ?? "")}`, {
                 method: "GET",
-                headers: { "Content-Type": "application/json" },
                 credentials: "include",
             });
 
 			const data = await response.json();
-			this.response = data.user;
+			this.response = data.profile;
 			// console.log(data.user);
 
 
@@ -72,68 +77,7 @@ class EditProfileComponent extends HTMLElement {
 	}
 
 	private addEventListeners(): void {
-		const uploadImg = this.shadowRoot?.querySelector("#uploadImg") as HTMLButtonElement;
-		const fileInput = this.shadowRoot?.querySelector("#fileInput") as HTMLInputElement;
-		const avatarImg = this.shadowRoot?.querySelector("#avatar") as HTMLImageElement;
-		const exitButton = this.shadowRoot?.querySelector("#exit") as HTMLButtonElement;
-		const saveButton = this.shadowRoot?.querySelector("#save") as HTMLButtonElement;
-		const usernameInput = this.shadowRoot?.querySelector("#username") as HTMLInputElement;
-
-		if (exitButton) {
-			exitButton.addEventListener("click", () => {
-				this.remove(); // Elimina el componente del DOM
-			});
-		}
-
-		if (uploadImg && fileInput && avatarImg) {
-			uploadImg.addEventListener("click", () => {
-				fileInput.click();
-			});
-			fileInput.addEventListener("change", async (e: Event) => {
-				const file = (e.target as HTMLInputElement).files?.[0];
-				if (!file)
-					return ;
-				const validTypes = ["image/jepg", "image/jpg", "image/png"];
-				if (!validTypes.includes(file.type)) {
-					alert("Only JPG or PNG.");
-					return;
-				}
-				const tempUrl = URL.createObjectURL(file);
-				avatarImg.src = tempUrl;
-			});
-		}
-
-		if (saveButton && fileInput && usernameInput) {
-			saveButton.addEventListener("click", async () => {
-				let username = usernameInput.value.trim();
-				if (username === this.response.username)
-					username = "";
-				const file = fileInput.files?.[0];
-
-				const formData = new FormData();
-				formData.append("username", username);
-				if (file)
-					formData.append("avatar", file);
-				try {
-					const response = await fetch("http://localhost:8000/edit-profile", {
-						method: "POST",
-						body: formData,
-						credentials: "include",
-					});
-					if (response.ok) {
-						console.log("Avatar uploaded successfully");
-						this.dispatchEvent(new CustomEvent("profile-updated", { bubbles: true }));
-						this.remove(); // Elimina el componente edit-profile del DOM
-					} else {
-						const errorData = await response.json();
-						console.error(errorData.message || "Error saving changes");
-					}
-				} catch (error) {
-					console.error("Error uploading profile", error);
-				}
-			});
-		}
-	}
+    }
 }
 
-customElements.define("pong-edit-profile", EditProfileComponent);
+customElements.define("pong-public-profile", PublicProfileComponent);

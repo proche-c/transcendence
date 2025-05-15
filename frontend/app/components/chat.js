@@ -11,7 +11,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 class ChatComponent extends HTMLElement {
     constructor() {
         super();
-        this.response = null;
         this.messages = [];
         this.chats = [];
         this.globalChat = [];
@@ -59,7 +58,6 @@ class ChatComponent extends HTMLElement {
         style.rel = "stylesheet";
         style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
         this.shadowRoot.innerHTML = `
-            <pong-header></pong-header>
             <pong-menu></pong-menu>
 			<div id="content" class="bg-purple-300 m-4 p-4 border border-violet-500 rounded-lg flex flex-col h-120 justify-between">
 				<div id="chat" class="grow bg-amber-50 overflow-auto flex">
@@ -82,36 +80,13 @@ class ChatComponent extends HTMLElement {
         this.getUsers();
         this.addEventListeners();
     }
-    getUsers() {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const response = yield fetch("http://localhost:8000/users", {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" },
-                    credentials: "include",
-                });
-                const data = yield response.json();
-                this.response = data.user;
-                console.log(data.user);
-            }
-            catch (error) {
-                console.log("Error en la peticion");
-            }
-        });
-    }
     addEventListeners() {
         var _a;
         (_a = this.sendButton) === null || _a === void 0 ? void 0 : _a.addEventListener("click", () => {
             var _a, _b;
             const messageToSend = ((_a = this.messageInput) === null || _a === void 0 ? void 0 : _a.value) || "";
             if (messageToSend) {
-                const msg = {
-                    user: "paula",
-                    type: 0,
-                    destinatary: "",
-                    message: messageToSend,
-                    chatId: -1,
-                };
+                const msg = { user: "paula", type: 0, destinatary: "", message: messageToSend, chatId: -1 };
                 (_b = this.socket) === null || _b === void 0 ? void 0 : _b.send(JSON.stringify(msg));
                 if (this.messageInput)
                     this.messageInput.value = "";
@@ -122,13 +97,7 @@ class ChatComponent extends HTMLElement {
         const datas = data.split(":");
         const user = datas[0];
         const messageToPrint = datas[1];
-        const message = {
-            user: user,
-            type: 0,
-            destinatary: "",
-            message: messageToPrint,
-            chatId: -1,
-        };
+        const message = { user: user, type: 0, destinatary: "", message: messageToPrint, chatId: -1 };
         if (message.type === 0)
             this.globalChat.push(message);
         else {

@@ -46,7 +46,7 @@ class ProfileComponent extends HTMLElement {
         const style = document.createElement("link");
         style.rel = "stylesheet";
         style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
-        const avatar = this.response.avatar || "avatars/default.jpg";
+        const avatar = this.response.avatar;
         const avatarUrl = `http://localhost:8000/static/${avatar}`;
         this.shadowRoot.innerHTML = `
 			<div class="flex h-screen justify-between">
@@ -145,6 +145,10 @@ class ProfileComponent extends HTMLElement {
                 if (editCard) {
                     editCard.innerHTML = "";
                     const editProfile = document.createElement("pong-edit-profile");
+                    editProfile.addEventListener("profile-updated", () => __awaiter(this, void 0, void 0, function* () {
+                        yield this.getProfile();
+                        this.updateData();
+                    }));
                     editCard.appendChild(editProfile);
                 }
             });
