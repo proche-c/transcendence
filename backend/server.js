@@ -1,23 +1,68 @@
-const fastify = require("fastify")({ logger: true }); // Loading Fastify framework with logging enabled
-const sqlite3 = require("sqlite3").verbose(); // SQLite3 library
-const fs = require("fs"); // File system library
-const path = require("path"); // Path library
-const bcrypt = require("bcrypt"); // Bcrypt for password hashing
-const jwt = require("@fastify/jwt"); // JWT for authentication
+// Fastify server using Node.js that manages an API listening on port 8000
+const dotenv = require('dotenv').config(); // Load environment variables from a .env file into process.env
+const fastify = require('fastify')({ logger: true }); // Loading Fastify framework with logging enabled
+const sqlite3 = require('sqlite3').verbose(); // SQLite3 library
+const fs = require('fs'); // File system library
+const path = require('path'); // Path library
+//const bcrypt = require('bcrypt'); // Bcrypt for password hashing
+const jwt = require('@fastify/jwt'); // JWT for authentication
+//const oauthPlugin = require('@fastify/oauth2'); // OAuth2 for authentication
+const cors = require('@fastify/cors'); // CORS plugin
+const speakeasy = require('speakeasy'); // Two-factor authentication library
+const qrcode = require('qrcode'); // QR code generation library
+//const { z } = require('zod'); // Zod for schema validation
 const fastifyWebsocket = require("@fastify/websocket");
-const fastifyCookie = require("@fastify/cookie");
-const fastifyStatic = require("@fastify/static");
-const dbPath = "/home/node/app/sqlite_data/database.sqlite"; //!!!IMPORTANT (THIS IS THE ONE IN COMPOSE FILE)
-
-fastify.register(fastifyCookie);
 fastify.register(fastifyWebsocket);
-fastify.register(jwt, { secret: "supersecretkey" });
+const fastifyCookie = require("@fastify/cookie");
+fastify.register(fastifyCookie);
 
+//********************TO SERVE STATIC FILES(AVATAR IMGS)******************** */
+
+const fastifyStatic = require('@fastify/static');
+
+const uploadssPath = path.join(__dirname, 'uploads');
+console.log("Serving statics from: ", uploadssPath);
+
+fastify.register(fastifyStatic, {
+    root: uploadssPath,
+    prefix: '/static/',
+});
+
+// Register CORS middleware
+fastify.register(cors, {
+  origin: [
+    "https://127.0.0.1:8443",
+    "https://localhost:8443",
+    "http://localhost:5500/frontend/",
+  ], // Especifica el origen permitido
+  credentials: true, // Permite el envío de cookies y cabeceras de autenticación
+});
+
+// Register JWT with a secret key
+fastify.register(jwt, { secret: 'supersecretkey' });
+
+// Decorate Fastify with an authentication middleware
+fastify.decorate("authenticate", async (request, reply) => {
+    try {
+        await request.jwtVerify();
+    } catch (err) {
+        return reply.status(401).send({ message: 'Unauthorized' });
+    }
+});
+
+// Define a simple route
+fastify.get('/', async (request, reply) => {
+    return { message: 'Pong!' };
+});
+
+// Route to the SQLite database
+const dbPath = "/home/node/app/sqlite_data/database.sqlite"; //!!!IMPORTANT (THIS IS THE ONE IN COMPOSE FILE)
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error("Database opening failed:", err.message);
   } else {
     console.log("Connected to database");
+
     // Initialize database
     try {
       const initSQL = fs.readFileSync(path.join(__dirname, "init.sql"), "utf8");
@@ -65,34 +110,6 @@ const dbRunAsync = (query, params) => {
 
 const authMiddleware = require('./authMiddleware')(dbGetAsync);
 
-const oauthPlugin = require("@fastify/oauth2"); // OAuth2 for authentication
-fastify.register(oauthPlugin, {
-  name: "googleOAuth2",
-  scope: ["profile", "email"],
-  credentials: {
-    client: {
-      id: process.env.GOOGLE_CLIENT_ID,
-      secret: process.env.GOOGLE_CLIENT_SECRET,
-    },
-    auth: oauthPlugin.GOOGLE_CONFIGURATION,
-  },
-  startRedirectPath: "/login/google",
-  callbackUri: "http://localhost:8000/auth/google/callback",
-});
-
-const uploadssPath = path.join(__dirname, "uploads");
-console.log("Serving statics from: ", uploadssPath);
-fastify.register(fastifyStatic, {
-  root: uploadssPath,
-  prefix: "/static/",
-});
-
-const cors = require("@fastify/cors"); // CORS plugin
-fastify.register(cors, { 
-    origin: ["https://localhost:8443", "http://localhost:5500/frontend/"], // Especifica el origen permitido
-    credentials: true // Permite el envío de cookies y cabeceras de autenticación
-});
-
 const userRoutes = require("./users");
 fastify.register(userRoutes, {
   prefix: "/users",
@@ -118,98 +135,9 @@ fastify.register(profileRoutes, {
   authMiddleware,
 });
 
-// Decorate Fastify with an authentication middleware
-fastify.decorate("authenticate", async (request, reply) => {
-  try {
-    await request.jwtVerify();
-  } catch (err) {
-    return reply.status(401).send({ message: "Unauthorized" });
-  }
-});
-
-// Define a simple route
-fastify.get("/", async (request, reply) => {
-  return { message: "Pong!" };
-});
-
-// User registration route
-fastify.post("/register", async (request, reply) => {
-  const { username, email, password } = request.body;
-  if (!username || !email || !password) {
-    return reply.status(400).send({ message: "All fields are required" });
-  }
-
-  try {
-    const row = await dbGetAsync(
-      "SELECT * FROM users WHERE email = ? OR username = ?",
-      [email, username],
-    );
-    if (row) {
-      return reply
-        .status(400)
-        .send({ message: "Username or email already exists" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const result = await dbRunAsync(
-      "INSERT INTO users (username, email, password_hash, avatar) VALUES (?, ?, ?, ?)",
-      [username, email, hashedPassword, "avatars/default.jpg"],
-    );
-
-    return reply
-      .status(201)
-      .send({ message: "User created", userId: result.lastID });
-  } catch (err) {
-    return reply
-      .status(500)
-      .send({ message: "Error processing request", error: err.message });
-  }
-});
-
-// User login with JWT
-fastify.post("/login", async (request, reply) => {
-  const { email, password } = request.body;
-  if (!email || !password) {
-    return reply.status(400).send({ message: "All fields are required" });
-  }
-
-  try {
-    const user = await dbGetAsync("SELECT * FROM users WHERE email = ?", [
-      email,
-    ]);
-    if (!user) {
-      return reply.status(404).send({ message: "User not found" });
-    }
-
-    const match = await bcrypt.compare(password, user.password_hash);
-    if (!match) {
-      return reply.status(401).send({ message: "Incorrect password" });
-    }
-
-    const token = fastify.jwt.sign(
-      { userId: user.id, username: user.username },
-      { expiresIn: "1h" },
-    );
-
-    // Added by paula to save token in cookies, saver way
-    reply
-      .setCookie("token", token, {
-        httpOnly: false,
-        secure: true, // true si usas HTTPSmake sta
-        sameSite: "none",
-        domain: "localhost",
-        path: "/",
-        expires: new Date(Date.now() + 60 * 70 * 1000), // Expira en 1 hora
-        // O usa Max-Age en segundos:
-        maxAge: 60 * 70, // 1 hora
-      })
-      .send({ message: "Login successful", token}); //token for testing(anna)
-  } catch (err) {
-    return reply
-      .status(500)
-      .send({ message: "Error processing request", error: err.message });
-  }
-});
+fastify.register(require('./login'), { dbGetAsync });
+fastify.register(require('./register'), { dbGetAsync, dbRunAsync });
+fastify.register(require('./googleAuth'));
 
 // Get tournaments
 fastify.get("/tournaments", async (request, reply) => {
@@ -247,20 +175,6 @@ fastify.post("/tournaments", async (request, reply) => {
   }
 });
 
-fastify.get("/auth/google/callback", async (request, reply) => {
-  try {
-    const token =
-      await fastify.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(
-        request,
-      );
-    return reply.send({ token });
-  } catch (err) {
-    return reply
-      .status(500)
-      .send({ message: "Google authentication failed", error: err.message });
-  }
-});
-
 //Added by paula to verify authentication througt frontend request
 fastify.get("/check-auth", async (request, reply) => {
   try {
@@ -282,6 +196,62 @@ fastify.get("/check-auth", async (request, reply) => {
     return reply.status(401).send({ message: "Invalid or expired token" });
   }
 });
+
+// Two-factor authentication route
+fastify.post(
+  "/2fa/setup",
+  { preHandler: [fastify.authenticate] },
+  async (request, reply) => {
+    const userId = request.user.userId;
+
+    const secret = speakeasy.generateSecret({
+      name: `PongApp (${request.user.username})`, // Name printed on Google Authenticator
+    });
+
+    await dbRunAsync(
+      "UPDATE users SET twofa_secret = ?, is_twofa_enabled = 1 WHERE id = ?",
+      [secret.base32, userId],
+    );
+
+    const qrCode = await qrcode.toDataURL(secret.otpauth_url);
+
+    return reply.send({
+      message: "2FA setup",
+      qrCode,
+      secret: secret.base32, // to hide in production
+    });
+  },
+);
+
+// Verify 2FA code
+fastify.post(
+  "/2fa/verify",
+  { preHandler: [fastify.authenticate] },
+  async (request, reply) => {
+    const { token } = request.body;
+    const userId = request.user.userId;
+
+    const user = await dbGetAsync(
+      "SELECT twofa_secret FROM users WHERE id = ?",
+      [userId],
+    );
+    if (!user || !user.twofa_secret) {
+      return reply.status(400).send({ message: "2FA not set up" });
+    }
+
+    const verified = speakeasy.totp.verify({
+      secret: user.twofa_secret,
+      encoding: "base32",
+      token,
+    });
+
+    if (!verified) {
+      return reply.status(401).send({ message: "Invalid 2FA code" });
+    }
+
+    return reply.send({ message: "2FA verified successfully" });
+  },
+);
 
 // Start the server
 const start = async () => {
