@@ -77,6 +77,7 @@ class ChatComponent extends HTMLElement {
 		style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
 
 		this.shadowRoot.innerHTML = `
+            <pong-header></pong-header>
             <pong-menu></pong-menu>
 			<div id="content" class="bg-purple-300 m-4 p-4 border border-violet-500 rounded-lg flex flex-col h-120 justify-between">
 				<div id="chat" class="grow bg-amber-50 overflow-auto flex">
