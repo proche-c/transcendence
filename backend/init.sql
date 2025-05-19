@@ -126,3 +126,19 @@ CREATE TABLE IF NOT EXISTS blocked_users (
   FOREIGN KEY (blocker_id) REFERENCES users(id),
   FOREIGN KEY (blocked_id) REFERENCES users(id)
 );
+
+/*-----------------GAME STATS---------------------*/
+
+CREATE TABLE IF NOT EXISTS user_stats (
+  user_id INTEGER PRIMARY KEY,
+  total_matches INTEGER DEFAULT 0,
+  total_wins INTEGER DEFAULT 0,
+  total_losses INTEGER DEFAULT 0,
+  goals_for INTEGER DEFAULT 0,
+  goals_against INTEGER DEFAULT 0,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+
+2 6 4 3 15 18 2
+1 5 3 3 14 17 1

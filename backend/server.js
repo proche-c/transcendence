@@ -253,6 +253,61 @@ fastify.post(
   },
 );
 
+
+// Función para asegurarnos de que exista un registro en user_stats
+async function ensureUserStats(userId) {
+  const row = await dbGetAsync(
+    'SELECT user_id FROM user_stats WHERE user_id = ?',
+    [userId]
+  );
+  if (!row) {
+    await dbRunAsync(
+      'INSERT INTO user_stats (user_id) VALUES (?)',
+      [userId]
+    );
+  }
+}
+
+// Ruta POST /api/stats
+fastify.post('/api/stats', {
+  schema: {
+    body: {
+      type: 'object',
+      required: ['userId', 'goalsFor', 'goalsAgainst'],
+      properties: {
+        userId:      { type: 'integer' },
+        goalsFor:    { type: 'integer' },
+        goalsAgainst:{ type: 'integer' }
+      }
+    }
+  }
+}, async (request, reply) => {
+  const { userId, goalsFor, goalsAgainst } = request.body;
+
+  try {
+    // 1) Creamos el registro si no existe
+    await ensureUserStats(userId);
+
+    // 2) Actualizamos las estadísticas
+    await dbRunAsync(
+      `UPDATE user_stats
+         SET total_matches = total_matches + 1,
+             total_wins    = total_wins + CASE WHEN ? > ? THEN 1 ELSE 0 END,
+             total_losses  = total_losses + CASE WHEN ? < ? THEN 1 ELSE 0 END,
+             goals_for     = goals_for + ?,
+             goals_against = goals_against + ?
+       WHERE user_id = ?`,
+      [goalsFor, goalsAgainst, goalsFor, goalsAgainst, goalsFor, goalsAgainst, userId]
+    );
+
+    return reply.code(200).send({ success: true });
+  } catch (err) {
+    fastify.log.error(err);
+    return reply.code(500).send({ error: 'DB error' });
+  }
+});
+
+
 // Start the server
 const start = async () => {
   try {

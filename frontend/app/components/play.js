@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 class PlayComponent extends HTMLElement {
     constructor() {
         super();
@@ -173,12 +182,66 @@ class PlayComponent extends HTMLElement {
     checkScore(gameState, resetFn) {
         if (gameState.ball.x <= 0) {
             gameState.scores.player2++;
-            resetFn();
+            if (gameState.scores.player2 >= 4) {
+                gameState.running = false;
+                this.showWinnerMessage("Player 2 Wins!");
+                this.reportResultToServer(gameState);
+            }
+            else {
+                resetFn();
+            }
         }
         else if (gameState.ball.x >= 800) {
             gameState.scores.player1++;
-            resetFn();
+            if (gameState.scores.player1 >= 4) {
+                gameState.running = false;
+                this.showWinnerMessage("Player 1 Wins!");
+                this.reportResultToServer(gameState);
+            }
+            else {
+                resetFn();
+            }
         }
+    }
+    showWinnerMessage(message) {
+        var _a;
+        const canvas = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelector('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx)
+            return;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '48px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(message, canvas.width / 2, canvas.height / 2);
+    }
+    reportResultToServer(gameState) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { player1, player2 } = gameState.scores;
+            const payload = {
+                userId: 2,
+                goalsFor: player1,
+                goalsAgainst: player2
+            };
+            try {
+                const res = yield fetch('http://localhost:8000/api/stats', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) {
+                    const text = yield res.text();
+                    console.error('Error subiendo stats:', text);
+                }
+                else {
+                    console.log('Stats enviadas correctamente');
+                }
+            }
+            catch (err) {
+                console.error('Error de red al reportar stats:', err);
+            }
+        });
     }
     resetBall(gameState) {
         gameState.ball.x = 400;

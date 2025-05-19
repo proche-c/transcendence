@@ -205,13 +205,64 @@ class PlayComponent extends HTMLElement {
     private checkScore(gameState: GameState, resetFn: () => void) {
         if (gameState.ball.x <= 0) {
             gameState.scores.player2++;
-            resetFn();
+            if (gameState.scores.player2 >= 4) {
+                gameState.running = false;
+                this.showWinnerMessage("Player 2 Wins!");
+                this.reportResultToServer(gameState);
+            } else {
+                resetFn();
+            }
         } else if (gameState.ball.x >= 800) {
             gameState.scores.player1++;
-            resetFn();
+            if (gameState.scores.player1 >= 4) {
+                gameState.running = false;
+                this.showWinnerMessage("Player 1 Wins!");
+                this.reportResultToServer(gameState);
+            } else {
+                resetFn();
+            }
         }
     }
 
+    private showWinnerMessage(message: string) {
+        const canvas = this.shadowRoot?.querySelector('canvas') as HTMLCanvasElement;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+    
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '48px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(message, canvas.width / 2, canvas.height / 2);
+    }
+
+    private async reportResultToServer(gameState: GameState) {
+        const { player1, player2 } = gameState.scores;
+        const payload = {
+          userId: 2, // Replace with actual user ID
+          goalsFor: player1,
+          goalsAgainst: player2
+        };
+      
+        try {
+          const res = await fetch('http://localhost:8000/api/stats', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (!res.ok) {
+            const text = await res.text();
+            console.error('Error subiendo stats:', text);
+          } else {
+            console.log('Stats enviadas correctamente');
+          }
+        } catch (err) {
+          console.error('Error de red al reportar stats:', err);
+        }
+    }
+    
     private resetBall(gameState: GameState) {
         gameState.ball.x = 400;
         gameState.ball.y = 250;
