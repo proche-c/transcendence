@@ -68,7 +68,6 @@ CREATE TABLE IF NOT EXISTS auth_providers (
 CREATE TABLE IF NOT EXISTS messages (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   chat_id INTEGER,
-  chatroom_id INTEGER,
   sender_id INTEGER NOT NULL,
   message TEXT NOT NULL,
   type INTEGER NOT NULL,

@@ -1,7 +1,7 @@
 {
-  "name": "transcendence-backend",
+  "name": "transcendence-frontend",
   "version": "1.0.0",
-  "description": "Backend for the Transcendence project",
+  "description": "Frontend for the Transcendence project",
   "main": "server.js",
   "scripts": {
     "start": "live-server --port=8080 --host=0.0.0.0 --entry-file=index.html",

@@ -1,9 +1,12 @@
+const authMiddlewareFactory = require("./authMiddleware");
+
 async function userRoutes(fastify, options) {
   const dbAllAsync = options.dbAllAsync;
   const dbGetAsync = options.dbGetAsync;
   const dbRunAsync = options.dbRunAsync;
-  const authMiddleware = require("./authMiddleware")(dbGetAsync, fastify);
-// get all users
+  const authMiddleware = authMiddlewareFactory(dbGetAsync, fastify);
+
+  // Get all users
   fastify.get("/", { preHandler: authMiddleware }, async (request, reply) => {
     try {
       const users = await dbAllAsync("SELECT id, username, avatar FROM users");
@@ -14,7 +17,7 @@ async function userRoutes(fastify, options) {
     }
   });
 
-  //  /users/friends — list of accepted friends
+  // List of accepted friends
   fastify.get("/friends", { preHandler: authMiddleware }, async (request, reply) => {
     try {
       const userId = request.user.id;
@@ -32,7 +35,7 @@ async function userRoutes(fastify, options) {
     }
   });
 
-  //  /users/friends — send a friend request
+  // Send a friend request
   fastify.post("/friends", { preHandler: authMiddleware }, async (request, reply) => {
     const { username } = request.body;
     const userId = request.user.id;
@@ -51,7 +54,8 @@ async function userRoutes(fastify, options) {
       if (existing) {
         return reply.status(400).send({ message: "Friend request already sent or exists" });
       }
-      await dbRunAsync( "INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, 'pending')",[userId, targetUser.id]);
+      await dbRunAsync("INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, 'accepted')", [userId, targetUser.id]);
+      await dbRunAsync("INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, 'accepted')", [targetUser.id, userId]);
       return reply.send({ message: "Friend request sent" });
     } 
     catch (err) {
@@ -59,6 +63,38 @@ async function userRoutes(fastify, options) {
       return reply.status(500).send({ message: "Error sending friend request" });
     }
   });
+
+  // Get one-to-one chats and chatrooms
+  fastify.get("/chats", { preHandler: authMiddleware }, async (request, reply) => {
+    const userId = request.user.id;
+    try {
+      const oneToOneChats = await dbAllAsync(
+        `SELECT c.id, u.username AS other_user, u.avatar
+         FROM chats c
+         JOIN users u ON (u.id = CASE
+           WHEN c.user1_id = ? THEN c.user2_id
+           ELSE c.user1_id
+         END)
+         WHERE c.user1_id = ? OR c.user2_id = ?`,
+        [userId, userId, userId]
+      );
+      const chatrooms = await dbAllAsync(
+        `SELECT cr.id, cr.name, cr.owner_id, cr.is_private, crm.role
+         FROM chatroom_members crm
+         JOIN chatrooms cr ON crm.chatroom_id = cr.id
+         WHERE crm.user_id = ?`,
+        [userId]
+      );
+      return reply.send({
+        oneToOneChats,
+        chatrooms,
+      });
+    } catch (err) {
+      request.log.error(err);
+      return reply.status(500).send({ message: "Failed to fetch chats" });
+    }
+  });
 }
 
 module.exports = userRoutes;
+
