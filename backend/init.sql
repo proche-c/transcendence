@@ -5,7 +5,13 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   avatar TEXT DEFAULT 'default_avatar.png',  -- Avatar par défaut
   twofa_secret TEXT,
-  is_twofa_enabled INTEGER DEFAULT 0
+  is_twofa_enabled INTEGER DEFAULT 0,
+  total_matches INTEGER DEFAULT 0,
+  total_wins INTEGER DEFAULT 0,
+  total_losses INTEGER DEFAULT 0,
+  goals_for INTEGER DEFAULT 0,
+  goals_against INTEGER DEFAULT 0,
+  rank INTEGER DEFAULT NULL
 );
 
 
@@ -128,7 +134,7 @@ CREATE TABLE IF NOT EXISTS blocked_users (
 );
 
 /*-----------------GAME STATS---------------------*/
-
+/*
 CREATE TABLE IF NOT EXISTS user_stats (
   user_id INTEGER PRIMARY KEY,
   total_matches INTEGER DEFAULT 0,
@@ -136,9 +142,6 @@ CREATE TABLE IF NOT EXISTS user_stats (
   total_losses INTEGER DEFAULT 0,
   goals_for INTEGER DEFAULT 0,
   goals_against INTEGER DEFAULT 0,
+  rank INTEGER DEFAULT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-
-2 6 4 3 15 18 2
-1 5 3 3 14 17 1
+); AHORA MISMO ESTO SE ENCUENTRA EN LA TABLA USERS*/  

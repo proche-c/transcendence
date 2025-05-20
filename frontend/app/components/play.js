@@ -219,16 +219,14 @@ class PlayComponent extends HTMLElement {
     reportResultToServer(gameState) {
         return __awaiter(this, void 0, void 0, function* () {
             const { player1, player2 } = gameState.scores;
-            const payload = {
-                userId: 2,
-                goalsFor: player1,
-                goalsAgainst: player2
-            };
+            const formData = new FormData();
+            formData.append("goalsFor", player1.toString());
+            formData.append("goalsAgainst", player2.toString());
             try {
                 const res = yield fetch('http://localhost:8000/api/stats', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: formData,
+                    credentials: 'include',
                 });
                 if (!res.ok) {
                     const text = yield res.text();

@@ -16,6 +16,7 @@ fastify.register(fastifyWebsocket);
 const fastifyCookie = require("@fastify/cookie");
 fastify.register(fastifyCookie);
 
+
 //********************TO SERVE STATIC FILES(AVATAR IMGS)******************** */
 
 const fastifyStatic = require('@fastify/static');
@@ -30,11 +31,12 @@ fastify.register(fastifyStatic, {
 
 // Register CORS middleware
 fastify.register(cors, {
-  origin: [
+  /*origin: [
     "https://127.0.0.1:8443",
     "https://localhost:8443",
     "http://localhost:5500/frontend/",
-  ], // Especifica el origen permitido
+  ], // Especifica el origen permitido*/
+  origin: true, // Permite cualquier origen
   credentials: true, // Permite el envío de cookies y cabeceras de autenticación
 });
 
@@ -134,6 +136,14 @@ fastify.register(profileRoutes, {
   dbRunAsync,
   authMiddleware,
 });
+
+const statsRoutes = require("./stats");
+fastify.register(statsRoutes, {
+  dbGetAsync,
+  dbRunAsync,
+  authMiddleware,
+});
+
 
 fastify.register(require('./login'), { dbGetAsync });
 fastify.register(require('./register'), { dbGetAsync, dbRunAsync });
@@ -254,58 +264,9 @@ fastify.post(
 );
 
 
-// Función para asegurarnos de que exista un registro en user_stats
-async function ensureUserStats(userId) {
-  const row = await dbGetAsync(
-    'SELECT user_id FROM user_stats WHERE user_id = ?',
-    [userId]
-  );
-  if (!row) {
-    await dbRunAsync(
-      'INSERT INTO user_stats (user_id) VALUES (?)',
-      [userId]
-    );
-  }
-}
 
-// Ruta POST /api/stats
-fastify.post('/api/stats', {
-  schema: {
-    body: {
-      type: 'object',
-      required: ['userId', 'goalsFor', 'goalsAgainst'],
-      properties: {
-        userId:      { type: 'integer' },
-        goalsFor:    { type: 'integer' },
-        goalsAgainst:{ type: 'integer' }
-      }
-    }
-  }
-}, async (request, reply) => {
-  const { userId, goalsFor, goalsAgainst } = request.body;
 
-  try {
-    // 1) Creamos el registro si no existe
-    await ensureUserStats(userId);
 
-    // 2) Actualizamos las estadísticas
-    await dbRunAsync(
-      `UPDATE user_stats
-         SET total_matches = total_matches + 1,
-             total_wins    = total_wins + CASE WHEN ? > ? THEN 1 ELSE 0 END,
-             total_losses  = total_losses + CASE WHEN ? < ? THEN 1 ELSE 0 END,
-             goals_for     = goals_for + ?,
-             goals_against = goals_against + ?
-       WHERE user_id = ?`,
-      [goalsFor, goalsAgainst, goalsFor, goalsAgainst, goalsFor, goalsAgainst, userId]
-    );
-
-    return reply.code(200).send({ success: true });
-  } catch (err) {
-    fastify.log.error(err);
-    return reply.code(500).send({ error: 'DB error' });
-  }
-});
 
 
 // Start the server

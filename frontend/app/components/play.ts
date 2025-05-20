@@ -240,17 +240,16 @@ class PlayComponent extends HTMLElement {
 
     private async reportResultToServer(gameState: GameState) {
         const { player1, player2 } = gameState.scores;
-        const payload = {
-          userId: 2, // Replace with actual user ID
-          goalsFor: player1,
-          goalsAgainst: player2
-        };
+        const formData = new FormData();
+      
+        formData.append("goalsFor", player1.toString());
+        formData.append("goalsAgainst", player2.toString());
       
         try {
           const res = await fetch('http://localhost:8000/api/stats', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: formData,
+            credentials: 'include',
           });
           if (!res.ok) {
             const text = await res.text();
@@ -261,7 +260,8 @@ class PlayComponent extends HTMLElement {
         } catch (err) {
           console.error('Error de red al reportar stats:', err);
         }
-    }
+      }
+      
     
     private resetBall(gameState: GameState) {
         gameState.ball.x = 400;
