@@ -1,20 +1,20 @@
-# THIS IS THE DOCKERFILE THAT WORKS FOR ME(ANNA) ON MY MAC, BUT ITS ONLY FOR TESTING
-FROM node:20-alpine
+# Usamos versión específica de Node.js
+FROM node:18-alpine
 
-# Install build tools for native modules
-RUN apk add --no-cache python3 make g++ sqlite
+# Instalamos sqlite3 (en Alpine se usa apk)
+RUN apk add --no-cache sqlite
 
-# Create app directory with correct permissions
-RUN mkdir -p /home/node/app && chown -R node:node /home/node/app
+# Crear directorio con permisos adecuados
+RUN mkdir -p /home/node/app && \
+    chown -R node:node /home/node/app
+
 WORKDIR /home/node/app
 
-# Switch to node user early
-USER node
-
-# Copy package files first
+# Copiar archivos de paquete
 COPY --chown=node:node package*.json ./
 
-# Install dependencies
+# Instalar dependencias como usuario node
+USER node
 RUN npm install
 
 RUN npm list @fastify/jwt || npm install @fastify/jwt
@@ -24,21 +24,22 @@ RUN npm install dotenv
 RUN npm install @fastify/static
 RUN npm install speakeasy qrcode
 RUN npm install zod 
+# zod is a validation library for TypeScript and JavaScript
 
-# Copy rest of the application
+# Copiar el resto de archivos
 COPY --chown=node:node . .
 
-# Set up entrypoint
+# Configurar entrypoint
 USER root
 COPY --chown=node:node entrypoint.sh /home/node/app/entrypoint.sh
 RUN chmod +x /home/node/app/entrypoint.sh
 
-# SQLite data folder permissions
-RUN mkdir -p /home/node/app/sqlite_data \
-  && chown -R node:node /home/node/app/sqlite_data \
-  && touch /home/node/app/sqlite_data/database.sqlite \
-  && chown node:node /home/node/app/sqlite_data/database.sqlite \
-  && chmod 664 /home/node/app/sqlite_data/database.sqlite
+# Permisos para SQLite
+RUN mkdir -p /home/node/app/sqlite_data && \
+    chown -R node:node /home/node/app/sqlite_data \
+    && touch /home/node/app/sqlite_data/database.sqlite \
+    && chown node:node /home/node/app/sqlite_data/database.sqlite \
+    && chmod 664 /home/node/app/sqlite_data/database.sqlite
 
 USER node
 
