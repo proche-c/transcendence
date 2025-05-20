@@ -18,6 +18,7 @@ module.exports = async function profileRoutes(fastify, options) {
       username: request.user.username,
       email: request.user.email,
       avatar: request.user.avatar,
+      twofa: request.user.is_twofa_enable,
     };
     return reply.send({ user: data });
   });
