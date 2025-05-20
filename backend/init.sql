@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
   total_losses INTEGER DEFAULT 0,
   goals_for INTEGER DEFAULT 0,
   goals_against INTEGER DEFAULT 0,
-  rank INTEGER DEFAULT NULL
+  ranking INTEGER DEFAULT NULL
 );
 
 
