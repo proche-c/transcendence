@@ -32,7 +32,7 @@ class EditProfileComponent extends HTMLElement {
                 });
                 const data = yield response.json();
                 this.response = data.user;
-                // console.log(data.user);
+                console.log(data.user);
             }
             catch (error) {
                 console.log('Error en la peticion');
@@ -61,6 +61,10 @@ class EditProfileComponent extends HTMLElement {
 
 				<div class="text-2xl font-bold text-center mt-4">
 					<input type="text" id="username" placeholder="Type new username" value="${this.response.username}" class="border rounded-lg px-3 py-2 mt-1 mx-5 mb-5 text-sm bg-gray-200 focus:border-violet-900 focus:ring-4 focus:ring-violet-900"/>
+				</div>
+				<div class="flex items-center justify-center gap-3 mb-5">
+					<input type="checkbox" id="2fa-checkbox" class="w-5 h-5 text-violet-900 border-gray-300 rounded focus:ring-violet-900">
+					<label for="2fa-checkbox" class="text-sm font-medium text-gray-700">Two-Factor Authentication</label>
 				</div>
 				<div class="flex justify-center items-center gap-12 h-full mb-4">
 				<button id="exit" class="group flex h-fit w-fit flex-col items-center justify-center rounded-2xl bg-violet-200 px-[1em] py-1 border">
