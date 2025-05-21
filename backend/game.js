@@ -1,4 +1,10 @@
 async function gameRoutes(fastify, options) {
+    const bcrypt = options.bcrypt;
+    const db = options.db; 
+    const dbGetAsync = options.dbGetAsync;
+    const dbRunAsync = options.dbRunAsync;
+    const dbAllAsync = options.dbAllAsync;
+    //const userSockets = new Map();
     if (!fastify.websocketGames) {
       fastify.websocketGames = [];
     }
@@ -13,14 +19,38 @@ async function gameRoutes(fastify, options) {
       scores: { player1: 0, player2: 0 }
     };
   
-    fastify.get('/game', { websocket: true }, (connection, req) => {
+    fastify.get('/', { websocket: true }, (connection, req) => {
+      try {
+        const token = req.cookies.token;
+        if (!token) {
+          fastify.log.warn('WebSocket connection rejected: no token');
+          connection.close();
+          return;
+        }
+        let payload;
+        try {
+          payload = fastify.jwt.verify(token);
+        } catch (err) {
+          fastify.log.warn('WebSocket JWT verification failed');
+          connection.close();
+          return;
+        }
+        const { userId, username } = payload;
+        connection.userId = userId;
+        connection.username = username;
+        //userSockets.set(userId, connection);
+        fastify.log.info(`User ${username} connected via WebSocket`);
+      }catch (err) {
+        fastify.log.error({ err }, 'WebSocket error during connection');
+      }
+      
       try {
         const playerId = Math.random().toString(36).substring(2, 10);
         const playerNumber = !fastify.websocketGames.find(c => c.playerNumber === 1) ? 1 : 2;
   
         if (fastify.websocketGames.length >= 2) {
-          connection.socket.send(JSON.stringify({ type: "error", message: "Sala llena" }));
-          connection.socket.close();
+          connection.send(JSON.stringify({ type: "error", message: "Sala llena" }));
+          connection.close();
           return;
         }
   
@@ -30,9 +60,9 @@ async function gameRoutes(fastify, options) {
         fastify.websocketGames.push(connection);
         fastify.log.info(`Jugador ${playerNumber} conectado: ${playerId}`);
   
-        connection.socket.send(JSON.stringify({ type: "init", playerId, playerNumber, gameState }));
+        connection.send(JSON.stringify({ type: "init", playerId, playerNumber, gameState }));
   
-        connection.socket.on('message', (message) => {
+        connection.on('message', (message) => {
           const data = JSON.parse(message);
   
           if (data.type === "move") {
@@ -48,7 +78,7 @@ async function gameRoutes(fastify, options) {
           }
         });
   
-        connection.socket.on('close', () => {
+        connection.on('close', () => {
           fastify.websocketGames = fastify.websocketGames.filter(client => client !== connection);
           fastify.log.info(`Jugador desconectado: ${playerId}`);
         });
@@ -101,8 +131,8 @@ async function gameRoutes(fastify, options) {
         }
   
         fastify.websocketGames.forEach(client => {
-          if (client.socket.readyState === client.socket.OPEN) {
-            client.socket.send(JSON.stringify({ type: "update", gameState }));
+          if (client.readyState === client.OPEN) {
+            client.send(JSON.stringify({ type: "update", gameState }));
           }
         });
   
@@ -124,8 +154,8 @@ async function gameRoutes(fastify, options) {
       gameState.running = false;
   
       fastify.websocketGames.forEach(client => {
-        if (client.socket.readyState === client.socket.OPEN) {
-          client.socket.send(JSON.stringify({ type: "end", message: winnerMessage }));
+        if (client.readyState === client.OPEN) {
+          client.send(JSON.stringify({ type: "end", message: winnerMessage }));
         }
       });
   
@@ -142,8 +172,8 @@ async function gameRoutes(fastify, options) {
       gameState.ball.speedY = 0;
   
       fastify.websocketGames.forEach(client => {
-        if (client.socket.readyState === client.socket.OPEN) {
-          client.socket.send(JSON.stringify({ type: "score", scores: gameState.scores }));
+        if (client.readyState === client.OPEN) {
+          client.send(JSON.stringify({ type: "score", scores: gameState.scores }));
         }
       });
     }
