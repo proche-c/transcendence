@@ -17,7 +17,7 @@ module.exports = async function (fastify, options) {
       auth: oauthPlugin.GOOGLE_CONFIGURATION
     },
     startRedirectPath: '/login/google',
-    callbackUri: 'http://localhost:8000/auth/google/callback'
+    callbackUri: 'https://localhost:8443/auth/google/callback'
   });
 
   // Google callback route

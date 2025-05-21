@@ -19,7 +19,7 @@ RUN npm install
 
 RUN npm list @fastify/jwt || npm install @fastify/jwt
 RUN npm list bcrypt || npm install bcrypt
-# RUN npm install fastify-passport @fastify/oauth2 fastify-secure-session 
+RUN npm install fastify-passport @fastify/oauth2 fastify-secure-session 
 RUN npm install dotenv
 RUN npm install @fastify/static
 RUN npm install speakeasy qrcode
