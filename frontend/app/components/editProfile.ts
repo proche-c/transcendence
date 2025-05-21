@@ -1,3 +1,5 @@
+import { fetchUserProfile } from "../utils/requests.js";
+
 class EditProfileComponent extends HTMLElement {
 	private response: any | null = null;
 	constructor() {
@@ -8,26 +10,12 @@ class EditProfileComponent extends HTMLElement {
 
 	private async load() {
 		console.log("Cargando edit profile");
-		await this.getEditProfile();
+		await this.getProfile();
 		this.render();
 	}
 
-	private async getEditProfile() {
-		try {
-            const response = await fetch("http://localhost:8000/profile", {
-                method: "GET",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-            });
-
-			const data = await response.json();
-			this.response = data.user;
-			console.log(data.user);
-
-
-		} catch (error: any) {
-			console.log('Error en la peticion');
-		}
+	private async getProfile() {
+		this.response = await fetchUserProfile();
 	}
 
 	private render(): void {

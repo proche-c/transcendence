@@ -1,4 +1,6 @@
 // tengo que crear la interfaz data!!!!!!!!!!!!!!!!!
+import { fetchUserProfile } from "../utils/requests.js";
+
 interface User	{
 	id: number;
 	username: string;
@@ -28,21 +30,7 @@ class FriendsComponent extends HTMLElement {
 	}
 
 	private async getProfile() {
-		try {
-            const response = await fetch("http://localhost:8000/profile", {
-                method: "GET",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-            });
-
-			const data = await response.json();
-			this.user = data.user;
-			console.log(this.user);
-
-
-		} catch (error: any) {
-			console.log('Error en la peticion');
-		}
+		this.responseProfile = await fetchUserProfile();
 	}
 
 	private async getUsers() {

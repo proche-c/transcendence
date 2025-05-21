@@ -21,6 +21,8 @@ module.exports = function (dbGetAsync, fastify) {
       }
 
       request.user = user;
+      console.log("imprimo user en middleware");
+      console.log(request.user);
     } catch (err) {
       return reply.status(403).send({ message: "Unauthorized bitch" });
     }
