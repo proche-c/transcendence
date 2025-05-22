@@ -76,7 +76,7 @@ module.exports = async function (fastify, options) {
         maxAge: 60 * 70, // 70 minutes
       });
 
-      return reply.redirect('http://localhost:8000/#profile');
+      return reply.redirect('https://localhost:8443/#profile');
     } catch (err) {
       return reply.status(500).send({ message: 'Google authentication failed', error: err.message });
     }
