@@ -8,6 +8,7 @@ const authMiddlewareAUX = require("./authMiddleware");
 module.exports = async function statsRoutes(fastify, options) {
   const dbGetAsync = options.dbGetAsync;
   const dbRunAsync = options.dbRunAsync;
+  const dbAllAsync = options.dbAllAsync;
   const authMiddleware = authMiddlewareAUX(dbGetAsync, fastify);
   fastify.register(multipart);
 
@@ -87,4 +88,45 @@ fastify.post('/api/stats', { preHandler: authMiddleware }, async (request, reply
     return reply.code(500).send({ error: 'DB error' });
   }
 });
+// Ruta GET per obtenir els 3 millors jugadors
+fastify.get('/api/leaderboard', async (request, reply) => {
+    
+  await dbRunAsync(`
+      WITH ranked AS (
+        SELECT
+          id,
+          RANK() OVER (
+            ORDER BY total_wins DESC, (goals_for - goals_against) DESC
+          ) AS pos
+        FROM users
+      )
+      UPDATE users
+      SET ranking = (
+        SELECT pos FROM ranked WHERE ranked.id = users.id
+      );
+    `);
+    
+  try {
+    const topPlayers = await dbAllAsync(`
+      SELECT id, username, ranking, total_wins, total_losses, goals_for, goals_against 
+      FROM users 
+      ORDER BY ranking ASC 
+      LIMIT 3
+    `);
+    
+    return reply.code(200).send({ 
+      success: true, 
+      topPlayers 
+    });
+  } catch (err) {
+    console.error("Error detallat:", err); // Afegim més detalls a la consola
+    request.log.error(err);
+    return reply.code(500).send({ error: 'Error al consultar la classificació',
+      message: err.message // Afegim el missatge d'error
+    });
+  }
+});
+
 }
+
+

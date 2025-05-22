@@ -139,6 +139,7 @@ const statsRoutes = require("./stats");
 fastify.register(statsRoutes, {
   dbGetAsync,
   dbRunAsync,
+  dbAllAsync,
   authMiddleware,
 });
 

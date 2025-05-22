@@ -1,9 +1,8 @@
 -- Ajout d'utilisateurs
-INSERT OR IGNORE INTO users (username, email, password_hash) VALUES 
-('player1', 'player1@example.com', '$2b$10$hashpassword1'),
-('player2', 'player2@example.com', '$2b$10$hashpassword2'),
-('player3', 'player3@example.com', '$2b$10$hashpassword3'),
-('alex', 'elgringo154@gmail.com', '123456');
+INSERT OR IGNORE INTO users (username, email, password_hash, total_matches, total_wins, total_losses, goals_for, goals_against) VALUES 
+('player1', 'player1@example.com', '$2b$10$hashpassword1', 2,2,0,20,10),
+('player2', 'player2@example.com', '$2b$10$hashpassword2', 2,2,0,20,15),
+('player3', 'player3@example.com', '$2b$10$hashpassword3', 2,1,1,20,5);
 
 -- Ajout de relations d'amis
 INSERT OR IGNORE INTO friends (user_id, friend_id, status) VALUES 
