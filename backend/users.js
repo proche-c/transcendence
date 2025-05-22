@@ -51,8 +51,9 @@ async function userRoutes(fastify, options) {
       if (existing) {
         return reply.status(400).send({ message: "Friend request already sent or exists" });
       }
-      await dbRunAsync( "INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, 'pending')",[userId, targetUser.id]);
-      return reply.send({ message: "Friend request sent" });
+      await dbRunAsync("INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, 'accepted')", [userId, targetUser.id]);
+      await dbRunAsync("INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, 'accepted')", [targetUser.id, userId]);
+      return reply.send({ message: "Friend added" });
     } 
     catch (err) {
       fastify.log.error(err);
