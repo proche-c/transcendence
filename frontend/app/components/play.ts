@@ -153,7 +153,7 @@ class PlayComponent extends HTMLElement {
             this.handlePlayerMovement(gameState, keysPressed);
             this.updateBallPosition(gameState);
             this.checkPaddleCollisions(gameState);
-            this.checkScore(gameState, () => this.resetBall(gameState));
+            this.checkScore(gameState);
             this.renderLocalGame(ctx, gameState);
             requestAnimationFrame(draw);
         };
@@ -166,7 +166,7 @@ class PlayComponent extends HTMLElement {
                 player1: { x: 30, y: 200 },
                 player2: { x: 740, y: 200 }
             },
-            ball: { x: 400, y: 250, speedX: 5, speedY: 5 },
+            ball: { x: 400, y: 250, speedX: 6, speedY: 0 },
             scores: { player1: 0, player2: 0 },
             running: true
         };
@@ -202,7 +202,7 @@ class PlayComponent extends HTMLElement {
         });
     }
 
-    private checkScore(gameState: GameState, resetFn: () => void) {
+    private checkScore(gameState: GameState) {
         if (gameState.ball.x <= 0) {
             gameState.scores.player2++;
             if (gameState.scores.player2 >= 4) {
@@ -210,7 +210,7 @@ class PlayComponent extends HTMLElement {
                 this.showWinnerMessage("Player 2 Wins!");
                 this.reportResultToServer(gameState);
             } else {
-                resetFn();
+                this.resetBall(gameState, 0);
             }
         } else if (gameState.ball.x >= 800) {
             gameState.scores.player1++;
@@ -219,7 +219,7 @@ class PlayComponent extends HTMLElement {
                 this.showWinnerMessage("Player 1 Wins!");
                 this.reportResultToServer(gameState);
             } else {
-                resetFn();
+                this.resetBall(gameState, 1);
             }
         }
     }
@@ -263,11 +263,15 @@ class PlayComponent extends HTMLElement {
       }
       
     
-    private resetBall(gameState: GameState) {
+    private resetBall(gameState: GameState, flag: number) {
         gameState.ball.x = 400;
         gameState.ball.y = 250;
-        gameState.ball.speedX = gameState.ball.speedX > 0 ? -10 : 10;
         gameState.ball.speedY = 0;
+        if (flag === 0)
+            gameState.ball.speedX = -6;
+        else
+            gameState.ball.speedX = 6;
+        
     }
 
     private renderLocalGame(ctx: CanvasRenderingContext2D, gameState: GameState) {
@@ -350,7 +354,7 @@ class PlayComponent extends HTMLElement {
             this.updateAI(gameState, 0.7);
             this.updateBallPosition(gameState);
             this.checkPaddleCollisions(gameState);
-            this.checkScore(gameState, () => this.resetBall(gameState));
+            this.checkScore(gameState);
             this.renderLocalGame(ctx, gameState);
 
             requestAnimationFrame(draw);
