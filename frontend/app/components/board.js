@@ -12,7 +12,6 @@ class BoardComponent extends HTMLElement {
         style.rel = "stylesheet";
         style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
         this.shadowRoot.innerHTML = `
-            <pong-header></pong-header>
             <pong-menu></pong-menu>
 			<div id="content" class="mt-4 p-4 border border-gray-300 rounded-lg">
 				Esto es el leader board

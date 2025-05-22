@@ -1,15 +1,14 @@
 // tengo que crear la interfaz data!!!!!!!!!!!!!!!!!
-interface User	{
-	id: number;
-	username: string;
-	avatar: string;
-}
+import { fetchUserProfile, fetchUsers, fetchFriends, User } from "../utils/requests.js";
+
+// interface User	{
+// 	id: number;
+// 	username: string;
+// 	avatar: string;
+// }
 
 
 class FriendsComponent extends HTMLElement {
-	private responseProfile: any | null = null;
-	private responseFriends: any | null = null;
-	private responseUsers: any | null = null;
 	private user: User | any | null = null;
 	private users: Array<User> = [];
 	private friends: Array<User> = [];
@@ -28,57 +27,20 @@ class FriendsComponent extends HTMLElement {
 	}
 
 	private async getProfile() {
-		try {
-            const response = await fetch("http://localhost:8000/profile", {
-                method: "GET",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-            });
-
-			const data = await response.json();
-			this.user = data.user;
-			console.log(this.user);
-
-
-		} catch (error: any) {
-			console.log('Error en la peticion');
-		}
+		this.user = await fetchUserProfile();
+		console.log("user:");
+		console.log(this.user);
 	}
 
 	private async getUsers() {
-		try {
-            const response = await fetch("http://localhost:8000/users", {
-                method: "GET",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-            });
-
-			const data = await response.json();
-			this.users = data;
-			console.log(this.users);
-
-
-		} catch (error: any) {
-			console.log('Error en la peticion');
-		}
+		this.users = await fetchUsers();
+		console.log(this.users);
 	}
 
 	private async getFriends() {
-		try {
-            const response = await fetch("http://localhost:8000/users/friends", {
-                method: "GET",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-            });
-
-			const data = await response.json();
-			this.friends = data.friends;
-			console.log(this.friends);
-
-
-		} catch (error: any) {
-			console.log('Error en la peticion');
-		}
+		this.friends = await fetchFriends();
+		console.log("friends:");
+		console.log(this.friends);
 	}
 
 	private render(): void {

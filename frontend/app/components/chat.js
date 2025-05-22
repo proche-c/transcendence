@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,9 +7,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+import { fetchUserProfile, fetchUsers } from "../utils/requests.js";
 class ChatComponent extends HTMLElement {
     constructor() {
         super();
+        this.user = null;
+        this.users = [];
         this.messages = [];
         this.chats = [];
         this.globalChat = [];
@@ -18,10 +20,31 @@ class ChatComponent extends HTMLElement {
         this.messageInput = null;
         this.sendButton = null;
         this.socket = null;
-        this.response = null;
+        this.responseUsers = null;
         this.attachShadow({ mode: "open" });
+        this.load();
         this.connect();
-        this.render();
+    }
+    load() {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.getProfile();
+            yield this.getUsers();
+            this.render();
+            // this.updateData();
+        });
+    }
+    getProfile() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.user = yield fetchUserProfile();
+            console.log("user:");
+            console.log(this.user);
+        });
+    }
+    getUsers() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.users = yield fetchUsers();
+            console.log(this.users);
+        });
     }
     connect() {
         this.socket = new WebSocket("ws://localhost:8000/chat");
@@ -35,50 +58,64 @@ class ChatComponent extends HTMLElement {
             this.addMessageToList(event.data);
         };
     }
-    getUsers() {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                // Esta url sera el endponit que configure el servidor
-                const response = yield fetch("http://localhost:8000/users", {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" },
-                    credentials: "include",
-                });
-                this.response = yield response.json();
-            }
-            catch (error) {
-                console.log("error en la peticion");
-            }
-        });
-    }
+    // private async getUsers() {
+    // 	this.responseUsers = await fetchUsers();
+    // }
     render() {
         if (!this.shadowRoot)
             return;
         const style = document.createElement("link");
         style.rel = "stylesheet";
         style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
+        const avatar = this.user.avatar;
+        const avatarUrl = `http://localhost:8000/static/${avatar}`;
         this.shadowRoot.innerHTML = `
-            <pong-header></pong-header>
-            <pong-menu></pong-menu>
-			<div id="content" class="bg-purple-300 m-4 p-4 border border-violet-500 rounded-lg flex flex-col h-120 justify-between">
-				<div id="chat" class="grow bg-amber-50 overflow-auto flex">
-					<div id="chats" class="w-1/4 bg-gray-200 border border-gray-300 rounded-lg p-2">
-						CHATS
+		<div class="flex h-screen items-center">
+			<div>
+				<pong-menu></pong-menu>
+			</div>
+			<div class="flex flex-col w-3/4 h-7/8">
+				<div id="profileCard" class="absolute z-50 top-0 left-0 bg-white mt-8 ml-8"></div>
+	
+				<div class="flex flex-col items-center">
+					<div class="w-16 h-16 rounded-full overflow-hidden border-4 border-black flex items-center justify-center bg-emerald-200">
+						<img src="${avatarUrl}" class="w-full h-full object-cover" />
 					</div>
-					<div id="messages" class="w-3/4 bg-gray-100 border border-gray-300 rounded-lg p-2 overflow-auto">
-					<ul id="messages"></ul>
+					<div class="my-1">
+						<p>${this.user.username}</p>
 					</div>
 				</div>
-				<div id="form">
-					<input type="text" id="message" placeholder="Type a message" class="border">
-					<button id="send" class="bg-gray-800 text-white m-1 p-1 text-center font-bold text-lg">Send</button>
+	
+				<div class="flex grow ml-6 justify-center">
+				<div class="bg-neutral-50 m-4 rounded-2xl flex flex-row w-full max-w-4xl border-2 border-violet-600">
+					
+					<!-- CHAT LIST (1/3 del contenedor) -->
+					<div class="flex flex-col flex-[1] border-r border-violet-300">
+					<h2 class="text-center border-b border-violet-600 m-2 p-3">Chats</h2>
+					<div class="flex bg-neutral-50 flex-col flex-grow rounded-b-2xl">
+						<!-- contenido de chats -->
+					</div>
+					</div>
+
+					<!-- MESSAGE VIEW (2/3 del contenedor) -->
+					<div class="flex flex-col flex-[2]">
+					<h2 class="text-center border-b border-violet-600 m-2 p-3">Messages</h2>
+					<div class="flex bg-neutral-50 flex-col flex-grow rounded-b-2xl">
+						<!-- contenido de mensajes -->
+					</div>
+					</div>
+
 				</div>
-		`;
+				</div>
+
+							</div>
+		</div>
+	`;
         this.shadowRoot.appendChild(style);
         this.messagesBox = this.shadowRoot.querySelector("#messages");
         this.messageInput = this.shadowRoot.querySelector("#message");
         this.sendButton = this.shadowRoot.querySelector("#send");
-        this.getUsers();
+        // this.getUsers();
         this.addEventListeners();
     }
     addEventListeners() {

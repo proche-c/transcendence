@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,12 +7,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+// tengo que crear la interfaz data!!!!!!!!!!!!!!!!!
+import { fetchUserProfile, fetchUsers, fetchFriends } from "../utils/requests.js";
+// interface User	{
+// 	id: number;
+// 	username: string;
+// 	avatar: string;
+// }
 class FriendsComponent extends HTMLElement {
     constructor() {
         super();
-        this.responseProfile = null;
-        this.responseFriends = null;
-        this.responseUsers = null;
         this.user = null;
         this.users = [];
         this.friends = [];
@@ -31,53 +34,22 @@ class FriendsComponent extends HTMLElement {
     }
     getProfile() {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const response = yield fetch("http://localhost:8000/profile", {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" },
-                    credentials: "include",
-                });
-                const data = yield response.json();
-                this.user = data.user;
-                console.log(this.user);
-            }
-            catch (error) {
-                console.log('Error en la peticion');
-            }
+            this.user = yield fetchUserProfile();
+            console.log("user:");
+            console.log(this.user);
         });
     }
     getUsers() {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const response = yield fetch("http://localhost:8000/users", {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" },
-                    credentials: "include",
-                });
-                const data = yield response.json();
-                this.users = data;
-                console.log(this.users);
-            }
-            catch (error) {
-                console.log('Error en la peticion');
-            }
+            this.users = yield fetchUsers();
+            console.log(this.users);
         });
     }
     getFriends() {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const response = yield fetch("http://localhost:8000/users/friends", {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" },
-                    credentials: "include",
-                });
-                const data = yield response.json();
-                this.friends = data.friends;
-                console.log(this.friends);
-            }
-            catch (error) {
-                console.log('Error en la peticion');
-            }
+            this.friends = yield fetchFriends();
+            console.log("friends:");
+            console.log(this.friends);
         });
     }
     render() {

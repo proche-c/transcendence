@@ -1,4 +1,4 @@
-
+import { fetchUserProfile, fetchUsers, fetchFriends, User } from "../utils/requests.js";
 
 interface Data {
 	user: string; // No lo necesitas porque lo tienes en el payload
@@ -25,6 +25,8 @@ interface Chat {
 }
 
 class ChatComponent extends HTMLElement {
+	private user: User | any | null = null;
+	private users: Array<User> = [];
 	private messages: Array<Data> = [];
 	private chats: Array<Chat> = [];
 	private globalChat: Array<Data> = [];
@@ -32,12 +34,30 @@ class ChatComponent extends HTMLElement {
 	private messageInput:  HTMLInputElement | null = null;
 	private sendButton: HTMLElement | null = null;
 	private socket: WebSocket | null = null;
-	private response: Promise<Response> | null = null;
+	private responseUsers: Promise<Response> | null = null;
 	constructor() {
 		super();
 		this.attachShadow({mode: "open"});
+		this.load();
 		this.connect();
+	}
+
+	private async load() {
+		await this.getProfile();
+		await this.getUsers();
 		this.render();
+		// this.updateData();
+	}
+
+	private async getProfile() {
+		this.user = await fetchUserProfile();
+		console.log("user:");
+		console.log(this.user);
+	}
+
+	private async getUsers() {
+		this.users = await fetchUsers();
+		console.log(this.users);
 	}
 
 	private connect() {
@@ -53,21 +73,9 @@ class ChatComponent extends HTMLElement {
 		}
 	}
 
-	private async getUsers() {
-
-        try {
-            // Esta url sera el endponit que configure el servidor
-            const response = await fetch("http://localhost:8000/users", {
-                method: "GET",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-            });
-
-            this.response = await response.json();
-        } catch (error: any) {
-            console.log("error en la peticion");
-        }
-    }
+	// private async getUsers() {
+	// 	this.responseUsers = await fetchUsers();
+	// }
 
 	private render(): void {
 		if(!this.shadowRoot)
@@ -76,29 +84,49 @@ class ChatComponent extends HTMLElement {
 		style.rel = "stylesheet";
 		style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
 
+		const avatar = this.user.avatar;
+		const avatarUrl = `http://localhost:8000/static/${avatar}`;
+
 		this.shadowRoot.innerHTML = `
-            <pong-header></pong-header>
-            <pong-menu></pong-menu>
-			<div id="content" class="bg-purple-300 m-4 p-4 border border-violet-500 rounded-lg flex flex-col h-120 justify-between">
-				<div id="chat" class="grow bg-amber-50 overflow-auto flex">
-					<div id="chats" class="w-1/4 bg-gray-200 border border-gray-300 rounded-lg p-2">
-						CHATS
+		<div class="flex h-screen items-center">
+			<div>
+				<pong-menu></pong-menu>
+			</div>
+			<div class="flex flex-col w-3/4 h-7/8">
+				<div id="profileCard" class="absolute z-50 top-0 left-0 bg-white mt-8 ml-8"></div>
+					<div class="flex flex-col items-center">
+						<div class="w-16 h-16 rounded-full overflow-hidden border-4 border-black flex items-center justify-center bg-emerald-200">
+							<img src="${avatarUrl}" class="w-full h-full object-cover" />
+						</div>
+						<div class="my-1">
+							<p>${this.user.username}</p>
+						</div>
 					</div>
-					<div id="messages" class="w-3/4 bg-gray-100 border border-gray-300 rounded-lg p-2 overflow-auto">
-					<ul id="messages"></ul>
+					<div class="flex grow ml-6 justify-center">
+						<div class="bg-neutral-50 m-4 rounded-2xl flex flex-row w-full max-w-4xl border-2 border-violet-600">
+							<div class="flex flex-col flex-[1] border-r border-violet-300">
+								<h2 class="text-center border-b border-violet-600 m-2 p-3">Chats</h2>
+								<div class="flex bg-neutral-50 flex-col flex-grow rounded-b-2xl">
+								</div>
+							</div>
+							<div class="flex flex-col flex-[2]">
+								<h2 class="text-center border-b border-violet-600 m-2 p-3">Messages</h2>
+								<div class="flex bg-neutral-50 flex-col flex-grow rounded-b-2xl">
+								</div>
+							</div>
+						</div>
 					</div>
+
 				</div>
-				<div id="form">
-					<input type="text" id="message" placeholder="Type a message" class="border">
-					<button id="send" class="bg-gray-800 text-white m-1 p-1 text-center font-bold text-lg">Send</button>
-				</div>
-		`;
+		</div>
+	`;
+	
 
 		this.shadowRoot.appendChild(style);
 		this.messagesBox = this.shadowRoot.querySelector("#messages") as HTMLElement;
 		this.messageInput = this.shadowRoot.querySelector("#message") as HTMLInputElement;
 		this.sendButton = this.shadowRoot.querySelector("#send") as HTMLElement;
-		this.getUsers();
+		// this.getUsers();
 		this.addEventListeners();
 
 		

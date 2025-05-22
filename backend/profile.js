@@ -18,44 +18,56 @@ module.exports = async function profileRoutes(fastify, options) {
       username: request.user.username,
       email: request.user.email,
       avatar: request.user.avatar,
-      twofa: request.user.is_twofa_enable,
+      twofa: request.user.is_twofa_enabled,
     };
+    console.log("Imprimo user en backend profile");
+    console.log(data);
     return reply.send({ user: data });
   });
 
   // edit-profile 
-  fastify.post("/edit-profile", { preHandler: authMiddleware }, async (request, reply) => {
-    try {
-      const userId = request.user.id;
-      const data = await request.file();
-      let fields = {};
-      let uploadedFile = null;
-      if (data) {
-        fields = data.fields || {};
-        uploadedFile = data.file;
+fastify.post("/edit-profile", { preHandler: authMiddleware }, async (request, reply) => {
+  try {
+    const userId = request.user.id;
+
+    const parts = request.parts();
+    let username = "";
+    let uploadedFile = null;
+    let filename = "";
+
+    for await (const part of parts) {
+      if (part.type === "file") {
+        uploadedFile = part.file;
+        filename = part.filename;
+      } else if (part.type === "field" && part.fieldname === "username") {
+        username = part.value.trim();
       }
-      const username = fields.username?.value;
-      if (username && username.trim() !== "") {
-        const existingUser = await dbGetAsync("SELECT id FROM users WHERE username = ?", [username.trim()]);
-        if (existingUser) {
-          return reply.status(400).send({ message: "Username already exists" });
-        }
-        await dbRunAsync("UPDATE users SET username = ? WHERE id = ?", [username.trim(), userId]);
-      }
-      if (uploadedFile && data.filename) {
-        const ext = path.extname(data.filename);
-        const fileName = crypto.randomBytes(16).toString("hex") + ext;
-        const uploadPath = path.join(uploadssPath, fileName);
-        await pump(uploadedFile, fs.createWriteStream(uploadPath));
-        const avatarPath = `/static/avatars/${fileName}`;
-        await dbRunAsync("UPDATE users SET avatar = ? WHERE id = ?", [avatarPath, userId]);
-      }
-      return reply.send({ message: "Profile updated successfully." });
-    } catch (error) {
-      fastify.log.error(error);
-      return reply.status(500).send({ message: "Error updating profile" });
     }
-  });
+
+    if (username !== "") {
+      const existingUser = await dbGetAsync("SELECT id FROM users WHERE username = ?", [username]);
+      if (existingUser) {
+        return reply.status(400).send({ message: "Username already exists" });
+      }
+      await dbRunAsync("UPDATE users SET username = ? WHERE id = ?", [username, userId]);
+    }
+
+    if (uploadedFile && filename) {
+      const ext = path.extname(filename);
+      const fileName = crypto.randomBytes(16).toString("hex") + ext;
+      const uploadPath = path.join(uploadssPath, fileName);
+      await pump(uploadedFile, fs.createWriteStream(uploadPath));
+      const avatarPath = `/static/avatars/${fileName}`;
+      await dbRunAsync("UPDATE users SET avatar = ? WHERE id = ?", [avatarPath, userId]);
+    }
+
+    return reply.send({ message: "Profile updated successfully." });
+  } catch (error) {
+    fastify.log.error(error);
+    return reply.status(500).send({ message: "Error updating profile" });
+  }
+});
+
 
   // public profile 
   fastify.get("/public-profile", { preHandler: authMiddleware }, async (request, reply) => {

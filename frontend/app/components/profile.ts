@@ -1,5 +1,5 @@
 // tengo que crear la interfaz data!!!!!!!!!!!!!!!!!
-
+import { fetchUserProfile } from "../utils/requests.js";
 
 class ProfileComponent extends HTMLElement {
 	private response: any | null = null;
@@ -16,21 +16,7 @@ class ProfileComponent extends HTMLElement {
 	}
 
 	private async getProfile() {
-		try {
-            const response = await fetch("http://localhost:8000/profile", {
-                method: "GET",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-            });
-
-			const data = await response.json();
-			this.response = data.user;
-			console.log(data.user);
-
-
-		} catch (error: any) {
-			console.log('Error en la peticion');
-		}
+		this.response = await fetchUserProfile();
 	}
 
 	private render(): void {
@@ -147,6 +133,10 @@ class ProfileComponent extends HTMLElement {
 				if (editCard) {
 					editCard.innerHTML = "";
 					const editProfile = document.createElement("pong-edit-profile");
+					editProfile.addEventListener("profile-updated", async () => {
+						await this.getProfile();
+						this.updateData();
+					});
 					editCard.appendChild(editProfile);
 				}
 			});

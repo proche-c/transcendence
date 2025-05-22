@@ -1,5 +1,3 @@
-"use strict";
-// tengo que crear la interfaz data!!!!!!!!!!!!!!!!!
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -9,6 +7,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+// tengo que crear la interfaz data!!!!!!!!!!!!!!!!!
+import { fetchUserProfile } from "../utils/requests.js";
 class ProfileComponent extends HTMLElement {
     constructor() {
         super();
@@ -25,19 +25,7 @@ class ProfileComponent extends HTMLElement {
     }
     getProfile() {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const response = yield fetch("http://localhost:8000/profile", {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" },
-                    credentials: "include",
-                });
-                const data = yield response.json();
-                this.response = data.user;
-                console.log(data.user);
-            }
-            catch (error) {
-                console.log('Error en la peticion');
-            }
+            this.response = yield fetchUserProfile();
         });
     }
     render() {
@@ -145,6 +133,10 @@ class ProfileComponent extends HTMLElement {
                 if (editCard) {
                     editCard.innerHTML = "";
                     const editProfile = document.createElement("pong-edit-profile");
+                    editProfile.addEventListener("profile-updated", () => __awaiter(this, void 0, void 0, function* () {
+                        yield this.getProfile();
+                        this.updateData();
+                    }));
                     editCard.appendChild(editProfile);
                 }
             });
