@@ -8,7 +8,7 @@ const authMiddlewareAUX = require("./authMiddleware");
 module.exports = async function profileRoutes(fastify, options) {
   const dbGetAsync = options.dbGetAsync;
   const dbRunAsync = options.dbRunAsync;
-  const uploadssPath = path.join(__dirname, "../uploads/avatars");
+  const uploadssPath = path.join(__dirname, "uploads/avatars");
   const authMiddleware = authMiddlewareAUX(dbGetAsync, fastify);
   fastify.register(multipart);
 
