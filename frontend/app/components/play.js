@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 class PlayComponent extends HTMLElement {
     constructor() {
         super();
@@ -216,30 +207,28 @@ class PlayComponent extends HTMLElement {
         ctx.textAlign = 'center';
         ctx.fillText(message, canvas.width / 2, canvas.height / 2);
     }
-    reportResultToServer(gameState) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { player1, player2 } = gameState.scores;
-            const formData = new FormData();
-            formData.append("goalsFor", player1.toString());
-            formData.append("goalsAgainst", player2.toString());
-            try {
-                const res = yield fetch('http://localhost:8000/api/stats', {
-                    method: 'POST',
-                    body: formData,
-                    credentials: 'include',
-                });
-                if (!res.ok) {
-                    const text = yield res.text();
-                    console.error('Error subiendo stats:', text);
-                }
-                else {
-                    console.log('Stats enviadas correctamente');
-                }
+    async reportResultToServer(gameState) {
+        const { player1, player2 } = gameState.scores;
+        const formData = new FormData();
+        formData.append("goalsFor", player1.toString());
+        formData.append("goalsAgainst", player2.toString());
+        try {
+            const res = await fetch('http://localhost:8000/api/stats', {
+                method: 'POST',
+                body: formData,
+                credentials: 'include',
+            });
+            if (!res.ok) {
+                const text = await res.text();
+                console.error('Error subiendo stats:', text);
             }
-            catch (err) {
-                console.error('Error de red al reportar stats:', err);
+            else {
+                console.log('Stats enviadas correctamente');
             }
-        });
+        }
+        catch (err) {
+            console.error('Error de red al reportar stats:', err);
+        }
     }
     resetBall(gameState, flag) {
         gameState.ball.x = 400;
@@ -265,7 +254,10 @@ class PlayComponent extends HTMLElement {
         var _a;
         const canvas = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelector('canvas');
         const ctx = canvas.getContext('2d');
-        const socket = new WebSocket('ws://localhost:8000/game');
+        const serverIP = window.location.hostname;
+        const socket = new WebSocket(`wss://${serverIP}:8000/game`);
+        console.log(`Connecting to server at ws://${serverIP}:8000/game`);
+        //const socket = new WebSocket('ws://localhost:8000/game');
         let playerNumber = null;
         let gameState = null;
         let playerY = 150;

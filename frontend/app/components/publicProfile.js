@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 class PublicProfileComponent extends HTMLElement {
     constructor() {
         super();
@@ -19,30 +10,26 @@ class PublicProfileComponent extends HTMLElement {
         this.username = this.getAttribute("username");
         this.load();
     }
-    load() {
-        return __awaiter(this, void 0, void 0, function* () {
-            console.log("Cargando public profile");
-            yield this.getPublicProfile();
-            this.render();
-        });
+    async load() {
+        console.log("Cargando public profile");
+        await this.getPublicProfile();
+        this.render();
     }
-    getPublicProfile() {
-        return __awaiter(this, void 0, void 0, function* () {
-            var _a;
-            console.log(`Username: ${this.username}`);
-            try {
-                const response = yield fetch(`http://localhost:8000/public-profile?username=${encodeURIComponent((_a = this.username) !== null && _a !== void 0 ? _a : "")}`, {
-                    method: "GET",
-                    credentials: "include",
-                });
-                const data = yield response.json();
-                this.response = data.profile;
-                // console.log(data.user);
-            }
-            catch (error) {
-                console.log('Error en la peticion');
-            }
-        });
+    async getPublicProfile() {
+        var _a;
+        console.log(`Username: ${this.username}`);
+        try {
+            const response = await fetch(`http://localhost:8000/public-profile?username=${encodeURIComponent((_a = this.username) !== null && _a !== void 0 ? _a : "")}`, {
+                method: "GET",
+                credentials: "include",
+            });
+            const data = await response.json();
+            this.response = data.profile;
+            // console.log(data.user);
+        }
+        catch (error) {
+            console.log('Error en la peticion');
+        }
     }
     render() {
         if (!this.shadowRoot)

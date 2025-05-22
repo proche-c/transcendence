@@ -289,7 +289,11 @@ class PlayComponent extends HTMLElement {
     private setupOnlineGame() {
         const canvas = this.shadowRoot?.querySelector('canvas') as HTMLCanvasElement;
         const ctx = canvas.getContext('2d')!;
-        const socket = new WebSocket('ws://localhost:8000/game');
+        
+        const serverIP = window.location.hostname;
+        const socket = new WebSocket(`wss://${serverIP}:8000/game`);
+        console.log(`Connecting to server at ws://${serverIP}:8000/game`);
+        //const socket = new WebSocket('ws://localhost:8000/game');
         let playerNumber: number | null = null;
         let gameState: GameState | null = null;
         let playerY = 150;

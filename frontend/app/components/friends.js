@@ -1,12 +1,3 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 // tengo que crear la interfaz data!!!!!!!!!!!!!!!!!
 import { fetchUserProfile, fetchUsers, fetchFriends } from "../utils/requests.js";
 // interface User	{
@@ -23,34 +14,26 @@ class FriendsComponent extends HTMLElement {
         this.attachShadow({ mode: "open" });
         this.load();
     }
-    load() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.getProfile();
-            yield this.getFriends();
-            yield this.getUsers();
-            this.render();
-            // this.updateData();
-        });
+    async load() {
+        await this.getProfile();
+        await this.getFriends();
+        await this.getUsers();
+        this.render();
+        // this.updateData();
     }
-    getProfile() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.user = yield fetchUserProfile();
-            console.log("user:");
-            console.log(this.user);
-        });
+    async getProfile() {
+        this.user = await fetchUserProfile();
+        console.log("user:");
+        console.log(this.user);
     }
-    getUsers() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.users = yield fetchUsers();
-            console.log(this.users);
-        });
+    async getUsers() {
+        this.users = await fetchUsers();
+        console.log(this.users);
     }
-    getFriends() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.friends = yield fetchFriends();
-            console.log("friends:");
-            console.log(this.friends);
-        });
+    async getFriends() {
+        this.friends = await fetchFriends();
+        console.log("friends:");
+        console.log(this.friends);
     }
     render() {
         if (!this.shadowRoot)
@@ -137,18 +120,18 @@ class FriendsComponent extends HTMLElement {
         console.log("Entro en addEventListeners");
         const addButtons = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelectorAll(".add-button");
         addButtons === null || addButtons === void 0 ? void 0 : addButtons.forEach((button) => {
-            button.addEventListener("click", (event) => __awaiter(this, void 0, void 0, function* () {
+            button.addEventListener("click", async (event) => {
                 const target = event.currentTarget;
                 const username = target.getAttribute("name-to-add");
                 console.log(`username: $(username)`);
                 if (username) {
-                    yield this.sendFriendRequest(username);
+                    await this.sendFriendRequest(username);
                 }
-            }));
+            });
         });
         const userButtons = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.querySelectorAll(".user-button");
         userButtons === null || userButtons === void 0 ? void 0 : userButtons.forEach((button) => {
-            button.addEventListener("click", (event) => __awaiter(this, void 0, void 0, function* () {
+            button.addEventListener("click", async (event) => {
                 var _a;
                 const target = event.currentTarget;
                 const username = target.getAttribute("data-username");
@@ -162,34 +145,32 @@ class FriendsComponent extends HTMLElement {
                         profileCard.appendChild(publicProfile);
                     }
                 }
-            }));
+            });
         });
     }
-    sendFriendRequest(username) {
-        return __awaiter(this, void 0, void 0, function* () {
-            console.log("Entro en sendFriendRequest");
-            try {
-                const response = yield fetch("http://localhost:8000/users/friends", {
-                    method: "POST",
-                    headers: {
-                        "Content-type": "application/json",
-                    },
-                    credentials: "include",
-                    body: JSON.stringify({ username }),
-                });
-                const data = yield response.json();
-                if (response.ok) {
-                    alert(`Friend request sent to ${username}`);
-                }
-                else {
-                    alert(`Error: ${data.message}`);
-                }
+    async sendFriendRequest(username) {
+        console.log("Entro en sendFriendRequest");
+        try {
+            const response = await fetch("http://localhost:8000/users/friends", {
+                method: "POST",
+                headers: {
+                    "Content-type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify({ username }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert(`Friend request sent to ${username}`);
             }
-            catch (error) {
-                console.error("Error sending friend request", error);
-                alert("Failed to send ");
+            else {
+                alert(`Error: ${data.message}`);
             }
-        });
+        }
+        catch (error) {
+            console.error("Error sending friend request", error);
+            alert("Failed to send ");
+        }
     }
 }
 customElements.define("pong-friends", FriendsComponent);

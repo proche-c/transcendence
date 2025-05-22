@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 class RegisterComponent extends HTMLElement {
     constructor() {
         super();
@@ -83,7 +74,7 @@ class RegisterComponent extends HTMLElement {
     }
     addEventListeners() {
         var _a, _b, _c, _d, _e;
-        (_a = this.registerForm) === null || _a === void 0 ? void 0 : _a.addEventListener("submit", (event) => __awaiter(this, void 0, void 0, function* () {
+        (_a = this.registerForm) === null || _a === void 0 ? void 0 : _a.addEventListener("submit", async (event) => {
             var _a, _b, _c, _d;
             event.preventDefault();
             const email = ((_a = this.emailInput) === null || _a === void 0 ? void 0 : _a.value) || "";
@@ -92,12 +83,12 @@ class RegisterComponent extends HTMLElement {
             const password2 = ((_d = this.password2Input) === null || _d === void 0 ? void 0 : _d.value) || "";
             // Fields validation before sending the request
             if (this.validateEmail() && this.validateUsername() && this.validatePasswordMatch()) {
-                yield this.postData(email, user, password);
+                await this.postData(email, user, password);
             }
             else {
                 this.errorMsg.textContent = "Fix the errors first"; // main error message
             }
-        }));
+        });
         // Real time fields validation
         (_b = this.emailInput) === null || _b === void 0 ? void 0 : _b.addEventListener("input", () => {
             this.validateEmail();
@@ -139,36 +130,34 @@ class RegisterComponent extends HTMLElement {
             return true;
         }
     }
-    checkEmailAvailability() {
-        return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
-            const email = ((_a = this.emailInput) === null || _a === void 0 ? void 0 : _a.value) || "";
-            const emailError = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.querySelector("#emailError");
-            if (!this.validateEmail())
-                return; // If the email is not valid, do not check availability
-            try {
-                // Appel à l'API pour vérifier la disponibilité de l'email
-                const response = yield fetch(`http://localhost:8000/check-email?email=${encodeURIComponent(email)}`);
-                // Vérifier si la réponse est correcte
-                if (!response.ok) {
-                    emailError.textContent = "Server error, please try again later.";
-                    return;
-                }
-                const data = yield response.json();
-                // Si la clé "available" existe et est false, cela signifie que l'email est déjà pris
-                if (data && data.available) {
-                    emailError.textContent = "Email is already taken";
-                }
-                else {
-                    emailError.textContent = ""; // Aucun problème, email disponible
-                }
+    async checkEmailAvailability() {
+        var _a, _b;
+        const email = ((_a = this.emailInput) === null || _a === void 0 ? void 0 : _a.value) || "";
+        const emailError = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.querySelector("#emailError");
+        if (!this.validateEmail())
+            return; // If the email is not valid, do not check availability
+        try {
+            // Appel à l'API pour vérifier la disponibilité de l'email
+            const response = await fetch(`http://localhost:8000/check-email?email=${encodeURIComponent(email)}`);
+            // Vérifier si la réponse est correcte
+            if (!response.ok) {
+                emailError.textContent = "Server error, please try again later.";
+                return;
             }
-            catch (err) {
-                // Gérer les erreurs réseau ou autres
-                console.error("Validation of email hasn't worked", err);
-                emailError.textContent = "Network error, please try again.";
+            const data = await response.json();
+            // Si la clé "available" existe et est false, cela signifie que l'email est déjà pris
+            if (data && data.available) {
+                emailError.textContent = "Email is already taken";
             }
-        });
+            else {
+                emailError.textContent = ""; // Aucun problème, email disponible
+            }
+        }
+        catch (err) {
+            // Gérer les erreurs réseau ou autres
+            console.error("Validation of email hasn't worked", err);
+            emailError.textContent = "Network error, please try again.";
+        }
     }
     // username validation
     validateUsername() {
@@ -189,35 +178,33 @@ class RegisterComponent extends HTMLElement {
         usernameError.textContent = "";
         return true;
     }
-    checkUsernameAvailability() {
-        return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
-            const username = ((_a = this.userInput) === null || _a === void 0 ? void 0 : _a.value) || "";
-            const usernameError = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.querySelector("#usernameError");
-            if (username.length < 3)
+    async checkUsernameAvailability() {
+        var _a, _b;
+        const username = ((_a = this.userInput) === null || _a === void 0 ? void 0 : _a.value) || "";
+        const usernameError = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.querySelector("#usernameError");
+        if (username.length < 3)
+            return;
+        try {
+            // Appel à l'API pour vérifier la disponibilité du nom d'utilisateur
+            const response = await fetch(`http://localhost:8000/check-username?username=${encodeURIComponent(username)}`);
+            // Vérifier si la réponse est correcte
+            if (!response.ok) {
+                usernameError.textContent = "Server error, please try again later.";
                 return;
-            try {
-                // Appel à l'API pour vérifier la disponibilité du nom d'utilisateur
-                const response = yield fetch(`http://localhost:8000/check-username?username=${encodeURIComponent(username)}`);
-                // Vérifier si la réponse est correcte
-                if (!response.ok) {
-                    usernameError.textContent = "Server error, please try again later.";
-                    return;
-                }
-                const data = yield response.json();
-                if (data && data.available) {
-                    usernameError.textContent = "Username is already taken";
-                }
-                else {
-                    usernameError.textContent = ""; // Aucun problème, nom d'utilisateur disponible
-                }
             }
-            catch (err) {
-                // Gérer les erreurs réseau ou autres
-                console.error("Validation of username hasn't worked", err);
-                usernameError.textContent = "Network error, please try again.";
+            const data = await response.json();
+            if (data && data.available) {
+                usernameError.textContent = "Username is already taken";
             }
-        });
+            else {
+                usernameError.textContent = ""; // Aucun problème, nom d'utilisateur disponible
+            }
+        }
+        catch (err) {
+            // Gérer les erreurs réseau ou autres
+            console.error("Validation of username hasn't worked", err);
+            usernameError.textContent = "Network error, please try again.";
+        }
     }
     // password1 validation
     checkPasswordStrength() {
@@ -251,28 +238,26 @@ class RegisterComponent extends HTMLElement {
         password2Error.textContent = "";
         return true;
     }
-    postData(email, user, password) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const data = { "username": user, "email": email, "password": password };
-            try {
-                const response = yield fetch("http://localhost:8000/register", {
-                    method: "POST",
-                    body: JSON.stringify(data),
-                    headers: { "Content-Type": "application/json" },
-                });
-                this.response = yield response.json();
-                console.log("Se ha enviado la peticion");
-                if (response.ok) {
-                    location.hash = "#";
-                }
-                if (!response.ok) {
-                    throw { status: response.status, statusText: response.statusText };
-                }
+    async postData(email, user, password) {
+        const data = { "username": user, "email": email, "password": password };
+        try {
+            const response = await fetch("http://localhost:8000/register", {
+                method: "POST",
+                body: JSON.stringify(data),
+                headers: { "Content-Type": "application/json" },
+            });
+            this.response = await response.json();
+            console.log("Se ha enviado la peticion");
+            if (response.ok) {
+                location.hash = "#";
             }
-            catch (error) {
-                console.log("error en la peticion");
+            if (!response.ok) {
+                throw { status: response.status, statusText: response.statusText };
             }
-        });
+        }
+        catch (error) {
+            console.log("error en la peticion");
+        }
     }
 }
 customElements.define("pong-register", RegisterComponent);

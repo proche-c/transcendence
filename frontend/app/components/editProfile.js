@@ -1,12 +1,3 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import { fetchUserProfile } from "../utils/requests.js";
 class EditProfileComponent extends HTMLElement {
     constructor() {
@@ -15,17 +6,13 @@ class EditProfileComponent extends HTMLElement {
         this.attachShadow({ mode: "open" });
         this.load();
     }
-    load() {
-        return __awaiter(this, void 0, void 0, function* () {
-            console.log("Cargando edit profile");
-            yield this.getProfile();
-            this.render();
-        });
+    async load() {
+        console.log("Cargando edit profile");
+        await this.getProfile();
+        this.render();
     }
-    getProfile() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.response = yield fetchUserProfile();
-        });
+    async getProfile() {
+        this.response = await fetchUserProfile();
     }
     render() {
         if (!this.shadowRoot)
@@ -85,7 +72,7 @@ class EditProfileComponent extends HTMLElement {
             uploadImg.addEventListener("click", () => {
                 fileInput.click();
             });
-            fileInput.addEventListener("change", (e) => __awaiter(this, void 0, void 0, function* () {
+            fileInput.addEventListener("change", async (e) => {
                 var _a;
                 const file = (_a = e.target.files) === null || _a === void 0 ? void 0 : _a[0];
                 if (!file)
@@ -97,10 +84,10 @@ class EditProfileComponent extends HTMLElement {
                 }
                 const tempUrl = URL.createObjectURL(file);
                 avatarImg.src = tempUrl;
-            }));
+            });
         }
         if (saveButton && fileInput && usernameInput) {
-            saveButton.addEventListener("click", () => __awaiter(this, void 0, void 0, function* () {
+            saveButton.addEventListener("click", async () => {
                 var _a;
                 let username = usernameInput.value.trim();
                 if (username === this.response.username)
@@ -111,7 +98,7 @@ class EditProfileComponent extends HTMLElement {
                 if (file)
                     formData.append("avatar", file);
                 try {
-                    const response = yield fetch("http://localhost:8000/edit-profile", {
+                    const response = await fetch("http://localhost:8000/edit-profile", {
                         method: "POST",
                         body: formData,
                         credentials: "include",
@@ -122,14 +109,14 @@ class EditProfileComponent extends HTMLElement {
                         this.remove(); // Elimina el componente edit-profile del DOM
                     }
                     else {
-                        const errorData = yield response.json();
+                        const errorData = await response.json();
                         console.error(errorData.message || "Error saving changes");
                     }
                 }
                 catch (error) {
                     console.error("Error uploading profile", error);
                 }
-            }));
+            });
         }
     }
 }

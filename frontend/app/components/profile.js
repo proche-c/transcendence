@@ -1,12 +1,3 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 // tengo que crear la interfaz data!!!!!!!!!!!!!!!!!
 import { fetchUserProfile } from "../utils/requests.js";
 class ProfileComponent extends HTMLElement {
@@ -16,17 +7,13 @@ class ProfileComponent extends HTMLElement {
         this.attachShadow({ mode: "open" });
         this.load();
     }
-    load() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.getProfile();
-            this.render();
-            this.updateData();
-        });
+    async load() {
+        await this.getProfile();
+        this.render();
+        this.updateData();
     }
-    getProfile() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.response = yield fetchUserProfile();
-        });
+    async getProfile() {
+        this.response = await fetchUserProfile();
     }
     render() {
         if (!this.shadowRoot)
@@ -133,10 +120,10 @@ class ProfileComponent extends HTMLElement {
                 if (editCard) {
                     editCard.innerHTML = "";
                     const editProfile = document.createElement("pong-edit-profile");
-                    editProfile.addEventListener("profile-updated", () => __awaiter(this, void 0, void 0, function* () {
-                        yield this.getProfile();
+                    editProfile.addEventListener("profile-updated", async () => {
+                        await this.getProfile();
                         this.updateData();
-                    }));
+                    });
                     editCard.appendChild(editProfile);
                 }
             });
