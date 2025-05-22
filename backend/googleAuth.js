@@ -17,7 +17,7 @@ module.exports = async function (fastify, options) {
       auth: oauthPlugin.GOOGLE_CONFIGURATION
     },
     startRedirectPath: '/login/google',
-    callbackUri: 'http://localhost:8000/auth/google/callback'
+    callbackUri: 'https://localhost:8443/auth/google/callback'
   });
 
   // Google callback route
@@ -75,8 +75,9 @@ module.exports = async function (fastify, options) {
         path: "/",
         maxAge: 60 * 70, // 70 minutes
       });
+      
 
-      return reply.redirect('http://localhost:5500/frontend/#profile');
+      return reply.redirect('https://localhost:8443/#profile');
     } catch (err) {
       return reply.status(500).send({ message: 'Google authentication failed', error: err.message });
     }
