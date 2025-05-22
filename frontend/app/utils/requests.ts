@@ -17,3 +17,44 @@ export async function fetchUserProfile() {
 		return null;
 	}
 }
+
+export interface User {
+	id: number;
+	username: string;
+	avatar: string;
+}
+
+export async function fetchUsers(): Promise<User[]> {
+	try {
+		const response = await fetch("http://localhost:8000/users", {
+			method: "GET",
+			headers: { "Content-Type": "application/json" },
+			credentials: "include",
+		});
+		const data = await response.json();
+		return data;
+	} catch (error: any) {
+		console.error("Error fetching users:", error);
+		return [];
+	}
+}
+
+export async function fetchFriends() {
+	try {
+		const response = await fetch("http://localhost:8000/users/friends", {
+			method: "GET",
+			headers: { "Content-Type": "application/json" },
+			credentials: "include",
+		});
+
+		if (!response.ok) {
+			throw new Error("Error en la respuesta del servidor");
+		}
+
+		const data = await response.json();
+		return data.friends;
+	} catch (error) {
+		console.error("Error al obtener friends:", error);
+		return null;
+	}
+}

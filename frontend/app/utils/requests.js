@@ -27,3 +27,40 @@ export function fetchUserProfile() {
         }
     });
 }
+export function fetchUsers() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const response = yield fetch("http://localhost:8000/users", {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+            });
+            const data = yield response.json();
+            return data;
+        }
+        catch (error) {
+            console.error("Error fetching users:", error);
+            return [];
+        }
+    });
+}
+export function fetchFriends() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const response = yield fetch("http://localhost:8000/users/friends", {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+            });
+            if (!response.ok) {
+                throw new Error("Error en la respuesta del servidor");
+            }
+            const data = yield response.json();
+            return data.friends;
+        }
+        catch (error) {
+            console.error("Error al obtener friends:", error);
+            return null;
+        }
+    });
+}

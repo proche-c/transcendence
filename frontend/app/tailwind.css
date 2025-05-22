@@ -21,11 +21,10 @@
     --color-blue-600: oklch(54.6% 0.245 262.881);
     --color-blue-700: oklch(48.8% 0.243 264.376);
     --color-violet-200: oklch(89.4% 0.057 293.283);
-    --color-violet-500: oklch(60.6% 0.25 292.717);
+    --color-violet-300: oklch(81.1% 0.111 293.571);
     --color-violet-600: oklch(54.1% 0.281 293.009);
     --color-violet-700: oklch(49.1% 0.27 292.581);
     --color-violet-900: oklch(38% 0.189 293.745);
-    --color-purple-300: oklch(82.7% 0.119 306.383);
     --color-purple-400: oklch(71.4% 0.203 305.504);
     --color-purple-700: oklch(49.6% 0.265 301.924);
     --color-purple-900: oklch(38.1% 0.176 304.987);
@@ -48,6 +47,7 @@
     --container-sm: 24rem;
     --container-md: 28rem;
     --container-xl: 36rem;
+    --container-4xl: 56rem;
     --text-xs: 0.75rem;
     --text-xs--line-height: calc(1 / 0.75);
     --text-sm: 0.875rem;
@@ -426,9 +426,6 @@
   .h-100 {
     height: calc(var(--spacing) * 100);
   }
-  .h-120 {
-    height: calc(var(--spacing) * 120);
-  }
   .h-fit {
     height: fit-content;
   }
@@ -437,9 +434,6 @@
   }
   .h-screen {
     height: 100vh;
-  }
-  .w-1\/4 {
-    width: calc(1/4 * 100%);
   }
   .w-3\/4 {
     width: calc(3/4 * 100%);
@@ -468,6 +462,9 @@
   .w-full {
     width: 100%;
   }
+  .max-w-4xl {
+    max-width: var(--container-4xl);
+  }
   .max-w-md {
     max-width: var(--container-md);
   }
@@ -479,6 +476,12 @@
   }
   .flex-1 {
     flex: 1;
+  }
+  .flex-\[1\] {
+    flex: 1;
+  }
+  .flex-\[2\] {
+    flex: 2;
   }
   .flex-grow {
     flex-grow: 1;
@@ -615,6 +618,10 @@
     border-top-style: var(--tw-border-style);
     border-top-width: 1px;
   }
+  .border-r {
+    border-right-style: var(--tw-border-style);
+    border-right-width: 1px;
+  }
   .border-b {
     border-bottom-style: var(--tw-border-style);
     border-bottom-width: 1px;
@@ -642,8 +649,8 @@
   .border-purple-900 {
     border-color: var(--color-purple-900);
   }
-  .border-violet-500 {
-    border-color: var(--color-violet-500);
+  .border-violet-300 {
+    border-color: var(--color-violet-300);
   }
   .border-violet-600 {
     border-color: var(--color-violet-600);
@@ -689,9 +696,6 @@
   }
   .bg-neutral-50 {
     background-color: var(--color-neutral-50);
-  }
-  .bg-purple-300 {
-    background-color: var(--color-purple-300);
   }
   .bg-purple-400 {
     background-color: var(--color-purple-400);
