@@ -135,6 +135,22 @@ fastify.register(profileRoutes, {
   authMiddleware,
 });
 
+const statsRoutes = require("./stats");
+fastify.register(statsRoutes, {
+  dbGetAsync,
+  dbRunAsync,
+  authMiddleware,
+});
+
+const gameRoutes = require("./game");
+fastify.register(gameRoutes, {
+  prefix: "/game",
+  db,
+  dbGetAsync, 
+  dbRunAsync,
+  dbAllAsync,
+});
+
 fastify.register(require('./login'), { dbGetAsync });
 fastify.register(require('./register'), { dbGetAsync, dbRunAsync });
 fastify.register(require('./googleAuth'));

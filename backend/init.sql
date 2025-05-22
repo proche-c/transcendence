@@ -5,7 +5,13 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   avatar TEXT DEFAULT 'default_avatar.png',  -- Avatar par défaut
   twofa_secret TEXT,
-  is_twofa_enabled INTEGER DEFAULT 0
+  is_twofa_enabled INTEGER DEFAULT 0,
+  total_matches INTEGER DEFAULT 0,
+  total_wins INTEGER DEFAULT 0,
+  total_losses INTEGER DEFAULT 0,
+  goals_for INTEGER DEFAULT 0,
+  goals_against INTEGER DEFAULT 0,
+  ranking INTEGER DEFAULT NUL
 );
 
 
