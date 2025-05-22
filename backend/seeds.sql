@@ -2,8 +2,7 @@
 INSERT OR IGNORE INTO users (username, email, password_hash) VALUES 
 ('player1', 'player1@example.com', '$2b$10$hashpassword1'),
 ('player2', 'player2@example.com', '$2b$10$hashpassword2'),
-('player3', 'player3@example.com', '$2b$10$hashpassword3'),
-('alex', 'elgringo154@gmail.com', '123456');
+('player3', 'player3@example.com', '$2b$10$hashpassword3');
 
 -- Ajout de relations d'amis
 INSERT OR IGNORE INTO friends (user_id, friend_id, status) VALUES 

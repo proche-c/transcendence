@@ -21,12 +21,21 @@ fastify.register(fastifyCookie);
 const fastifyStatic = require('@fastify/static');
 
 const uploadssPath = path.join(__dirname, 'uploads');
-console.log("Serving statics from: ", uploadssPath);
 
+console.log("Serving statics from: ", uploadssPath);
 fastify.register(fastifyStatic, {
     root: uploadssPath,
     prefix: '/static/',
 });
+
+
+const frontendPath = path.join(__dirname, '../frontend');
+fastify.register(fastifyStatic, {
+  root: frontendPath,
+  prefix: '/',
+  decorateReply: false,
+});
+
 
 // Register CORS middleware
 fastify.register(cors, {
