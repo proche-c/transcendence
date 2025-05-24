@@ -43,4 +43,18 @@ fastify.post('/2fa/verify', { preHandler: [fastify.authenticate] }, async (reque
     return reply.send({ message: '2FA verified successfully' });
 });
 
+fastify.get('/2fa/status', { preHandler: [fastify.authenticate] }, async (request, reply) => {
+    const userId = request.user.userId;
+    const user = await dbGetAsync('SELECT is_twofa_enabled FROM users WHERE id = ?', [userId]);
+    return reply.send({ enabled: !!user?.is_twofa_enabled });
+  });
+
+  fastify.post('/2fa/disable', { preHandler: [fastify.authenticate] }, async (request, reply) => {
+	const userId = request.user.userId;
+	await dbRunAsync('UPDATE users SET is_twofa_enabled = 0, twofa_secret = NULL WHERE id = ?', [userId]);
+	return reply.send({ message: "2FA disabled" });
+});
+
+  
+
 }
