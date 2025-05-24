@@ -1,4 +1,8 @@
-odule.exports = async function (fastify, options) {
+const speakeasy = require('speakeasy');
+const qrcode = require('qrcode');
+
+
+module.exports = async function (fastify, options) {
     const { dbGetAsync, dbRunAsync } = options;
 
 // Two-factor authentication route
@@ -16,7 +20,7 @@ fastify.post('/2fa/setup', { preHandler: [fastify.authenticate] }, async (reques
     return reply.send({
         message: '2FA setup',
         qrCode,
-        secret: secret.base32, // to hide in production
+        secret: secret.base32, // to hide in production!!!!!!!!!!!!!!!!!!!!!!!!
     });
 });
 
@@ -42,5 +46,15 @@ fastify.post('/2fa/verify', { preHandler: [fastify.authenticate] }, async (reque
 
     return reply.send({ message: '2FA verified successfully' });
 });
+
+// Disable 2FA
+fastify.post('/2fa/disable', { preHandler: [fastify.authenticate] }, async (request, reply) => {
+    const userId = request.user.userId;
+
+    await dbRunAsync('UPDATE users SET twofa_secret = NULL, is_twofa_enabled = 0 WHERE id = ?', [userId]);
+
+    return reply.send({ message: '2FA disabled' });
+});
+
 
 }
