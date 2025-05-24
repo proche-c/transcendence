@@ -153,7 +153,7 @@ fastify.register(gameRoutes, {
 
 fastify.register(require('./login'), { dbGetAsync });
 fastify.register(require('./register'), { dbGetAsync, dbRunAsync });
-fastify.register(require('./googleAuth'));
+fastify.register(require('./googleAuth'), { dbGetAsync, dbRunAsync });
 
 // Get tournaments
 fastify.get("/tournaments", async (request, reply) => {
