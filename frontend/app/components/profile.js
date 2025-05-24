@@ -43,7 +43,7 @@ class ProfileComponent extends HTMLElement {
 				</div>
 				<div class="grow h-7/8 my-10 mx-4 w-7/12 flex items-center justify-center">
 
-					<div class="group relative block max-w-screen-sm mx-auto h-100 lg:h-120">
+					<div class="group relative block max-w-screen-sm mx-auto h-120 lg:h-150">
 						<div id="editCard" class="absolute z-50 top-0 left-0 bg-white mt-8 ml-8"></div>
 						<span class="absolute inset-0 border-2 border-dashed border-black"></span>
 						<div class="relative flex flex-col h-full w-60 md:w-72 transform border-2 border-black bg-white transition-transform group-hover:scale-105">
@@ -68,8 +68,17 @@ class ProfileComponent extends HTMLElement {
 								<div class="text-xl text-center mt-2">
 								Total wins: <span id="wins" class="font-bold">0</span>
 								</div>
+								<div class="text-xl text-center mt-2">
+								Total losses: <span id="losses" class="font-bold">0</span>
+								</div>
 								<div class="text-xl text-center mt-2 mb-4">
 								Win rate: <span id="rate" class="font-bold">0</span>
+								</div>
+								<div class="text-xl text-center mt-2">
+								Goals for: <span id="goalsFor" class="font-bold">0</span>
+								</div>
+								<div class="text-xl text-center mt-2">
+								Goals against: <span id="goalsAgainst" class="font-bold">0</span>
 								</div>
 								<div class="place-self-start mt-4">
 									<button id="edit">
@@ -100,27 +109,42 @@ class ProfileComponent extends HTMLElement {
         }
         const rank = this.shadowRoot.querySelector("#rank");
         if (rank) {
-            this.response.rank = this.response.rank || 1;
-            rank.innerHTML = 'Rank: ' + this.response.rank;
+            this.response.ranking = this.response.ranking || 1;
+            rank.innerHTML = 'Rank: ' + this.response.ranking;
         }
         const totalGames = this.shadowRoot.querySelector("#totalGames");
         if (totalGames) {
-            this.response.totalGames = this.response.totalGames || 0;
-            totalGames.innerHTML = this.response.totalGames;
+            this.response.total_matches = this.response.total_matches || 0;
+            totalGames.innerHTML = this.response.total_matches;
         }
         const wins = this.shadowRoot.querySelector("#wins");
         if (wins) {
-            this.response.totalWins = this.response.totalWins || 0;
-            wins.innerHTML = this.response.totalWins;
+            this.response.total_wins = this.response.total_wins || 0;
+            wins.innerHTML = this.response.total_wins;
+        }
+        const losses = this.shadowRoot.querySelector("#losses");
+        if (losses) {
+            this.response.total_losses = this.response.total_losses || 0;
+            losses.innerHTML = this.response.total_losses;
         }
         const rate = this.shadowRoot.querySelector("#rate");
         if (rate) {
             let winsRate = 0;
-            if (this.response.totalGames > 0) {
-                winsRate = this.response.totalWins / this.response.totalGames;
+            if (this.response.total_matches > 0) {
+                winsRate = this.response.total_wins / this.response.total_matches;
                 winsRate = Math.round(winsRate * 100);
             }
             rate.innerHTML = winsRate + '%';
+        }
+        const goalsFor = this.shadowRoot.querySelector("#goalsFor");
+        if (goalsFor) {
+            this.response.goals_for = this.response.goals_for || 0;
+            goalsFor.innerHTML = this.response.goals_for;
+        }
+        const goalsAgainst = this.shadowRoot.querySelector("#goalsAgainst");
+        if (goalsAgainst) {
+            this.response.goals_against = this.response.goals_against || 0;
+            goalsAgainst.innerHTML = this.response.goals_against;
         }
     }
     addEventListeners() {

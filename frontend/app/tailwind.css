@@ -423,8 +423,8 @@
   .h-32 {
     height: calc(var(--spacing) * 32);
   }
-  .h-100 {
-    height: calc(var(--spacing) * 100);
+  .h-120 {
+    height: calc(var(--spacing) * 120);
   }
   .h-fit {
     height: fit-content;
@@ -565,9 +565,6 @@
   }
   .place-self-start {
     place-self: start;
-  }
-  .overflow-auto {
-    overflow: auto;
   }
   .overflow-hidden {
     overflow: hidden;
@@ -1123,9 +1120,9 @@
       margin-left: calc(var(--spacing) * 0);
     }
   }
-  .lg\:h-120 {
+  .lg\:h-150 {
     @media (width >= 64rem) {
-      height: calc(var(--spacing) * 120);
+      height: calc(var(--spacing) * 150);
     }
   }
   .lg\:w-6\/12 {

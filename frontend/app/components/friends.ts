@@ -1,11 +1,4 @@
-// tengo que crear la interfaz data!!!!!!!!!!!!!!!!!
 import { fetchUserProfile, fetchUsers, fetchFriends, User } from "../utils/requests.js";
-
-// interface User	{
-// 	id: number;
-// 	username: string;
-// 	avatar: string;
-// }
 
 
 class FriendsComponent extends HTMLElement {
@@ -23,24 +16,18 @@ class FriendsComponent extends HTMLElement {
 		await this.getFriends();
 		await this.getUsers();
 		this.render();
-		// this.updateData();
 	}
 
 	private async getProfile() {
 		this.user = await fetchUserProfile();
-		console.log("user:");
-		console.log(this.user);
 	}
 
 	private async getUsers() {
 		this.users = await fetchUsers();
-		console.log(this.users);
 	}
 
 	private async getFriends() {
 		this.friends = await fetchFriends();
-		console.log("friends:");
-		console.log(this.friends);
 	}
 
 	private render(): void {
@@ -130,7 +117,6 @@ class FriendsComponent extends HTMLElement {
 	}
 
 	private addEventListeners() {
-		console.log("Entro en addEventListeners");
 
 		const addButtons = this.shadowRoot?.querySelectorAll(".add-button");
 		addButtons?.forEach((button) => {

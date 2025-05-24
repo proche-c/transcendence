@@ -19,6 +19,12 @@ module.exports = async function profileRoutes(fastify, options) {
       email: request.user.email,
       avatar: request.user.avatar,
       twofa: request.user.is_twofa_enabled,
+      total_matches: request.user.total_matches,
+      total_wins: request.user.total_wins,
+      total_losses: request.user.total_losses,
+      goals_for: request.user.goals_for,
+      goals_against: request.user.goals_against,
+      ranking: request.user.ranking
     };
     console.log("Imprimo user en backend profile");
     console.log(data);

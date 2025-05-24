@@ -76,39 +76,30 @@ class ChatComponent extends HTMLElement {
 			</div>
 			<div class="flex flex-col w-3/4 h-7/8">
 				<div id="profileCard" class="absolute z-50 top-0 left-0 bg-white mt-8 ml-8"></div>
-	
-				<div class="flex flex-col items-center">
-					<div class="w-16 h-16 rounded-full overflow-hidden border-4 border-black flex items-center justify-center bg-emerald-200">
-						<img src="${avatarUrl}" class="w-full h-full object-cover" />
+					<div class="flex flex-col items-center">
+						<div class="w-16 h-16 rounded-full overflow-hidden border-4 border-black flex items-center justify-center bg-emerald-200">
+							<img src="${avatarUrl}" class="w-full h-full object-cover" />
+						</div>
+						<div class="my-1">
+							<p>${this.user.username}</p>
+						</div>
 					</div>
-					<div class="my-1">
-						<p>${this.user.username}</p>
-					</div>
-				</div>
-	
-				<div class="flex grow ml-6 justify-center">
-				<div class="bg-neutral-50 m-4 rounded-2xl flex flex-row w-full max-w-4xl border-2 border-violet-600">
-					
-					<!-- CHAT LIST (1/3 del contenedor) -->
-					<div class="flex flex-col flex-[1] border-r border-violet-300">
-					<h2 class="text-center border-b border-violet-600 m-2 p-3">Chats</h2>
-					<div class="flex bg-neutral-50 flex-col flex-grow rounded-b-2xl">
-						<!-- contenido de chats -->
-					</div>
-					</div>
-
-					<!-- MESSAGE VIEW (2/3 del contenedor) -->
-					<div class="flex flex-col flex-[2]">
-					<h2 class="text-center border-b border-violet-600 m-2 p-3">Messages</h2>
-					<div class="flex bg-neutral-50 flex-col flex-grow rounded-b-2xl">
-						<!-- contenido de mensajes -->
-					</div>
-					</div>
-
-				</div>
-				</div>
-
+					<div class="flex grow ml-6 justify-center">
+						<div class="bg-neutral-50 m-4 rounded-2xl flex flex-row w-full max-w-4xl border-2 border-violet-600">
+							<div class="flex flex-col flex-[1] border-r border-violet-300">
+								<h2 class="text-center border-b border-violet-600 m-2 p-3">Chats</h2>
+								<div class="flex bg-neutral-50 flex-col flex-grow rounded-b-2xl">
+								</div>
 							</div>
+							<div class="flex flex-col flex-[2]">
+								<h2 class="text-center border-b border-violet-600 m-2 p-3">Messages</h2>
+								<div class="flex bg-neutral-50 flex-col flex-grow rounded-b-2xl">
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</div>
 		</div>
 	`;
         this.shadowRoot.appendChild(style);
