@@ -1,6 +1,7 @@
 import { fetchUserProfile } from "../utils/requests.js";
 
-class EditProfileComponent extends HTMLElement {
+class 
+EditProfileComponent extends HTMLElement {
 	private response: any | null = null;
 	private twofaEnabled: boolean = false;
 
