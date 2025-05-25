@@ -51,7 +51,7 @@ services:
     restart: always
     depends_on:
       - nginx
-    command: http nginx:8443
+    command: http https://nginx:8443
     env_file:
       - ./backend/.env
     ports:
