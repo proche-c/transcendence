@@ -46,15 +46,14 @@ services:
       - PORT=8000
 
   ngrok:
-    image: wernight/ngrok
+    image: ngrok/ngrok:latest
     container_name: ngrok
     restart: always
     depends_on:
       - nginx
+    command: http nginx:8443
     env_file:
       - ./backend/.env
-    environment:
-      - NGROK_PORT=nginx:8443
     ports:
       - "4040:4040"
     networks:
