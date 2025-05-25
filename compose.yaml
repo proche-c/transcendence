@@ -5,11 +5,13 @@ services:
     container_name: nginx
     restart: always
     ports:
+      - "8080:8080"
       - "8443:8443"
     volumes:
       - ./frontend:/usr/share/nginx/html
     depends_on:
       - frontend
+      - backend
     networks:
       - transcendence-net
 
@@ -35,13 +37,28 @@ services:
       - ./backend:/home/node/app
       - /home/node/app/node_modules  # Solo para evitar sobrescritura
       - sqlite_data:/home/node/app/sqlite_data 
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     networks:
       - transcendence-net
     environment:
       - NODE_ENV=production
       - PORT=8000
+
+  ngrok:
+    image: wernight/ngrok
+    container_name: ngrok
+    restart: always
+    depends_on:
+      - backend
+    environment:
+      - NGROK_AUTHTOKEN
+      - NGROK_PORT=backend:8000
+      - NGROK_REGION=es
+    ports:
+      - "4040:4040"  # API locale de ngrok
+    networks:
+      - transcendence-net
 
 networks:
   transcendence-net:

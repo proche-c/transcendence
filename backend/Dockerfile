@@ -1,7 +1,8 @@
 # Usamos versión específica de Node.js
-FROM node:18-alpine
+FROM node:23-alpine
 
 # Instalamos sqlite3 (en Alpine se usa apk)
+RUN apk add --no-cache python3 make g++
 RUN apk add --no-cache sqlite
 
 # Crear directorio con permisos adecuados
