@@ -7,8 +7,29 @@ RESET := $(shell tput -Txterm sgr0)
 DOCKER_COMPOSE := docker-compose
 DOCKER_COMPOSE_FILE := compose.yaml
 
-start:
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up -d
+NGROK_API := http://localhost:4040/api/tunnels
+NGROK_ENV := ./backend/.env.shared
+
+prepare-env:
+	@touch $(NGROK_ENV)
+
+
+start: prepare-env up-ngrok wait-ngrok-url up-rest
+
+up-ngrok:
+	@echo "$(YELLOW)[INFO] Starting nginx and ngrok$(RESET)"
+	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up -d nginx ngrok
+
+wait-ngrok-url:
+	@echo "$(YELLOW)[INFO] Waiting for the ngrok Url...$(RESET)"
+	@until curl -s $(NGROK_API) | grep -q "public_url"; do sleep 1; done
+	@NGROK_URL=$$(curl -s $(NGROK_API) | grep -o "https://[a-zA-Z0-9.-]*\.ngrok-free\.app" | head -n 1); \
+	echo "NGROK_URL=$$NGROK_URL" > $(NGROK_ENV); \
+	echo "$(GREEN)[OK] Ngrok URL catched : $$NGROK_URL$(RESET)"
+
+up-rest:
+	@echo "$(YELLOW)[INFO] Starting backend and frontend...$(RESET)"
+	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up -d backend frontend
 
 down:
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down
@@ -28,6 +49,9 @@ sleep:
 
 re: fclean sleep start
 
+url:
+	@grep NGROK_URL $(NGROK_ENV) || echo "Not yet generated."
+
 help:
 	@echo "Available commands:"
 	@echo "  make start → Mount the containers"
@@ -37,5 +61,6 @@ help:
 	@echo "  make fclean → Delete the containers and images, and remove volumes"
 	@echo "  make re    → Delete the containers and images, and remove volumes, then mount the containers"
 	@echo "  make down  → Stop and remove the containers"
+	@echo "  make url   → Show the current ngrok URL"
 
-.PHONY: start stop clean help re fclean down
+.PHONY: start stop clean help re fclean down url up-ngrok wait-ngrok-url up-rest prepare-env sleep

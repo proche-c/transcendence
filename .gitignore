@@ -2,3 +2,4 @@ sql
 .env
 sqlite_data/
 .DS_Store
+.env.shared
