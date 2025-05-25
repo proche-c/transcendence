@@ -50,15 +50,16 @@ services:
     container_name: ngrok
     restart: always
     depends_on:
-      - backend
+      - nginx
+    env_file:
+      - ./backend/.env
     environment:
-      - NGROK_AUTHTOKEN
-      - NGROK_PORT=backend:8000
-      - NGROK_REGION=es
+      - NGROK_PORT=nginx:8443
     ports:
-      - "4040:4040"  # API locale de ngrok
+      - "4040:4040"
     networks:
       - transcendence-net
+
 
 networks:
   transcendence-net:
