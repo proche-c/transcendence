@@ -10,11 +10,11 @@ DOCKER_COMPOSE_FILE := compose.yaml
 NGROK_API := http://localhost:4040/api/tunnels
 NGROK_ENV := ./backend/.env.shared
 
-prepare-env:
-	@touch $(NGROK_ENV)
-
 
 start: prepare-env up-ngrok wait-ngrok-url up-rest
+
+prepare-env:
+	@touch $(NGROK_ENV)
 
 up-ngrok:
 	@echo "$(YELLOW)[INFO] Starting nginx and ngrok$(RESET)"
@@ -30,6 +30,7 @@ wait-ngrok-url:
 up-rest:
 	@echo "$(YELLOW)[INFO] Starting backend and frontend...$(RESET)"
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up -d backend frontend
+	@echo "$(GREEN)[OK] Ngrok URL catched : $$NGROK_URL$(RESET)"
 
 down:
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down
