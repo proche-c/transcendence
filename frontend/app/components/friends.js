@@ -7,13 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-// tengo que crear la interfaz data!!!!!!!!!!!!!!!!!
 import { fetchUserProfile, fetchUsers, fetchFriends } from "../utils/requests.js";
-// interface User	{
-// 	id: number;
-// 	username: string;
-// 	avatar: string;
-// }
 class FriendsComponent extends HTMLElement {
     constructor() {
         super();
@@ -29,27 +23,21 @@ class FriendsComponent extends HTMLElement {
             yield this.getFriends();
             yield this.getUsers();
             this.render();
-            // this.updateData();
         });
     }
     getProfile() {
         return __awaiter(this, void 0, void 0, function* () {
             this.user = yield fetchUserProfile();
-            console.log("user:");
-            console.log(this.user);
         });
     }
     getUsers() {
         return __awaiter(this, void 0, void 0, function* () {
             this.users = yield fetchUsers();
-            console.log(this.users);
         });
     }
     getFriends() {
         return __awaiter(this, void 0, void 0, function* () {
             this.friends = yield fetchFriends();
-            console.log("friends:");
-            console.log(this.friends);
         });
     }
     render() {
@@ -74,28 +62,31 @@ class FriendsComponent extends HTMLElement {
 				</div>
 				`;
         }).join("");
-        const usersButtons = this.users.map((user) => {
-            if (user.username != this.user.username) {
-                const avatar = user.avatar;
-                const avatarUrl = `http://localhost:8000/static/${avatar}`;
-                return `
-					<div class="flex m-1 ml-3 items center">
-						<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-black flex items-center justify-center bg-emerald-200">
-							<img src="${avatarUrl}" class="w-full h-full object-cover" />
-						</div>
-						<button class="user-button ml-1 flex-1 text-left" data-username="${user.username}">${user.username}</button>
-						<div class="ml-auto flex items-center space-x-1">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="size-6">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-							</svg>
-							<button class="add-button text-xs text-green-700 font-bold italic" name-to-add="${user.username}">Add friend</button>
-						</div>
+        const usersButtons = this.users
+            .filter((user) => {
+            // Filtramos: no es el mismo que el usuario logueado y no está ya en la lista de amigos
+            return user.username !== this.user.username &&
+                !this.friends.some((friend) => friend.username === user.username);
+        })
+            .map((user) => {
+            const avatar = user.avatar;
+            const avatarUrl = `http://localhost:8000/static/${avatar}`;
+            return `
+				<div class="flex m-1 ml-3 items center">
+					<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-black flex items-center justify-center bg-emerald-200">
+						<img src="${avatarUrl}" class="w-full h-full object-cover" />
 					</div>
-					`;
-            }
-            else
-                return null;
-        }).join("");
+					<button class="user-button ml-1 flex-1 text-left" data-username="${user.username}">${user.username}</button>
+					<div class="ml-auto flex items-center space-x-1">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="size-6">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+						</svg>
+						<button class="add-button text-xs text-green-700 font-bold italic" name-to-add="${user.username}">Add friend</button>
+					</div>
+				</div>
+			`;
+        })
+            .join("");
         this.shadowRoot.innerHTML = `
 			<div class="flex h-screen items-center">
 				<div>
@@ -134,7 +125,6 @@ class FriendsComponent extends HTMLElement {
     }
     addEventListeners() {
         var _a, _b;
-        console.log("Entro en addEventListeners");
         const addButtons = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelectorAll(".add-button");
         addButtons === null || addButtons === void 0 ? void 0 : addButtons.forEach((button) => {
             button.addEventListener("click", (event) => __awaiter(this, void 0, void 0, function* () {
@@ -143,6 +133,7 @@ class FriendsComponent extends HTMLElement {
                 console.log(`username: $(username)`);
                 if (username) {
                     yield this.sendFriendRequest(username);
+                    yield this.load();
                 }
             }));
         });

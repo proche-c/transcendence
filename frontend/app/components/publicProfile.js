@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,6 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+import { fetchPublicProfile } from "../utils/requests.js";
 class PublicProfileComponent extends HTMLElement {
     constructor() {
         super();
@@ -21,27 +21,16 @@ class PublicProfileComponent extends HTMLElement {
     }
     load() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("Cargando public profile");
             yield this.getPublicProfile();
             this.render();
+            this.updateData();
         });
     }
     getPublicProfile() {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a;
-            console.log(`Username: ${this.username}`);
-            try {
-                const response = yield fetch(`http://localhost:8000/public-profile?username=${encodeURIComponent((_a = this.username) !== null && _a !== void 0 ? _a : "")}`, {
-                    method: "GET",
-                    credentials: "include",
-                });
-                const data = yield response.json();
-                this.response = data.profile;
-                // console.log(data.user);
-            }
-            catch (error) {
-                console.log('Error en la peticion');
-            }
+            this.response = yield fetchPublicProfile(this.username);
+            console.log("en public profile, imprimo user:");
+            console.log(this.response);
         });
     }
     render() {
@@ -53,27 +42,26 @@ class PublicProfileComponent extends HTMLElement {
         const avatar = this.response.avatar;
         const avatarUrl = `http://localhost:8000/static/${avatar}`;
         this.shadowRoot.innerHTML = `
-			<div class="relative flex flex-col h-full w-60 md:w-72 transform border-2 border-black bg-white transition-transform group-hover:scale-105 ">
-                <div class="relative group w-32 h-32 rounded-full overflow-hidden border-4 border-black flex items-center justify-center my-5 mx-auto">
-                    <img id="avatar" src="${avatarUrl}" class="w-full h-full object-cover" />
-					<button id="uploadImg" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border-2 border-black rounded-full p-2 bg-white/20 backdrop-blur-sm hover:bg-white/80 transition">
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-16">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
-						</svg>
-					</button>
-					<input type="file" id="fileInput" accept=".jpg,.jpeg,.png" class="hidden" />
-                </div>
+			<div class="group relative block max-w-screen-sm mx-auto h-120 lg:h-150">
+				<span class="absolute inset-0 border-2 border-dashed border-black"></span>
+				<div class="relative flex flex-col h-full w-60 md:w-72 transform border-2 border-black bg-white transition-transform group-hover:scale-105">
+					<div id="profile-picture" class="w-32 h-32 rounded-full overflow-hidden border-4 border-black flex items-center justify-center my-5 mx-auto">
+						<img src="${avatarUrl}" class="w-full h-full object-cover" />
+					</div>
+					<div id="username" class="text-2xl font-bold text-center mt-4">usuario</div>
+					<div id="rank" class="text-xl text-center mt-4 font-bold text-violet-900">Rank</div>
 
-				<div class="text-2xl font-bold text-center mt-4">
-					<input type="text" id="username" placeholder="Type new username" value="${this.response.username}" class="border rounded-lg px-3 py-2 mt-1 mx-5 mb-5 text-sm bg-gray-200 focus:border-violet-900 focus:ring-4 focus:ring-violet-900"/>
-				</div>
-				<div class="flex justify-center items-center gap-12 h-full mb-4">
-				<button id="exit" class="group flex h-fit w-fit flex-col items-center justify-center rounded-2xl bg-violet-200 px-[1em] py-1 border">
-					<p class="font-semibold text-violet-900 duration-200 group-active:translate-y-[5%]">Exit</p>
+						<div class="text-xl text-center mt-2">Total games: <span id="totalGames" class="font-bold">0</span></div>
+						<div class="text-xl text-center mt-2">Total wins: <span id="wins" class="font-bold">0</span></div>
+						<div class="text-xl text-center mt-2">Total losses: <span id="losses" class="font-bold">0</span></div>
+						<div class="text-xl text-center mt-2 mb-4">Win rate: <span id="rate" class="font-bold">0</span></div>
+						<div class="text-xl text-center mt-2">Goals for: <span id="goalsFor" class="font-bold">0</span></div>
+						<div class="text-xl text-center mt-2">Goals against: <span id="goalsAgainst" class="font-bold">0</span></div>
+						<div class="mt-4">
+				<button id="close" class="align-center justify-center rounded-2xl bg-violet-200 px-[1em] py-1 border">
+					<p class="font-semibold text-violet-900 duration-200 group-active:translate-y-[5%]">Close</p>
 				</button>
-				<button id="save" class="group flex h-fit w-fit flex-col items-center justify-center rounded-2xl bg-violet-200 px-[1em] py-1 border">
-					<p class="font-semibold text-violet-900 duration-200 group-active:translate-y-[5%]">Save</p>
-				</button>
+						</div>
 				</div>
 			</div>
 
@@ -82,6 +70,70 @@ class PublicProfileComponent extends HTMLElement {
         this.addEventListeners();
     }
     addEventListeners() {
+        var _a;
+        const closeButton = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelector("#close");
+        if (closeButton) {
+            closeButton.addEventListener("click", () => {
+                this.remove(); // Elimina el componente del DOM
+            });
+        }
+    }
+    updateData() {
+        if (!this.shadowRoot)
+            return;
+        const username = this.shadowRoot.querySelector("#username");
+        if (username) {
+            username.innerHTML = this.response.username;
+        }
+        const profilePicContainer = this.shadowRoot.querySelector("#profile-picture");
+        const img = profilePicContainer === null || profilePicContainer === void 0 ? void 0 : profilePicContainer.querySelector("img");
+        if (img instanceof HTMLImageElement) {
+            const avatar = this.response.avatar || "avatars/default.jpg";
+            img.src = `http://localhost:8000/static/${avatar}?ts=${Date.now()}`; // Avoid caché
+        }
+        const email = this.shadowRoot.querySelector("#email");
+        if (email) {
+            email.innerHTML = this.response.email;
+        }
+        const rank = this.shadowRoot.querySelector("#rank");
+        if (rank) {
+            this.response.ranking = this.response.ranking || 1;
+            rank.innerHTML = 'Rank: ' + this.response.ranking;
+        }
+        const totalGames = this.shadowRoot.querySelector("#totalGames");
+        if (totalGames) {
+            this.response.total_matches = this.response.total_matches || 0;
+            totalGames.innerHTML = this.response.total_matches;
+        }
+        const wins = this.shadowRoot.querySelector("#wins");
+        if (wins) {
+            this.response.total_wins = this.response.total_wins || 0;
+            wins.innerHTML = this.response.total_wins;
+        }
+        const losses = this.shadowRoot.querySelector("#losses");
+        if (losses) {
+            this.response.total_losses = this.response.total_losses || 0;
+            losses.innerHTML = this.response.total_losses;
+        }
+        const rate = this.shadowRoot.querySelector("#rate");
+        if (rate) {
+            let winsRate = 0;
+            if (this.response.total_matches > 0) {
+                winsRate = this.response.total_wins / this.response.total_matches;
+                winsRate = Math.round(winsRate * 100);
+            }
+            rate.innerHTML = winsRate + '%';
+        }
+        const goalsFor = this.shadowRoot.querySelector("#goalsFor");
+        if (goalsFor) {
+            this.response.goals_for = this.response.goals_for || 0;
+            goalsFor.innerHTML = this.response.goals_for;
+        }
+        const goalsAgainst = this.shadowRoot.querySelector("#goalsAgainst");
+        if (goalsAgainst) {
+            this.response.goals_against = this.response.goals_against || 0;
+            goalsAgainst.innerHTML = this.response.goals_against;
+        }
     }
 }
 customElements.define("pong-public-profile", PublicProfileComponent);

@@ -6,7 +6,7 @@ async function userRoutes(fastify, options) {
 // get all users
   fastify.get("/", { preHandler: authMiddleware }, async (request, reply) => {
     try {
-      const users = await dbAllAsync("SELECT id, username, avatar FROM users");
+      const users = await dbAllAsync("SELECT id, username, avatar, total_matches, total_wins, total_losses, goals_for, goals_against, ranking FROM users");
       reply.send(users);
     } catch (err) {
       fastify.log.error({ err }, "DB error, cannot load the users");
@@ -51,8 +51,9 @@ async function userRoutes(fastify, options) {
       if (existing) {
         return reply.status(400).send({ message: "Friend request already sent or exists" });
       }
-      await dbRunAsync( "INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, 'pending')",[userId, targetUser.id]);
-      return reply.send({ message: "Friend request sent" });
+      await dbRunAsync("INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, 'accepted')", [userId, targetUser.id]);
+      await dbRunAsync("INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, 'accepted')", [targetUser.id, userId]);
+      return reply.send({ message: "Friend added" });
     } 
     catch (err) {
       fastify.log.error(err);

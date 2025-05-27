@@ -1,25 +1,48 @@
+import { fetchUserProfile, User } from "../utils/requests.js";
+
 class HeaderComponent extends HTMLElement {
-    constructor() {
-        super();
-        this.attachShadow({mode: "open"});
-        this.render();
-    }
+	private user: User | any | null = null;
 
-    private render(): void {
-        if (!this.shadowRoot)
-            return;
 
+	constructor() {
+		super();
+		this.attachShadow({mode: "open"});
+		this.load();
+	}
+
+	private async load() {
+		await this.getProfile();
+		this.render();
+	}
+
+	private async getProfile() {
+		this.user = await fetchUserProfile();
+	}
+
+	private render(): void {
+		if(!this.shadowRoot)
+			return;
 		const style = document.createElement("link");
 		style.rel = "stylesheet";
 		style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
 
-        this.shadowRoot.innerHTML = `
-        <div class= "bg-gray-950 flex items-center align-middle justify-center p-3 m-2 h-30 shadow-lg  rounded-lg">
-                <img src="./app/assets/pong.png" class="scale-50">
-        </div>`
+		const avatar = this.user.avatar;
+		const avatarUrl = `http://localhost:8000/static/${avatar}`;
 
-        this.shadowRoot.appendChild(style);
-    }
+		this.shadowRoot.innerHTML = `
+		<div class="flex flex-col items-center w-5/6 h-full my-2">
+			<div class="w-16 h-16 rounded-full overflow-hidden border-4 border-black flex items-center justify-center bg-emerald-200">
+				<img src="${avatarUrl}" class="w-full h-full object-cover" />
+			</div>
+			<div class="my-1">
+				<p>${this.user.username}</p>
+			</div>
+		</div
+		`;
+
+		this.shadowRoot.appendChild(style);
+	}
+
 }
 
 customElements.define("pong-header", HeaderComponent);
