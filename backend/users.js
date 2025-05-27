@@ -60,6 +60,29 @@ async function userRoutes(fastify, options) {
       return reply.status(500).send({ message: "Error sending friend request" });
     }
   });
+
+  fastify.get("/messages", { preHandler: authMiddleware }, async (request, reply) => {
+    const userId = request.user.id;
+    const chatId = request.query.chatId;
+  
+    if (!chatId) {
+      return reply.status(400).send({ message: "chatId is required" });
+    }
+    try {
+      const messages = await dbAllAsync(
+        `SELECT m.id, m.message, m.timestamp, u.username AS sender
+         FROM messages m
+         JOIN users u ON u.id = m.sender_id
+         WHERE m.chat_id = ?
+         ORDER BY m.timestamp ASC`,
+        [chatId]
+      );
+      return reply.send({ chatId, messages });
+    } catch (err) {
+      request.log.error(err);
+      return reply.status(500).send({ message: "Failed to fetch messages" });
+    }
+  });  
 }
 
 module.exports = userRoutes;
