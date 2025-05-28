@@ -1,5 +1,5 @@
 import { GameState } from './interfaces.js';
-import { createInitialGameState, updateBallPosition, checkPaddleCollisions } from './game_utils.js';
+import { createInitialGameState, updateBallPosition, checkPaddleCollisions, reportResultToServer } from './game_utils.js';
 import { renderLocalGame, showWinnerMessage, showStartMessage, startCountdown } from './ui_components.js';
 
 export function setupAIGame(shadowRoot: ShadowRoot | null) {
@@ -85,6 +85,7 @@ export function setupAIGame(shadowRoot: ShadowRoot | null) {
             if (gameState.scores.player2 >= 4) {
                 gameState.running = false;
                 showWinnerMessage(ctx, canvas, "AI Wins!");
+                reportResultToServer(gameState);
             } else {
                 resetBall(gameState, 0);
             }
@@ -93,6 +94,7 @@ export function setupAIGame(shadowRoot: ShadowRoot | null) {
             if (gameState.scores.player1 >= 4) {
                 gameState.running = false;
                 showWinnerMessage(ctx, canvas, "You Win!");
+                reportResultToServer(gameState);
             } else {
                 resetBall(gameState, 1);
             }

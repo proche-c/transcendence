@@ -61,6 +61,13 @@ async function gameRoutes(fastify, options) {
         fastify.log.info(`Jugador ${playerNumber} conectado: ${playerId}`);
   
         connection.send(JSON.stringify({ type: "init", playerId, playerNumber, gameState }));
+        
+        // Comprovar si tenim dos jugadors i iniciar el joc automàticament
+        if (fastify.websocketGames.length === 2 && !gameState.running) {
+          fastify.log.info('Dos jugadors connectats. Iniciant el joc automàticament...');
+          gameState.running = true;
+          startGame();
+        }
   
         connection.on('message', (message) => {
           const data = JSON.parse(message);
@@ -71,7 +78,8 @@ async function gameRoutes(fastify, options) {
               gameState.players[`player${pn}`].y = data.y;
             }
           }
-  
+          
+          // Mantenim aquesta part per compatibilitat, tot i que ja no serà necessària
           if (data.type === "start" && data.message === "jugar" && !gameState.running && playerNumber == 2) {
             gameState.running = true;
             startGame();
