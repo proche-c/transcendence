@@ -30,7 +30,10 @@ wait-ngrok-url:
 up-rest:
 	@echo "$(YELLOW)[INFO] Starting backend and frontend...$(RESET)"
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up -d backend frontend
-	@echo "$(GREEN)[OK] Ngrok URL catched : $$NGROK_URL$(RESET)"
+	@@NGROK_URL=$$(grep NGROK_URL $(NGROK_ENV) | cut -d '=' -f2); \
+	echo "$(GREEN)Connect to: $$NGROK_URL$(RESET)"; \
+	echo "$(GREEN)or: https://localhost:8443$(RESET)"; \
+	echo "$(GREEN)or: https://www.Pleiad-es.online/pong.html/$(RESET)"
 
 down:
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down
