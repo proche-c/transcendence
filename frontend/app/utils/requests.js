@@ -1,6 +1,6 @@
 export async function fetchUserProfile() {
     try {
-        const response = await fetch("http://localhost:8000/profile", {
+        const response = await fetch("https://192.168.68.50:8443/api/profile", {
             method: "GET",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
@@ -18,7 +18,7 @@ export async function fetchUserProfile() {
 }
 export async function fetchUsers() {
     try {
-        const response = await fetch("http://localhost:8000/users", {
+        const response = await fetch("https://192.168.68.50:8443/api/users", {
             method: "GET",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
@@ -33,7 +33,7 @@ export async function fetchUsers() {
 }
 export async function fetchFriends() {
     try {
-        const response = await fetch("http://localhost:8000/users/friends", {
+        const response = await fetch("https://192.168.68.50:8443/api/users/friends", {
             method: "GET",
             headers: { "Content-Type": "application/json" },
             credentials: "include",

@@ -32,7 +32,7 @@ class ChatComponent extends HTMLElement {
         console.log(this.users);
     }
     connect() {
-        this.socket = new WebSocket("ws://localhost:8000/chat");
+        this.socket = new WebSocket("ws://192.168.68.50:8000/chat");
         console.log(this.socket);
         this.socket.onmessage = (event) => {
             // const data: Data = JSON.parse(event.data);
@@ -53,7 +53,7 @@ class ChatComponent extends HTMLElement {
         style.rel = "stylesheet";
         style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
         const avatar = this.user.avatar;
-        const avatarUrl = `http://localhost:8000/static/${avatar}`;
+        const avatarUrl = `https://192.168.68.50:8443/api/static/${avatar}`;
         this.shadowRoot.innerHTML = `
 		<div class="flex h-screen items-center">
 			<div>

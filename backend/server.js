@@ -16,6 +16,20 @@ fastify.register(fastifyWebsocket);
 const fastifyCookie = require("@fastify/cookie");
 fastify.register(fastifyCookie);
 
+// Afegeix aquesta configuració abans de fastify.listen
+const options = {
+  https: {
+    key: fs.readFileSync(path.join(__dirname, 'certificates/key.pem')),
+    cert: fs.readFileSync(path.join(__dirname, 'certificates/cert.pem')),
+    minVersion: 'TLSv1.2', // Minimum TLS version
+    maxVersion: 'TLSv1.3',
+    ciphers: 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384',
+    honorCipherOrder: true
+  },
+  port: 8000,
+  host: "0.0.0.0"
+};
+
 //********************TO SERVE STATIC FILES(AVATAR IMGS)******************** */
 
 const fastifyStatic = require('@fastify/static');
@@ -30,12 +44,11 @@ fastify.register(fastifyStatic, {
 
 // Register CORS middleware
 fastify.register(cors, {
-  origin: [
-    "https://127.0.0.1:8443",
-    "https://localhost:8443",
-    "http://localhost:5500/frontend/",
-  ], // Especifica el origen permitido
+  origin: true, // Especifica el origen permitido
   credentials: true, // Permite el envío de cookies y cabeceras de autenticación
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Métodos HTTP permitidos
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range']
 });
 
 // Register JWT with a secret key
@@ -273,8 +286,8 @@ fastify.post(
 // Start the server
 const start = async () => {
   try {
-    await fastify.listen({ port: 8000, host: "0.0.0.0" });
-    console.log("Server is running on http://localhost:8000");
+    await fastify.listen(options);
+    console.log("Server is running on https://192.168.68.50:8443/api");
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);

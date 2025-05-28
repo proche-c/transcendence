@@ -24,7 +24,7 @@
 
         async function isAuthenticated() {
             try {
-                const response = await fetch("http://localhost:8000/check-auth", {
+                const response = await fetch("https://192.168.68.50:8443/api/check-auth", {
                     method: "GET",
                     credentials: "include",
                 });

@@ -65,7 +65,7 @@ module.exports = async function (fastify, options) {
         httpOnly: false,
         secure: true,
         sameSite: "none",
-        domain: "localhost",
+        domain: "192.168.68.50",
         path: "/",
         maxAge: 60 * 70,
       });

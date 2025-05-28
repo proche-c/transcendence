@@ -4,8 +4,8 @@ export function setupOnlineGame(shadowRoot) {
     const canvas = shadowRoot.querySelector('canvas');
     const ctx = canvas.getContext('2d');
     const serverIP = window.location.hostname;
-    const socket = new WebSocket(`wss://${serverIP}:8000/game`);
-    console.log(`Connecting to server at ws://${serverIP}:8000/game`);
+    const socket = new WebSocket(`wss://192.168.68.50:8443/api/game`);
+    console.log(`Connecting to server at wss://192.168.68.50:8443/game`);
     let playerNumber = null;
     let gameState = null;
     let playerY = 150;

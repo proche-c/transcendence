@@ -54,11 +54,11 @@ class FriendsComponent extends HTMLElement {
 		console.log(this.user);
 
 		const avatar = this.user.avatar;
-		const avatarUrl = `http://localhost:8000/static/${avatar}`;
+		const avatarUrl = `https://192.168.68.50:8443/api/static/${avatar}`;
 
 		const friendsButtons = this.friends.map((friend: User) => {
 			const avatar = friend.avatar;
-			const avatarUrl = `http://localhost:8000/static/${avatar}`;
+			const avatarUrl = `https://192.168.68.50:8443/api/static/${avatar}`;
 			return `
 				<div class="flex m-1 ml-3 items center">
 					<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-black flex items-center justify-center bg-emerald-200">
@@ -72,7 +72,7 @@ class FriendsComponent extends HTMLElement {
 		const usersButtons = this.users.map((user: User) => {
 			if (user.username != this.user.username) {
 				const avatar = user.avatar;
-				const avatarUrl = `http://localhost:8000/static/${avatar}`;
+				const avatarUrl = `https://192.168.68.50:8443/api/static/${avatar}`;
 				return `
 					<div class="flex m-1 ml-3 items center">
 						<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-black flex items-center justify-center bg-emerald-200">
@@ -80,7 +80,7 @@ class FriendsComponent extends HTMLElement {
 						</div>
 						<button class="user-button ml-1 flex-1 text-left" data-username="${user.username}">${user.username}</button>
 						<div class="ml-auto flex items-center space-x-1">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="size-6">
+							<svg xmlns="https://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="size-6">
 							<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
 							</svg>
 							<button class="add-button text-xs text-green-700 font-bold italic" name-to-add="${user.username}">Add friend</button>
@@ -166,7 +166,7 @@ class FriendsComponent extends HTMLElement {
 	private async sendFriendRequest(username: string) {
 		console.log("Entro en sendFriendRequest");
 		try {
-			const response = await fetch("http://localhost:8000/users/friends", {
+			const response = await fetch("https://192.168.68.50:8443/api/users/friends", {
 				method: "POST",
 				headers: {
 					"Content-type": "application/json",
