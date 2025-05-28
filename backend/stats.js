@@ -12,22 +12,6 @@ module.exports = async function statsRoutes(fastify, options) {
   const authMiddleware = authMiddlewareAUX(dbGetAsync, fastify);
   fastify.register(multipart);
 
-// Función para asegurarnos de que exista un registro en user_stats
-/*async function ensureUserStats(userId) {
-    const row = await dbGetAsync(
-      'SELECT user_id FROM user_stats WHERE user_id = ?',
-      [userId]
-    );
-    if (!row) {
-      await dbRunAsync(
-        'INSERT INTO user_stats (user_id) VALUES (?)',
-        [userId]
-      );
-    }
-  }*/
-  
-  // Ruta POST /api/stats
-
 fastify.post('/api/stats', { preHandler: authMiddleware }, async (request, reply) => {
   const userId = request.user.id;
 
@@ -71,7 +55,15 @@ fastify.post('/api/stats', { preHandler: authMiddleware }, async (request, reply
         SELECT
           id,
           RANK() OVER (
-            ORDER BY total_wins DESC, (goals_for - goals_against) DESC
+            ORDER BY 
+              -- Primer els jugadors amb partides, després els que no en tenen
+              CASE WHEN total_matches > 0 THEN 0 ELSE 1 END,
+              -- Ordenació per victòries (descendent)
+              total_wins DESC,
+              -- En cas d'empat, diferència de gols (descendent)
+              (goals_for - goals_against) DESC,
+              -- En cas d'empat entre jugadors sense partides, ordenem per ID (els més antics primer)
+              id ASC
           ) AS pos
         FROM users
       )
