@@ -111,3 +111,25 @@ export function fetchChats() {
         }
     });
 }
+export function fetchMessages(chatId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const response = yield fetch(`http://localhost:8000/users/messages?chatId=${chatId}`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+            });
+            if (!response.ok) {
+                throw new Error("Error en la respuesta del servidor");
+            }
+            const data = yield response.json();
+            console.log("Cuando pido messages obtengo: ");
+            console.log(data);
+            return data;
+        }
+        catch (error) {
+            console.error("Error al obtener messages:", error);
+            return null;
+        }
+    });
+}

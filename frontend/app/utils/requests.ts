@@ -25,7 +25,8 @@ export interface Message {
 
 export interface OneToOneChat {
 	id: number;
-	participant: User; // el otro usuario
+	other_user  : string; // el otro usuario
+	avatar: string;
 }
 
 export interface ChatRoom {
@@ -138,6 +139,28 @@ export async function fetchChats(): Promise<any | ChatData | null> {
 
 	} catch (error) {
 		console.error("Error al obtener los chats:", error);
+		return null;
+	}
+}
+
+export async function fetchMessages(chatId: number | null) {
+	try {
+		const response = await fetch(`http://localhost:8000/users/messages?chatId=${chatId}`, {
+			method: "GET",
+			headers: { "Content-Type": "application/json" },
+			credentials: "include",
+		});
+
+		if (!response.ok) {
+			throw new Error("Error en la respuesta del servidor");
+		}
+
+		const data = await response.json();
+		console.log("Cuando pido messages obtengo: ");
+		console.log(data);
+		return data;
+	} catch (error) {
+		console.error("Error al obtener messages:", error);
 		return null;
 	}
 }
