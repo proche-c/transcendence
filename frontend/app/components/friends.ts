@@ -1,11 +1,4 @@
-// tengo que crear la interfaz data!!!!!!!!!!!!!!!!!
 import { fetchUserProfile, fetchUsers, fetchFriends, User } from "../utils/requests.js";
-
-// interface User	{
-// 	id: number;
-// 	username: string;
-// 	avatar: string;
-// }
 
 
 class FriendsComponent extends HTMLElement {
@@ -23,24 +16,18 @@ class FriendsComponent extends HTMLElement {
 		await this.getFriends();
 		await this.getUsers();
 		this.render();
-		// this.updateData();
 	}
 
 	private async getProfile() {
 		this.user = await fetchUserProfile();
-		console.log("user:");
-		console.log(this.user);
 	}
 
 	private async getUsers() {
 		this.users = await fetchUsers();
-		console.log(this.users);
 	}
 
 	private async getFriends() {
 		this.friends = await fetchFriends();
-		console.log("friends:");
-		console.log(this.friends);
 	}
 
 	private render(): void {
@@ -69,27 +56,32 @@ class FriendsComponent extends HTMLElement {
 				`;
 		}).join("");
 
-		const usersButtons = this.users.map((user: User) => {
-			if (user.username != this.user.username) {
-				const avatar = user.avatar;
-				const avatarUrl = `http://localhost:8000/static/${avatar}`;
-				return `
-					<div class="flex m-1 ml-3 items center">
-						<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-black flex items-center justify-center bg-emerald-200">
-							<img src="${avatarUrl}" class="w-full h-full object-cover" />
-						</div>
-						<button class="user-button ml-1 flex-1 text-left" data-username="${user.username}">${user.username}</button>
-						<div class="ml-auto flex items-center space-x-1">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="size-6">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-							</svg>
-							<button class="add-button text-xs text-green-700 font-bold italic" name-to-add="${user.username}">Add friend</button>
-						</div>
+		const usersButtons = this.users
+		.filter((user: User) => {
+			// Filtramos: no es el mismo que el usuario logueado y no está ya en la lista de amigos
+			return user.username !== this.user.username &&
+				!this.friends.some((friend: User) => friend.username === user.username);
+		})
+		.map((user: User) => {
+			const avatar = user.avatar;
+			const avatarUrl = `http://localhost:8000/static/${avatar}`;
+			return `
+				<div class="flex m-1 ml-3 items center">
+					<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-black flex items-center justify-center bg-emerald-200">
+						<img src="${avatarUrl}" class="w-full h-full object-cover" />
 					</div>
-					`;
-			} else
-				return null;
-		}).join("");
+					<button class="user-button ml-1 flex-1 text-left" data-username="${user.username}">${user.username}</button>
+					<div class="ml-auto flex items-center space-x-1">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="size-6">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+						</svg>
+						<button class="add-button text-xs text-green-700 font-bold italic" name-to-add="${user.username}">Add friend</button>
+					</div>
+				</div>
+			`;
+		})
+		.join("");
+	
 
 		this.shadowRoot.innerHTML = `
 			<div class="flex h-screen items-center">
@@ -130,7 +122,6 @@ class FriendsComponent extends HTMLElement {
 	}
 
 	private addEventListeners() {
-		console.log("Entro en addEventListeners");
 
 		const addButtons = this.shadowRoot?.querySelectorAll(".add-button");
 		addButtons?.forEach((button) => {
@@ -140,6 +131,7 @@ class FriendsComponent extends HTMLElement {
 				console.log(`username: $(username)`);
 				if (username) {
 					await this.sendFriendRequest(username);
+					await this.load();
 				}
 			});
 		});

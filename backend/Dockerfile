@@ -1,5 +1,5 @@
 # Usamos versión específica de Node.js
-FROM node:18-alpine
+FROM node:20-alpine
 
 # Instalamos sqlite3 (en Alpine se usa apk)
 RUN apk add --no-cache sqlite

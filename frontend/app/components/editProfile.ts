@@ -97,21 +97,25 @@ class EditProfileComponent extends HTMLElement {
 
 		if (saveButton && fileInput && usernameInput) {
 			saveButton.addEventListener("click", async () => {
+				console.log("presiono save");
 				let username = usernameInput.value.trim();
 				if (username === this.response.username)
 					username = "";
 				const file = fileInput.files?.[0];
 
 				const formData = new FormData();
+				console.log("hago append de formData");
 				formData.append("username", username);
 				if (file)
 					formData.append("avatar", file);
 				try {
+					console.log("hago request");
 					const response = await fetch("http://localhost:8000/edit-profile", {
 						method: "POST",
 						body: formData,
 						credentials: "include",
 					});
+					console.log("termina request");
 					if (response.ok) {
 						console.log("Avatar uploaded successfully");
 						this.dispatchEvent(new CustomEvent("profile-updated", { bubbles: true }));

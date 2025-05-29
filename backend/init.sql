@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS friends (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL,
   friend_id INTEGER NOT NULL,
-  status TEXT CHECK(status IN ('pending', 'accepted', 'blocked')) DEFAULT 'pending',
+  status TEXT CHECK(status IN ( 'accepted', 'blocked')) DEFAULT 'accepted',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE,

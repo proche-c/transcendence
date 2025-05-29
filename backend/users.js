@@ -6,7 +6,7 @@ async function userRoutes(fastify, options) {
 // get all users
   fastify.get("/", { preHandler: authMiddleware }, async (request, reply) => {
     try {
-      const users = await dbAllAsync("SELECT id, username, avatar FROM users");
+      const users = await dbAllAsync("SELECT id, username, avatar, total_matches, total_wins, total_losses, goals_for, goals_against, ranking FROM users");
       reply.send(users);
     } catch (err) {
       fastify.log.error({ err }, "DB error, cannot load the users");
@@ -51,14 +51,38 @@ async function userRoutes(fastify, options) {
       if (existing) {
         return reply.status(400).send({ message: "Friend request already sent or exists" });
       }
-      await dbRunAsync( "INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, 'pending')",[userId, targetUser.id]);
-      return reply.send({ message: "Friend request sent" });
+      await dbRunAsync("INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, 'accepted')", [userId, targetUser.id]);
+      await dbRunAsync("INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, 'accepted')", [targetUser.id, userId]);
+      return reply.send({ message: "Friend added" });
     } 
     catch (err) {
       fastify.log.error(err);
       return reply.status(500).send({ message: "Error sending friend request" });
     }
   });
+
+  fastify.get("/messages", { preHandler: authMiddleware }, async (request, reply) => {
+    const userId = request.user.id;
+    const chatId = request.query.chatId;
+  
+    if (!chatId) {
+      return reply.status(400).send({ message: "chatId is required" });
+    }
+    try {
+      const messages = await dbAllAsync(
+        `SELECT m.id, m.message, m.timestamp, u.username AS sender
+         FROM messages m
+         JOIN users u ON u.id = m.sender_id
+         WHERE m.chat_id = ?
+         ORDER BY m.timestamp ASC`,
+        [chatId]
+      );
+      return reply.send({ chatId, messages });
+    } catch (err) {
+      request.log.error(err);
+      return reply.status(500).send({ message: "Failed to fetch messages" });
+    }
+  }); 
 }
 
 module.exports = userRoutes;

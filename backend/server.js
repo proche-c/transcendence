@@ -132,6 +132,7 @@ const profileRoutes = require("./profile");
 fastify.register(profileRoutes, {
   dbGetAsync,
   dbRunAsync,
+  dbAllAsync,
   authMiddleware,
 });
 

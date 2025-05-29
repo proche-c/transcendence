@@ -8,7 +8,8 @@ const authMiddlewareAUX = require("./authMiddleware");
 module.exports = async function profileRoutes(fastify, options) {
   const dbGetAsync = options.dbGetAsync;
   const dbRunAsync = options.dbRunAsync;
-  const uploadssPath = path.join(__dirname, "../uploads/avatars");
+  const dbAllAsync = options.dbAllAsync;
+  const uploadssPath = path.join(__dirname, "uploads/avatars");
   const authMiddleware = authMiddlewareAUX(dbGetAsync, fastify);
   fastify.register(multipart);
 
@@ -68,7 +69,6 @@ fastify.post("/edit-profile", { preHandler: authMiddleware }, async (request, re
   }
 });
 
-
   // public profile 
   fastify.get("/public-profile", { preHandler: authMiddleware }, async (request, reply) => {
     const { username } = request.query;
@@ -90,4 +90,37 @@ fastify.post("/edit-profile", { preHandler: authMiddleware }, async (request, re
       return reply.status(500).send({ message: "Error fetching public profile" });
     }
   });  
+
+  fastify.get("/chats", { preHandler: authMiddleware }, async (request, reply) => {
+    const userId = request.user.id;
+    try {
+        const chats = await dbAllAsync(
+        `SELECT c.id, u.username AS other_user, u.avatar
+         FROM chats c
+         JOIN users u ON (u.id = CASE
+           WHEN c.user1_id = ? THEN c.user2_id
+           ELSE c.user1_id
+         END)
+         WHERE c.user1_id = ? OR c.user2_id = ?`,
+        [userId, userId, userId]
+      );
+    
+      const chatrooms = await dbAllAsync(
+        `SELECT cr.id, cr.name, cr.owner_id, cr.is_private, crm.role
+         FROM chatroom_members crm
+         JOIN chatrooms cr ON crm.chatroom_id = cr.id
+         WHERE crm.user_id = ?`,
+        [userId]
+      );
+  
+      return reply.send({
+        oneToOneChats: chats,
+        chatrooms,
+      });
+    } catch (err) {
+      request.log.error(err); 
+      return reply.status(500).send({ message: "Failed to fetch chats" });
+    }
+  });
+  
 };
