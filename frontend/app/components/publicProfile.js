@@ -1,4 +1,4 @@
-"use strict";
+import { SERVER_IP } from '../config.js';
 class PublicProfileComponent extends HTMLElement {
     constructor() {
         super();
@@ -19,7 +19,7 @@ class PublicProfileComponent extends HTMLElement {
         var _a;
         console.log(`Username: ${this.username}`);
         try {
-            const response = await fetch(`https://192.168.68.50:8443/api/public-profile?username=${encodeURIComponent((_a = this.username) !== null && _a !== void 0 ? _a : "")}`, {
+            const response = await fetch(`https://${SERVER_IP}:8443/api/public-profile?username=${encodeURIComponent((_a = this.username) !== null && _a !== void 0 ? _a : "")}`, {
                 method: "GET",
                 credentials: "include",
             });
@@ -38,7 +38,7 @@ class PublicProfileComponent extends HTMLElement {
         style.rel = "stylesheet";
         style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
         const avatar = this.response.avatar;
-        const avatarUrl = `https://192.168.68.50:8443/api/static/${avatar}`;
+        const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
         this.shadowRoot.innerHTML = `
 			<div class="relative flex flex-col h-full w-60 md:w-72 transform border-2 border-black bg-white transition-transform group-hover:scale-105 ">
                 <div class="relative group w-32 h-32 rounded-full overflow-hidden border-4 border-black flex items-center justify-center my-5 mx-auto">

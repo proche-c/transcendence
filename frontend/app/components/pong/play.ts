@@ -4,6 +4,7 @@ import { setupAIGame } from './ai_game.js';
 import { setupOnlineGame } from './online_game.js';
 import { setupCrazyGame } from './crazy_game.js';
 
+
 class PlayComponent extends HTMLElement {
     private gameMode: GameMode = null;
     private cleanupFunction: (() => void) | null = null;
@@ -18,7 +19,6 @@ class PlayComponent extends HTMLElement {
     private renderMenu(): void {
         if (!this.shadowRoot) return;
         
-        // Creem l'enllaç a Tailwind CSS igual que al perfil
         const style = document.createElement("link");
         style.rel = "stylesheet";
         style.href = "./app/tailwind.css";
@@ -62,6 +62,7 @@ class PlayComponent extends HTMLElement {
         const onlineBtn = this.shadowRoot?.getElementById('onlineBtn');
         const aiBtn = this.shadowRoot?.getElementById('aiBtn');
         const crazyBtn = this.shadowRoot?.getElementById('crazyBtn');
+        const pong3dBtn = this.shadowRoot?.getElementById('3dBtn');  // Nou botó
 
         localBtn?.addEventListener('click', () => {
             this.cleanupCurrentGame();
@@ -92,12 +93,25 @@ class PlayComponent extends HTMLElement {
         });
     }
 
-    private cleanupCurrentGame() {
-        if (this.cleanupFunction) {
-            this.cleanupFunction();
-            this.cleanupFunction = null;
-        }
+private cleanupCurrentGame() {
+    if (this.cleanupFunction) {
+        this.cleanupFunction();
+        this.cleanupFunction = null;
     }
+    
+    // Assegurem-nos que no queden canvas anteriors
+    if (this.shadowRoot) {
+        // Netejar completament el contingut del shadowRoot abans de fer innerHTML
+        const oldCanvas = this.shadowRoot.querySelectorAll("canvas");
+        oldCanvas.forEach(canvas => {
+            canvas.width = 0;
+            canvas.height = 0;
+            if (canvas.parentNode) {
+                canvas.parentNode.removeChild(canvas);
+            }
+        });
+    }
+}
 
     private renderGame(): void {
         if (!this.shadowRoot) return;

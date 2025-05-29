@@ -1,4 +1,4 @@
-"use strict";
+import { SERVER_IP } from '../config.js';
 class RegisterComponent extends HTMLElement {
     constructor() {
         super();
@@ -138,7 +138,7 @@ class RegisterComponent extends HTMLElement {
             return; // If the email is not valid, do not check availability
         try {
             // Appel à l'API pour vérifier la disponibilité de l'email
-            const response = await fetch(`https://192.168.68.50:8443/api/check-email?email=${encodeURIComponent(email)}`);
+            const response = await fetch(`https://${SERVER_IP}:8443/api/check-email?email=${encodeURIComponent(email)}`);
             // Vérifier si la réponse est correcte
             if (!response.ok) {
                 emailError.textContent = "Server error, please try again later.";
@@ -186,7 +186,7 @@ class RegisterComponent extends HTMLElement {
             return;
         try {
             // Appel à l'API pour vérifier la disponibilité du nom d'utilisateur
-            const response = await fetch(`https://192.168.68.50:8443/api/check-username?username=${encodeURIComponent(username)}`);
+            const response = await fetch(`https://${SERVER_IP}:8443/api/check-username?username=${encodeURIComponent(username)}`);
             // Vérifier si la réponse est correcte
             if (!response.ok) {
                 usernameError.textContent = "Server error, please try again later.";
@@ -241,7 +241,7 @@ class RegisterComponent extends HTMLElement {
     async postData(email, user, password) {
         const data = { "username": user, "email": email, "password": password };
         try {
-            const response = await fetch("https://192.168.68.50:8443/api/register", {
+            const response = await fetch(`https://${SERVER_IP}:8443/api/register`, {
                 method: "POST",
                 body: JSON.stringify(data),
                 headers: { "Content-Type": "application/json" },

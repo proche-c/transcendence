@@ -1,3 +1,4 @@
+import { SERVER_IP } from '../config.js';
 import { fetchUserProfile } from "../utils/requests.js";
 
 class EditProfileComponent extends HTMLElement {
@@ -26,7 +27,7 @@ class EditProfileComponent extends HTMLElement {
 		style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
 
 		const avatar = this.response.avatar;
-		const avatarUrl = `https://192.168.68.50:8443/api/static/${avatar}`;
+		const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
 
 		this.shadowRoot.innerHTML = `
 			<div class="relative flex flex-col h-full w-60 md:w-72 transform border-2 border-black bg-white transition-transform group-hover:scale-105 ">
@@ -107,7 +108,7 @@ class EditProfileComponent extends HTMLElement {
 				if (file)
 					formData.append("avatar", file);
 				try {
-					const response = await fetch("https://192.168.68.50:8443/api/edit-profile", {
+					const response = await fetch(`https://${SERVER_IP}:8443/api/edit-profile`, {
 						method: "POST",
 						body: formData,
 						credentials: "include",

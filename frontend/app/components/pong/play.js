@@ -14,7 +14,6 @@ class PlayComponent extends HTMLElement {
     renderMenu() {
         if (!this.shadowRoot)
             return;
-        // Creem l'enllaç a Tailwind CSS igual que al perfil
         const style = document.createElement("link");
         style.rel = "stylesheet";
         style.href = "./app/tailwind.css";
@@ -51,11 +50,12 @@ class PlayComponent extends HTMLElement {
         this.setupMenuListeners();
     }
     setupMenuListeners() {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e;
         const localBtn = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.getElementById('localBtn');
         const onlineBtn = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.getElementById('onlineBtn');
         const aiBtn = (_c = this.shadowRoot) === null || _c === void 0 ? void 0 : _c.getElementById('aiBtn');
         const crazyBtn = (_d = this.shadowRoot) === null || _d === void 0 ? void 0 : _d.getElementById('crazyBtn');
+        const pong3dBtn = (_e = this.shadowRoot) === null || _e === void 0 ? void 0 : _e.getElementById('3dBtn'); // Nou botó
         localBtn === null || localBtn === void 0 ? void 0 : localBtn.addEventListener('click', () => {
             this.cleanupCurrentGame();
             this.gameMode = 'local';
@@ -85,6 +85,18 @@ class PlayComponent extends HTMLElement {
         if (this.cleanupFunction) {
             this.cleanupFunction();
             this.cleanupFunction = null;
+        }
+        // Assegurem-nos que no queden canvas anteriors
+        if (this.shadowRoot) {
+            // Netejar completament el contingut del shadowRoot abans de fer innerHTML
+            const oldCanvas = this.shadowRoot.querySelectorAll("canvas");
+            oldCanvas.forEach(canvas => {
+                canvas.width = 0;
+                canvas.height = 0;
+                if (canvas.parentNode) {
+                    canvas.parentNode.removeChild(canvas);
+                }
+            });
         }
     }
     renderGame() {

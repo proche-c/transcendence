@@ -1,3 +1,4 @@
+import { SERVER_IP } from '../../config.js';
 export function createInitialGameState() {
     return {
         players: {
@@ -113,7 +114,7 @@ export async function reportResultToServer(gameState) {
     formData.append("goalsFor", player1.toString());
     formData.append("goalsAgainst", player2.toString());
     try {
-        const res = await fetch('https://192.168.68.50:8443/api/api/stats', {
+        const res = await fetch(`https://${SERVER_IP}:8443/api/api/stats`, {
             method: 'POST',
             body: formData,
             credentials: 'include',

@@ -1,6 +1,7 @@
+import { SERVER_IP } from '../config.js';
 export async function fetchUserProfile() {
     try {
-        const response = await fetch("https://192.168.68.50:8443/api/profile", {
+        const response = await fetch(`https://${SERVER_IP}:8443/api/profile`, {
             method: "GET",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
@@ -18,7 +19,7 @@ export async function fetchUserProfile() {
 }
 export async function fetchUsers() {
     try {
-        const response = await fetch("https://192.168.68.50:8443/api/users", {
+        const response = await fetch(`https://${SERVER_IP}:8443/api/users`, {
             method: "GET",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
@@ -33,7 +34,7 @@ export async function fetchUsers() {
 }
 export async function fetchFriends() {
     try {
-        const response = await fetch("https://192.168.68.50:8443/api/users/friends", {
+        const response = await fetch(`https://${SERVER_IP}:8443/api/users/friends`, {
             method: "GET",
             headers: { "Content-Type": "application/json" },
             credentials: "include",

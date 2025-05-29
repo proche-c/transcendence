@@ -1,3 +1,4 @@
+const { SERVER_IP } = require('./config.js');
 const oauthPlugin = require('@fastify/oauth2');
 const fetch = require('node-fetch');
 const path = require('path');
@@ -17,7 +18,7 @@ module.exports = async function (fastify, options) {
       auth: oauthPlugin.GOOGLE_CONFIGURATION
     },
     startRedirectPath: '/login/google',
-    callbackUri: 'https://192.168.68.50:8443/api/auth/google/callback'
+    callbackUri: `https://${SERVER_IP}:8443/api/auth/google/callback`
   });
 
   // Google callback route
@@ -71,12 +72,12 @@ module.exports = async function (fastify, options) {
         httpOnly: false,
         secure: true,
         sameSite: "none",
-        domain: "192.168.68.50",
+        domain: SERVER_IP,
         path: "/",
         maxAge: 60 * 70, // 70 minutes
       });
 
-      return reply.redirect('https://192.168.68.50:5500/frontend/#profile');
+      return reply.redirect(`https://${SERVER_IP}:5500/frontend/#profile`);
     } catch (err) {
       return reply.status(500).send({ message: 'Google authentication failed', error: err.message });
     }

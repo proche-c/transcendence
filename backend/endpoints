@@ -1,5 +1,5 @@
 // EDIT PROFILE //
-"https://192.168.68.50:8443/api/edit-profile"
+"https://${SERVER_IP}:8443/api/edit-profile"
 
 I'll send 2 parameters:
     1. username:
@@ -16,7 +16,7 @@ I'll send 2 parameters:
             - send front new route
 
 // FRIENDS //
-"https://192.168.68.50:8443/api/friends"
+"https://${SERVER_IP}:8443/api/friends"
 
 GET -> send front all friends
 
@@ -25,7 +25,7 @@ POST -> I'll send 1 parameter: username
     - if user exist -> add to friends and send reply to front
 
 // PUBLIC PROFILE //
-"https://192.168.68.50:8443/api/public-profile"
+"https://${SERVER_IP}:8443/api/public-profile"
 
 I'll send 1 parameter: username
     - if user doesn't exist -> send front an error

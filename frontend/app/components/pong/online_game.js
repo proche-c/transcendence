@@ -1,11 +1,12 @@
+import { SERVER_IP } from '../../config.js';
 export function setupOnlineGame(shadowRoot) {
     if (!shadowRoot)
         return null;
     const canvas = shadowRoot.querySelector('canvas');
     const ctx = canvas.getContext('2d');
     const serverIP = window.location.hostname;
-    const socket = new WebSocket(`wss://192.168.68.50:8443/api/game`);
-    console.log(`Connecting to server at wss://192.168.68.50:8443/game`);
+    const socket = new WebSocket(`wss://${SERVER_IP}:8443/api/game`);
+    console.log(`Connecting to server at wss://${SERVER_IP}:8443/game`);
     let playerNumber = null;
     let gameState = null;
     let playerY = 150;

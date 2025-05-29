@@ -1,3 +1,4 @@
+import { SERVER_IP } from '../config.js';
 class PublicProfileComponent extends HTMLElement {
     private username: string | null = null;
 	private response: any | null = null;
@@ -20,7 +21,7 @@ class PublicProfileComponent extends HTMLElement {
 	private async getPublicProfile() {
         console.log(`Username: ${this.username}`);
 		try {
-            const response = await fetch(`https://192.168.68.50:8443/api/public-profile?username=${encodeURIComponent(this.username ?? "")}`, {
+            const response = await fetch(`https://${SERVER_IP}:8443/api/public-profile?username=${encodeURIComponent(this.username ?? "")}`, {
                 method: "GET",
                 credentials: "include",
             });
@@ -43,7 +44,7 @@ class PublicProfileComponent extends HTMLElement {
 		style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
 
 		const avatar = this.response.avatar;
-		const avatarUrl = `https://192.168.68.50:8443/api/static/${avatar}`;
+		const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
 
 		this.shadowRoot.innerHTML = `
 			<div class="relative flex flex-col h-full w-60 md:w-72 transform border-2 border-black bg-white transition-transform group-hover:scale-105 ">

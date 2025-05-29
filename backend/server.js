@@ -15,6 +15,7 @@ const fastifyWebsocket = require("@fastify/websocket");
 fastify.register(fastifyWebsocket);
 const fastifyCookie = require("@fastify/cookie");
 fastify.register(fastifyCookie);
+const { SERVER_IP } = require('./config.js');
 
 // Afegeix aquesta configuració abans de fastify.listen
 const options = {
@@ -287,7 +288,7 @@ fastify.post(
 const start = async () => {
   try {
     await fastify.listen(options);
-    console.log("Server is running on https://192.168.68.50:8443/api");
+    console.log(`Server is running on https://${SERVER_IP}:8443/api`);
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);

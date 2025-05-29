@@ -1,4 +1,5 @@
 import { fetchUserProfile, fetchUsers, fetchFriends, User } from "../utils/requests.js";
+import { SERVER_IP } from '../config.js';
 
 interface Data {
 	user: string; // No lo necesitas porque lo tienes en el payload
@@ -61,7 +62,7 @@ class ChatComponent extends HTMLElement {
 	}
 
 	private connect() {
-		this.socket = new WebSocket("ws://192.168.68.50:8000/chat");
+		this.socket = new WebSocket("ws://${SERVER_IP}:8000/chat");
 		console.log(this.socket);
 		this.socket.onmessage = (event) => {
 			// const data: Data = JSON.parse(event.data);
@@ -85,7 +86,7 @@ class ChatComponent extends HTMLElement {
 		style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
 
 		const avatar = this.user.avatar;
-		const avatarUrl = `https://192.168.68.50:8443/api/static/${avatar}`;
+		const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
 
 		this.shadowRoot.innerHTML = `
 		<div class="flex h-screen items-center">

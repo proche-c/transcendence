@@ -1,4 +1,5 @@
 import { GameState, CrazyGameState } from './interfaces.js';
+import { SERVER_IP } from '../../config.js';
 
 export function createInitialGameState(): GameState {
     return {
@@ -122,7 +123,7 @@ export async function reportResultToServer(gameState: GameState) {
     formData.append("goalsAgainst", player2.toString());
   
     try {
-      const res = await fetch('https://192.168.68.50:8443/api/api/stats', {
+      const res = await fetch(`https://${SERVER_IP}:8443/api/api/stats`, {
         method: 'POST',
         body: formData,
         credentials: 'include',

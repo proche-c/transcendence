@@ -1,5 +1,6 @@
 // tengo que crear la interfaz data!!!!!!!!!!!!!!!!!
 import { fetchUserProfile } from "../utils/requests.js";
+import { SERVER_IP } from '../config.js';
 
 class ProfileComponent extends HTMLElement {
 	private response: any | null = null;
@@ -27,7 +28,7 @@ class ProfileComponent extends HTMLElement {
 		style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
 
 		const avatar = this.response.avatar || "avatars/default.jpg";
-		const avatarUrl = `https://192.168.68.50:8443/api/static/${avatar}`;
+		const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
 
 		this.shadowRoot.innerHTML = `
 			<div class="flex h-screen justify-between">

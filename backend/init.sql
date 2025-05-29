@@ -48,6 +48,22 @@ CREATE TABLE IF NOT EXISTS tournaments (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS tournament_matches (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  tournament_id INTEGER NOT NULL,
+  round TEXT NOT NULL, -- 'semifinal' o 'final'
+  match_number INTEGER NOT NULL, -- 1 o 2 per semifinals, 1 per final
+  player1_id INTEGER,
+  player2_id INTEGER,
+  winner_id INTEGER,
+  match_id INTEGER, -- Referència a la taula 'matches' quan es juga
+  FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
+  FOREIGN KEY (player1_id) REFERENCES users(id),
+  FOREIGN KEY (player2_id) REFERENCES users(id),
+  FOREIGN KEY (winner_id) REFERENCES users(id),
+  FOREIGN KEY (match_id) REFERENCES matches(id)
+);
+
 
 CREATE TABLE IF NOT EXISTS tournament_participants (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

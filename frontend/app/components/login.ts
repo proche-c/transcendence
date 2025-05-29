@@ -1,3 +1,4 @@
+import { SERVER_IP } from '../config.js';
 class LoginComponent extends HTMLElement {
     private emailInput: HTMLInputElement | null = null;
     private passwordInput: HTMLInputElement | null = null;
@@ -99,7 +100,7 @@ class LoginComponent extends HTMLElement {
             console.log("Google button found"); // Vérifiez si ce log s'affiche
             this.googleButton.addEventListener("click", () => {
                 console.log("Google button clicked");
-                window.location.href = "https://192.168.68.50:8443/api/login/google";
+                window.location.href = `https://${SERVER_IP}:8443/api/login/google`;
             });
         } else {
             console.error("Google button not found");
@@ -111,7 +112,7 @@ class LoginComponent extends HTMLElement {
 
         try {
             // Esta url sera el endpoint que configure el servidor
-            const response = await fetch("https://192.168.68.50:8443/api/login", {
+            const response = await fetch(`https://${SERVER_IP}:8443/api/login`, {
                 method: "POST",
                 body: JSON.stringify(data),
                 headers: { "Content-Type": "application/json" },

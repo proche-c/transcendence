@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const speakeasy = require('speakeasy');
 const { z } = require("zod");
+const { SERVER_IP } = require('./config');
 
 // Schema to validate login data
 const loginSchema = z.object({
@@ -65,7 +66,7 @@ module.exports = async function (fastify, options) {
         httpOnly: false,
         secure: true,
         sameSite: "none",
-        domain: "192.168.68.50",
+        domain: SERVER_IP,
         path: "/",
         maxAge: 60 * 70,
       });
