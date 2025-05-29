@@ -169,3 +169,172 @@ private cleanupCurrentGame() {
 }
 
 customElements.define("pong-play", PlayComponent);
+
+                    <button id="backToMenuBtn" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                        Volver al Menú
+                    </button>
+                </div>
+                
+                <div class="flex-1 flex items-center justify-center">
+                    <div id="tournamentBracket" class="text-center">
+                        <h3 class="text-xl font-semibold mb-4">Bracket del Torneo</h3>
+                        <div id="bracketDisplay" class="text-sm text-gray-300">
+                            Esperando jugadores...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    private setupTournament() {
+        const socket = new WebSocket(`wss://localhost:8443/api/game`);
+        let isJoined = false;
+        
+        const joinBtn = this.shadowRoot?.getElementById('joinTournamentBtn') as HTMLButtonElement;
+        const aliasInput = this.shadowRoot?.getElementById('aliasInput') as HTMLInputElement;
+        const backBtn = this.shadowRoot?.getElementById('backToMenuBtn') as HTMLButtonElement;
+        const declareWinnerBtn = this.shadowRoot?.getElementById('declareWinnerBtn') as HTMLButtonElement;
+
+        socket.onopen = () => {
+            console.log('Conectado al torneo');
+            // Solicitar estado inicial
+            socket.send(JSON.stringify({ type: 'tournament_get_state' }));
+        };
+
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            
+            switch (data.type) {
+                case 'tournament_join_result':
+                    if (data.success) {
+                        isJoined = true;
+                        joinBtn.disabled = true;
+                        joinBtn.textContent = 'Unido al Torneo';
+                        aliasInput.disabled = true;
+                    } else {
+                        alert(data.message);
+                    }
+                    break;
+
+                case 'tournament_state':
+                case 'tournament_state_update':
+                    this.updateTournamentDisplay(data.state);
+                    break;
+
+                case 'tournament_match_start':
+                    this.showMatchInfo(data.match);
+                    break;
+
+                case 'tournament_match_result_response':
+                    if (data.success) {
+                        console.log('Resultado del partido registrado:', data.message);
+                    } else {
+                        alert(data.message);
+                    }
+                    break;
+            }
+        };
+
+        joinBtn?.addEventListener('click', () => {
+            const alias = aliasInput.value.trim();
+            if (!alias) {
+                alert('Por favor ingresa un alias');
+                return;
+            }
+            
+            socket.send(JSON.stringify({
+                type: 'tournament_join',
+                alias: alias
+            }));
+        });
+
+        backBtn?.addEventListener('click', () => {
+            socket.close();
+            this.renderMenu();
+            this.setupMenuListeners();
+        });
+
+        declareWinnerBtn?.addEventListener('click', () => {
+            // Aquí deberías implementar la lógica para determinar el ganador
+            // Por ahora, asumimos que el jugador actual gana
+            socket.send(JSON.stringify({
+                type: 'tournament_match_result',
+                winnerId: 'current_player_id' // Esto debería ser dinámico
+            }));
+        });
+
+        return () => {
+            socket.close();
+        };
+    }
+
+    private updateTournamentDisplay(state: any) {
+        const statusText = this.shadowRoot?.getElementById('statusText');
+        const playersList = this.shadowRoot?.getElementById('playersList');
+        const bracketDisplay = this.shadowRoot?.getElementById('bracketDisplay');
+
+        if (statusText) {
+            statusText.textContent = `Estado: ${state.tournamentStatus} - Jugadores: ${state.playersCount}/4`;
+        }
+
+        if (playersList) {
+            const playersHtml = state.players.map((player: any) => 
+                `<div class="flex justify-between items-center py-1">
+                    <span>${player.alias}</span>
+                    <span class="text-xs ${player.status === 'connected' ? 'text-green-400' : 'text-red-400'}">${player.status}</span>
+                </div>`
+            ).join('');
+            playersList.innerHTML = playersHtml;
+        }
+
+        if (bracketDisplay) {
+            if (state.tournamentStatus === 'waiting') {
+                bracketDisplay.innerHTML = 'Esperando jugadores...';
+            } else {
+                let bracketHtml = '<div class="space-y-2">';
+                
+                if (state.semifinals && state.semifinals.length > 0) {
+                    bracketHtml += '<h4 class="font-semibold">Semifinales:</h4>';
+                    state.semifinals.forEach((match: any) => {
+                        if (match) {
+                            bracketHtml += `<div class="text-sm">${match.player1Alias} vs ${match.player2Alias} - ${match.status}</div>`;
+                        }
+                    });
+                }
+                
+                if (state.final) {
+                    bracketHtml += '<h4 class="font-semibold mt-2">Final:</h4>';
+                    bracketHtml += `<div class="text-sm">${state.final.player1Alias} vs ${state.final.player2Alias} - ${state.final.status}</div>`;
+                }
+                
+                if (state.winner) {
+                    bracketHtml += `<h4 class="font-semibold mt-2 text-yellow-400">¡Ganador: ${state.winner.alias}!</h4>`;
+                }
+                
+                bracketHtml += '</div>';
+                bracketDisplay.innerHTML = bracketHtml;
+            }
+        }
+    }
+
+    private showMatchInfo(match: any) {
+        const matchInfo = this.shadowRoot?.getElementById('matchInfo');
+        const currentMatchText = this.shadowRoot?.getElementById('currentMatchText');
+        const matchControls = this.shadowRoot?.getElementById('matchControls');
+
+        if (matchInfo) {
+            matchInfo.style.display = 'block';
+        }
+
+        if (currentMatchText) {
+            currentMatchText.textContent = `${match.round}: ${match.player1.alias} vs ${match.player2.alias}`;
+        }
+
+        if (matchControls) {
+            matchControls.style.display = 'block';
+        }
+    }
+}
+
+customElements.define("pong-play", PlayComponent);

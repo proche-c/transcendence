@@ -22,27 +22,27 @@ class PlayComponent extends HTMLElement {
                 <div class="">
                     <pong-menu></pong-menu>
                 </div>
-                <div class="grow flex items-center justify-center">
-                    <div class="relative block max-w-screen-sm mx-auto">
-                        <span class="absolute inset-0 border-2 border-dashed border-black"></span>
-                        <div class="relative flex flex-col transform border-2 border-black bg-orange transition-transform group-hover:scale-105 p-8">                        
-                            <button id="localBtn" class="p-4 mb-4 text-lg font-bold text-black bg-blue-800 hover:bg-blue-950 transition-colors rounded-lg shadow-md">
-                                Local 1vs1
-                            </button>
-                            
-                            <button id="onlineBtn" class="p-4 mb-4 text-lg font-bold text-black bg-blue-800 hover:bg-blue-950 transition-colors rounded-lg shadow-md">
-                                Online Multiplayer
-                            </button>
-                            
-                            <button id="aiBtn" class="p-4 mb-4 text-lg font-bold text-black bg-blue-800 hover:bg-blue-950 transition-colors rounded-lg shadow-md">
-                                Play vs AI
-                            </button>
-                            
-                            <button id="crazyBtn" class="p-4 mb-4 text-lg font-bold text-black bg-blue-800 hover:bg-blue-950 transition-colors rounded-lg shadow-md">
-                                Crazy Game
-                            </button>
-                        </div>
-                    </div>
+                <div class="flex flex-col items-center justify-center h-full space-y-8">
+                <h1 class="text-4xl font-bold text-white mb-8">Selecciona tu modo de juego</h1>
+                <div class="grid grid-cols-2 gap-6">
+                    <button id="localBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition duration-200">
+                        Juego Local
+                    </button>
+                    <button id="onlineBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition duration-200">
+                        Juego Online
+                    </button>
+                    <button id="aiBtn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition duration-200">
+                        vs IA
+                    </button>
+                    <button id="tournamentBtn" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition duration-200">
+                        Torneo (4 jugadores)
+                    </button>
+                    <button id="crazyBtn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition duration-200">
+                        Modo Loco
+                    </button>
+                    <button id="3dBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-lg text-xl transition duration-200">
+                        Pong 3D
+                    </button>
                 </div>
             </div>
         `;
@@ -56,6 +56,7 @@ class PlayComponent extends HTMLElement {
         const aiBtn = (_c = this.shadowRoot) === null || _c === void 0 ? void 0 : _c.getElementById('aiBtn');
         const crazyBtn = (_d = this.shadowRoot) === null || _d === void 0 ? void 0 : _d.getElementById('crazyBtn');
         const pong3dBtn = (_e = this.shadowRoot) === null || _e === void 0 ? void 0 : _e.getElementById('3dBtn'); // Nou botó
+        const tournamentBtn = this.shadowRoot?.getElementById('tournamentBtn');
         localBtn === null || localBtn === void 0 ? void 0 : localBtn.addEventListener('click', () => {
             this.cleanupCurrentGame();
             this.gameMode = 'local';
@@ -80,6 +81,24 @@ class PlayComponent extends HTMLElement {
             this.renderSquareGame();
             this.cleanupFunction = setupCrazyGame(this.shadowRoot);
         });
+        tournamentBtn?.addEventListener('click', () => {
+            this.cleanupCurrentGame();
+            this.gameMode = 'tournament';
+            this.showTournament();
+        });
+    }
+    showTournament() {
+        if (!this.shadowRoot) return;
+
+        this.shadowRoot.innerHTML = '';
+        const tournament = document.createElement('pong-tournament');
+        
+        tournament.addEventListener('back-to-play', () => {
+            this.renderMenu();
+            this.setupMenuListeners();
+        });
+
+        this.shadowRoot.appendChild(tournament);
     }
     cleanupCurrentGame() {
         if (this.cleanupFunction) {

@@ -114,7 +114,7 @@ export async function reportResultToServer(gameState) {
     formData.append("goalsFor", player1.toString());
     formData.append("goalsAgainst", player2.toString());
     try {
-        const res = await fetch(`https://${SERVER_IP}:8443/api/api/stats`, {
+        const res = await fetch(`https://${SERVER_IP}:8443/api/stats`, {
             method: 'POST',
             body: formData,
             credentials: 'include',

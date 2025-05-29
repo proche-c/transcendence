@@ -33,7 +33,7 @@ class ChatComponent extends HTMLElement {
         console.log(this.users);
     }
     connect() {
-        this.socket = new WebSocket("ws://${SERVER_IP}:8000/chat");
+        this.socket = new WebSocket(`wss://${SERVER_IP}:8443/api/chat`);
         console.log(this.socket);
         this.socket.onmessage = (event) => {
             // const data: Data = JSON.parse(event.data);
