@@ -46,4 +46,4 @@ if [ -f ".env" ]; then
   echo "Fitxer .env actualitzat"
 fi
 
-echo "Configuració de la IP completada. Utilitza les variables a les teves aplicacions."
+echo "Utilitza https://$SERVER_IP:8443 per accedir a la web del pong"
