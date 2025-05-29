@@ -114,7 +114,7 @@ class ChatComponent extends HTMLElement {
 			// Chats one-to-one
 			for (const oneToOne of this.chats.oneToOneChats) {
 				const btn = document.createElement("button");
-				btn.textContent = oneToOne.participant.username;
+				btn.textContent = oneToOne.other_user;
 				btn.className = "text-left p-2 hover:bg-violet-100 w-full border-b border-gray-300";
 				btn.addEventListener("click", () => {
 					console.log("Chat one-to-one seleccionado:", oneToOne.participant.username);
@@ -138,8 +138,8 @@ class ChatComponent extends HTMLElement {
 			if (messageToSend) {
 				const msg: Message = {
 					sender: this.user.username,
-					type: 0,
-					destinatary: "",
+					type: 1,
+					destinatary: "alex",
 					message: messageToSend,
 					chatId: -1
 				};

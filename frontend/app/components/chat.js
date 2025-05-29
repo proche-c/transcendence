@@ -140,8 +140,8 @@ class ChatComponent extends HTMLElement {
             if (messageToSend) {
                 const msg = {
                     sender: this.user.username,
-                    type: 0,
-                    destinatary: "",
+                    type: 1,
+                    destinatary: "alex",
                     message: messageToSend,
                     chatId: -1
                 };

@@ -55,7 +55,7 @@ class BoardComponent extends HTMLElement {
         this.shadowRoot.innerHTML = `
 		<div class="flex h-screen">
 			<div><pong-menu></pong-menu></div>
-			<div class="flex flex-col w-74">
+			<div class="flex flex-col w-74 md:w-200">
 				<div><pong-header></div>
 
 				<div class="flex flex-col md:flex-row bg-violet-600">
@@ -66,14 +66,15 @@ class BoardComponent extends HTMLElement {
 							<img src="${avatarUrl}" class="w-full h-full object-cover" />
 						</div>
 						<div id="username" class="text-xs font-bold text-center mt-2">usuario</div>
+						
 						<div id="rank" class="text-center mt-3 font-bold text-violet-900">Rank</div>
 
-							<div class="text-xs text-center mt-2">Total games: <span id="totalGames" class="font-bold">0</span></div>
-							<div class="text-center mt-2">Total wins: <span id="wins" class="font-bold">0</span></div>
-							<div class="text-center mt-2">Total losses: <span id="losses" class="font-bold">0</span></div>
-							<div class="text-center mt-2">Win rate: <span id="rate" class="font-bold">0</span></div>
-							<div class="text-center mt-2">Goals for: <span id="goalsFor" class="font-bold">0</span></div>
-							<div class="text-center mt-2">Goals against: <span id="goalsAgainst" class="font-bold">0</span></div>
+						<div class="text-xs text-center mt-2">Total games: <span id="totalGames" class="font-bold">0</span></div>
+						<div class="text-center mt-2">Total wins: <span id="wins" class="font-bold">0</span></div>
+						<div class="text-center mt-2">Total losses: <span id="losses" class="font-bold">0</span></div>
+						<div class="text-center mt-2">Win rate: <span id="rate" class="font-bold">0</span></div>
+						<div class="text-center mt-2">Goals for: <span id="goalsFor" class="font-bold">0</span></div>
+						<div class="text-center mt-2">Goals against: <span id="goalsAgainst" class="font-bold">0</span></div>
 					</div>
 
 
