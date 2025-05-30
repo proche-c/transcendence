@@ -1,7 +1,4 @@
-#!/bin/bash
-# filepath: /Users/paubotargues/Desktop/trans/setup-ip-vars.sh
-
-# Detecta la IP segons el sistema operatiu
+#!/bin/bash# Detecta la IP segons el sistema operatiu
 get_ip() {
   if [ "$(uname)" = "Darwin" ]; then
     # Mac OS X
