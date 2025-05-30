@@ -1,4 +1,5 @@
 import { fetchUserProfile, fetchUsers, fetchChats, fetchMessages, User, Chat, Message, ChatData, OneToOneChat } from "../utils/requests.js";
+import { SERVER_IP } from '../config.js';
 
 
 class ChatComponent extends HTMLElement {
@@ -43,8 +44,8 @@ class ChatComponent extends HTMLElement {
 	}
 
 	private connect() {
-		this.socket = new WebSocket("ws://localhost:8000/chat");
-
+		this.socket = new WebSocket("wss://${SERVER_IP}:8443/chat");
+		console.log(this.socket);
 		this.socket.onmessage = (event) => {
 			console.log("data que recibo:", event.data);
 			this.addMessageToMessages(event.data);
@@ -62,7 +63,7 @@ class ChatComponent extends HTMLElement {
 		console.log(this.user);
 
 		const avatar = this.user.avatar;
-		const avatarUrl = `http://localhost:8000/static/${avatar}`;
+		const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
 
 		this.shadowRoot.innerHTML = `
 			<div class="flex h-screen items-center">

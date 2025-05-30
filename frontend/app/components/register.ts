@@ -1,3 +1,4 @@
+import { SERVER_IP } from '../config.js';
 class RegisterComponent extends HTMLElement {
   private emailInput: HTMLInputElement | null = null;
   private userInput: HTMLInputElement | null = null;
@@ -145,7 +146,7 @@ render() {
   
       try {
           // Appel à l'API pour vérifier la disponibilité de l'email
-          const response = await fetch(`http://localhost:8000/check-email?email=${encodeURIComponent(email)}`);
+          const response = await fetch(`https://${SERVER_IP}:8443/api/check-email?email=${encodeURIComponent(email)}`);
           
           // Vérifier si la réponse est correcte
           if (!response.ok) {
@@ -200,7 +201,7 @@ render() {
       
       try {
           // Appel à l'API pour vérifier la disponibilité du nom d'utilisateur
-          const response = await fetch(`http://localhost:8000/check-username?username=${encodeURIComponent(username)}`);
+          const response = await fetch(`https://${SERVER_IP}:8443/api/check-username?username=${encodeURIComponent(username)}`);
           
           // Vérifier si la réponse est correcte
           if (!response.ok) {
@@ -263,7 +264,7 @@ render() {
       const data = { "username": user, "email": email, "password": password };
 
       try {
-          const response = await fetch("http://localhost:8000/register", {
+          const response = await fetch(`https://${SERVER_IP}:8443/api/register`, {
               method: "POST",
               body: JSON.stringify(data),
               headers: { "Content-Type": "application/json" },

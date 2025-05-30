@@ -1,3 +1,5 @@
+import { SERVER_IP } from '../config.js';
+
 export interface User {
 	id: number;
 	username: string;
@@ -42,7 +44,7 @@ export interface ChatData {
 
 export async function fetchUserProfile() {
 	try {
-		const response = await fetch("http://localhost:8000/profile", {
+		const response = await fetch(`https://${SERVER_IP}:8443/api/profile`, {
 			method: "GET",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include",
@@ -62,7 +64,7 @@ export async function fetchUserProfile() {
 
 export async function fetchUsers(): Promise<User[]> {
 	try {
-		const response = await fetch("http://localhost:8000/users", {
+		const response = await fetch(`https://${SERVER_IP}:8443/api/users`, {
 			method: "GET",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include",
@@ -79,7 +81,7 @@ export async function fetchUsers(): Promise<User[]> {
 
 export async function fetchFriends() {
 	try {
-		const response = await fetch("http://localhost:8000/users/friends", {
+		const response = await fetch(`https://${SERVER_IP}:8443/api/users/friends`, {
 			method: "GET",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include",
@@ -99,7 +101,7 @@ export async function fetchFriends() {
 
 export async function fetchPublicProfile(user: string | null) {
 	try {
-		const response = await fetch(`http://localhost:8000/public-profile?username=${encodeURIComponent(user ?? "")}`, {
+		const response = await fetch(`https://${SERVER_IP}:8443/public-profile?username=${encodeURIComponent(user ?? "")}`, {
 			method: "GET",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include",
@@ -119,7 +121,7 @@ export async function fetchPublicProfile(user: string | null) {
 
 export async function fetchChats(): Promise<any | ChatData | null> {
 	try {
-		const response = await fetch("http://localhost:8000/chats", {
+		const response = await fetch(`https://${SERVER_IP}:8443/chats`, {
 			method: "GET",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include", // importante para que se envíen las cookies
@@ -145,7 +147,7 @@ export async function fetchChats(): Promise<any | ChatData | null> {
 
 export async function fetchMessages(chatId: number | null) {
 	try {
-		const response = await fetch(`http://localhost:8000/users/messages?chatId=${chatId}`, {
+		const response = await fetch(`https://${SERVER_IP}:8443/users/messages?chatId=${chatId}`, {
 			method: "GET",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include",

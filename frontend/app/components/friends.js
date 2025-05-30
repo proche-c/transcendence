@@ -49,10 +49,10 @@ class FriendsComponent extends HTMLElement {
         console.log("El user es :");
         console.log(this.user);
         const avatar = this.user.avatar;
-        const avatarUrl = `http://localhost:8000/static/${avatar}`;
+        const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
         const friendsButtons = this.friends.map((friend) => {
             const avatar = friend.avatar;
-            const avatarUrl = `http://localhost:8000/static/${avatar}`;
+            const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
             return `
 				<div class="flex m-1 ml-3 items center">
 					<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-black flex items-center justify-center bg-emerald-200">
@@ -127,7 +127,7 @@ class FriendsComponent extends HTMLElement {
         var _a, _b;
         const addButtons = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelectorAll(".add-button");
         addButtons === null || addButtons === void 0 ? void 0 : addButtons.forEach((button) => {
-            button.addEventListener("click", (event) => __awaiter(this, void 0, void 0, function* () {
+            button.addEventListener("click", async (event) => {
                 const target = event.currentTarget;
                 const username = target.getAttribute("name-to-add");
                 console.log(`username: $(username)`);
@@ -135,11 +135,11 @@ class FriendsComponent extends HTMLElement {
                     yield this.sendFriendRequest(username);
                     yield this.load();
                 }
-            }));
+            });
         });
         const userButtons = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.querySelectorAll(".user-button");
         userButtons === null || userButtons === void 0 ? void 0 : userButtons.forEach((button) => {
-            button.addEventListener("click", (event) => __awaiter(this, void 0, void 0, function* () {
+            button.addEventListener("click", async (event) => {
                 var _a;
                 const target = event.currentTarget;
                 const username = target.getAttribute("data-username");
@@ -153,34 +153,32 @@ class FriendsComponent extends HTMLElement {
                         profileCard.appendChild(publicProfile);
                     }
                 }
-            }));
+            });
         });
     }
-    sendFriendRequest(username) {
-        return __awaiter(this, void 0, void 0, function* () {
-            console.log("Entro en sendFriendRequest");
-            try {
-                const response = yield fetch("http://localhost:8000/users/friends", {
-                    method: "POST",
-                    headers: {
-                        "Content-type": "application/json",
-                    },
-                    credentials: "include",
-                    body: JSON.stringify({ username }),
-                });
-                const data = yield response.json();
-                if (response.ok) {
-                    alert(`Friend request sent to ${username}`);
-                }
-                else {
-                    alert(`Error: ${data.message}`);
-                }
+    async sendFriendRequest(username) {
+        console.log("Entro en sendFriendRequest");
+        try {
+            const response = await fetch(`https://${SERVER_IP}:8443/api/users/friends`, {
+                method: "POST",
+                headers: {
+                    "Content-type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify({ username }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert(`Friend request sent to ${username}`);
             }
-            catch (error) {
-                console.error("Error sending friend request", error);
-                alert("Failed to send ");
+            else {
+                alert(`Error: ${data.message}`);
             }
-        });
+        }
+        catch (error) {
+            console.error("Error sending friend request", error);
+            alert("Failed to send ");
+        }
     }
 }
 customElements.define("pong-friends", FriendsComponent);

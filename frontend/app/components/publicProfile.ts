@@ -1,4 +1,5 @@
 import { fetchPublicProfile } from "../utils/requests.js";
+import { SERVER_IP } from '../config.js';
 
 class PublicProfileComponent extends HTMLElement {
     private username: string | null = null;
@@ -33,7 +34,7 @@ class PublicProfileComponent extends HTMLElement {
 		style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
 
 		const avatar = this.response.avatar;
-		const avatarUrl = `http://localhost:8000/static/${avatar}`;
+		const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
 
 		this.shadowRoot.innerHTML = `
 			<div class="group relative block max-w-screen-sm mx-auto h-120 lg:h-150">

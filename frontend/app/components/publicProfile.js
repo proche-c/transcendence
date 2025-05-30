@@ -40,7 +40,7 @@ class PublicProfileComponent extends HTMLElement {
         style.rel = "stylesheet";
         style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
         const avatar = this.response.avatar;
-        const avatarUrl = `http://localhost:8000/static/${avatar}`;
+        const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
         this.shadowRoot.innerHTML = `
 			<div class="group relative block max-w-screen-sm mx-auto h-120 lg:h-150">
 				<span class="absolute inset-0 border-2 border-dashed border-black"></span>

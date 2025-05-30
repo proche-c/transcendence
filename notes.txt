@@ -131,7 +131,7 @@ docker exec -it backend sh
 
 1️⃣ Inscription de l'utilisateur
 
-curl -X POST http://localhost:8000/register \
+curl -X POST https://${SERVER_IP}:8443/api/register \
   -H "Content-Type: application/json" \
   -d '{
     "username": "elgringo",
@@ -141,7 +141,7 @@ curl -X POST http://localhost:8000/register \
 
 2️⃣ Connexion pour récupérer le token JWT
 
-curl -X POST http://localhost:8000/login \
+curl -X POST https://${SERVER_IP}:8443/api/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "elgringo154@gmail.com",
@@ -151,7 +151,7 @@ curl -X POST http://localhost:8000/login \
 🔁 Copie le token JWT de la réponse — disons qu’on l’appelle ALEX_TOKEN.
 
 3️⃣ Activation de la 2FA (setup avec QR Code)
-curl -X POST http://localhost:8000/2fa/setup \
+curl -X POST https://${SERVER_IP}:8443/api/2fa/setup \
   -H "Authorization: Bearer ALEX_TOKEN"
 
 
@@ -170,7 +170,7 @@ in the web browser you can paste data:image/png;base64...
 4️⃣ Vérification du code Google Authenticator
 Depuis ton app, récupère un code à 6 chiffres, par ex : 123456
 
-curl -X POST http://localhost:8000/2fa/verify \
+curl -X POST https://${SERVER_IP}:8443/api/2fa/verify \
   -H "Authorization: Bearer ALEX_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"token":"123456"}'
@@ -179,7 +179,7 @@ curl -X POST http://localhost:8000/2fa/verify \
 
 5️⃣ Connexion future AVEC 2FA
 
-curl -X POST http://localhost:8000/login \
+curl -X POST https://${SERVER_IP}:8443/api/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "elgringo154@gmail.com",

@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { fetchUserProfile } from "../utils/requests.js";
+import { SERVER_IP } from '../config.js';
 class ProfileComponent extends HTMLElement {
     constructor() {
         super();
@@ -15,12 +16,10 @@ class ProfileComponent extends HTMLElement {
         this.attachShadow({ mode: "open" });
         this.load();
     }
-    load() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.getProfile();
-            this.render();
-            this.updateData();
-        });
+    async load() {
+        await this.getProfile();
+        this.render();
+        this.updateData();
     }
     getProfile() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -36,7 +35,7 @@ class ProfileComponent extends HTMLElement {
         style.rel = "stylesheet";
         style.href = "./app/tailwind.css";
         const avatar = this.response.avatar || "avatars/default.jpg";
-        const avatarUrl = `http://localhost:8000/static/${avatar}`;
+        const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
         this.shadowRoot.innerHTML = `
 			<div class="flex h-screen justify-between">
 				<div class="">
@@ -143,10 +142,10 @@ class ProfileComponent extends HTMLElement {
                 if (editCard) {
                     editCard.innerHTML = "";
                     const editProfile = document.createElement("pong-edit-profile");
-                    editProfile.addEventListener("profile-updated", () => __awaiter(this, void 0, void 0, function* () {
-                        yield this.getProfile();
+                    editProfile.addEventListener("profile-updated", async () => {
+                        await this.getProfile();
                         this.updateData();
-                    }));
+                    });
                     editCard.appendChild(editProfile);
                 }
             });
