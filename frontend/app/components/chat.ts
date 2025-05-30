@@ -44,7 +44,7 @@ class ChatComponent extends HTMLElement {
 	}
 
 	private connect() {
-		this.socket = new WebSocket("wss://${SERVER_IP}:8443/chat");
+		this.socket = new WebSocket(`wss://${SERVER_IP}:8443/api/chat`);
 		console.log(this.socket);
 		this.socket.onmessage = (event) => {
 			console.log("data que recibo:", event.data);

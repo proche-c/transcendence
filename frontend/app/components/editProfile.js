@@ -102,7 +102,7 @@ class EditProfileComponent extends HTMLElement {
                     formData.append("avatar", file);
                 try {
                     console.log("hago request");
-                    const response = yield fetch("http://localhost:8000/edit-profile", {
+                    const response = await fetch(`https://${SERVER_IP}:8443/api/edit-profile`, {
                         method: "POST",
                         body: formData,
                         credentials: "include",

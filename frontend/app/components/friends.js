@@ -1,13 +1,5 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import { fetchUserProfile, fetchUsers, fetchFriends } from "../utils/requests.js";
+import { SERVER_IP } from '../config.js';
 class FriendsComponent extends HTMLElement {
     constructor() {
         super();
@@ -17,28 +9,20 @@ class FriendsComponent extends HTMLElement {
         this.attachShadow({ mode: "open" });
         this.load();
     }
-    load() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.getProfile();
-            yield this.getFriends();
-            yield this.getUsers();
-            this.render();
-        });
+    async load() {
+        await this.getProfile();
+        await this.getFriends();
+        await this.getUsers();
+        this.render();
     }
-    getProfile() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.user = yield fetchUserProfile();
-        });
+    async getProfile() {
+        this.user = await fetchUserProfile();
     }
-    getUsers() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.users = yield fetchUsers();
-        });
+    async getUsers() {
+        this.users = await fetchUsers();
     }
-    getFriends() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.friends = yield fetchFriends();
-        });
+    async getFriends() {
+        this.friends = await fetchFriends();
     }
     render() {
         if (!this.shadowRoot)
@@ -70,7 +54,7 @@ class FriendsComponent extends HTMLElement {
         })
             .map((user) => {
             const avatar = user.avatar;
-            const avatarUrl = `http://localhost:8000/static/${avatar}`;
+            const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
             return `
 				<div class="flex m-1 ml-3 items center">
 					<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-black flex items-center justify-center bg-emerald-200">
@@ -132,8 +116,8 @@ class FriendsComponent extends HTMLElement {
                 const username = target.getAttribute("name-to-add");
                 console.log(`username: $(username)`);
                 if (username) {
-                    yield this.sendFriendRequest(username);
-                    yield this.load();
+                    await this.sendFriendRequest(username);
+                    await this.load();
                 }
             });
         });

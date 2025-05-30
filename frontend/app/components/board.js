@@ -1,13 +1,5 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import { fetchUserProfile, fetchUsers } from "../utils/requests.js";
+import { SERVER_IP } from '../config.js';
 class BoardComponent extends HTMLElement {
     constructor() {
         super();
@@ -19,26 +11,20 @@ class BoardComponent extends HTMLElement {
         this.attachShadow({ mode: "open" });
         this.load();
     }
-    load() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.getProfile();
-            yield this.getUsers();
-            this.user1 = this.getUserRank(1);
-            this.user2 = this.getUserRank(2);
-            this.user3 = this.getUserRank(3);
-            this.render();
-        });
+    async load() {
+        await this.getProfile();
+        await this.getUsers();
+        this.user1 = this.getUserRank(1);
+        this.user2 = this.getUserRank(2);
+        this.user3 = this.getUserRank(3);
+        this.render();
     }
-    getProfile() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.user = yield fetchUserProfile();
-        });
+    async getProfile() {
+        this.user = await fetchUserProfile();
     }
-    getUsers() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.users = yield fetchUsers();
-            console.log(this.users);
-        });
+    async getUsers() {
+        this.users = await fetchUsers();
+        console.log(this.users);
     }
     getUserRank(rank) {
         const user = this.users.find((user) => user.ranking === rank);
@@ -51,7 +37,7 @@ class BoardComponent extends HTMLElement {
         style.rel = "stylesheet";
         style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
         const avatar = this.user.avatar;
-        const avatarUrl = `http://localhost:8000/static/${avatar}`;
+        const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
         this.shadowRoot.innerHTML = `
 		<div class="flex h-screen">
 			<div><pong-menu></pong-menu></div>

@@ -101,7 +101,7 @@ export async function fetchFriends() {
 
 export async function fetchPublicProfile(user: string | null) {
 	try {
-		const response = await fetch(`https://${SERVER_IP}:8443/public-profile?username=${encodeURIComponent(user ?? "")}`, {
+		const response = await fetch(`https://${SERVER_IP}:8443/api/public-profile?username=${encodeURIComponent(user ?? "")}`, {
 			method: "GET",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include",
@@ -121,7 +121,7 @@ export async function fetchPublicProfile(user: string | null) {
 
 export async function fetchChats(): Promise<any | ChatData | null> {
 	try {
-		const response = await fetch(`https://${SERVER_IP}:8443/chats`, {
+		const response = await fetch(`https://${SERVER_IP}:8443/api/chats`, {
 			method: "GET",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include", // importante para que se envíen las cookies
@@ -147,7 +147,7 @@ export async function fetchChats(): Promise<any | ChatData | null> {
 
 export async function fetchMessages(chatId: number | null) {
 	try {
-		const response = await fetch(`https://${SERVER_IP}:8443/users/messages?chatId=${chatId}`, {
+		const response = await fetch(`https://${SERVER_IP}:8443/api/users/messages?chatId=${chatId}`, {
 			method: "GET",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include",

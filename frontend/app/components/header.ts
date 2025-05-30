@@ -1,4 +1,5 @@
 import { fetchUserProfile, User } from "../utils/requests.js";
+import { SERVER_IP } from '../config.js';
 
 class HeaderComponent extends HTMLElement {
 	private user: User | any | null = null;
@@ -27,7 +28,7 @@ class HeaderComponent extends HTMLElement {
 		style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
 
 		const avatar = this.user.avatar;
-		const avatarUrl = `http://localhost:8000/static/${avatar}`;
+		const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
 
 		this.shadowRoot.innerHTML = `
 		<div class="flex flex-col items-center w-full h-full my-2">

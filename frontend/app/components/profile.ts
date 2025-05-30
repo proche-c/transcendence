@@ -85,7 +85,7 @@ class ProfileComponent extends HTMLElement {
 		const img = profilePicContainer?.querySelector("img");
 		if (img instanceof HTMLImageElement) {
 			const avatar = this.response.avatar || "avatars/default.jpg";
-			img.src = `https://${SERVER_IP}:8443/static/${avatar}?ts=${Date.now()}`; // Avoid caché
+			img.src = `https://${SERVER_IP}:8443/api/static/${avatar}?ts=${Date.now()}`; // Avoid caché
 		}
 
 		const email = this.shadowRoot.querySelector("#email");
