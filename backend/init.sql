@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
   total_losses INTEGER DEFAULT 0,
   goals_for INTEGER DEFAULT 0,
   goals_against INTEGER DEFAULT 0,
-  ranking INTEGER DEFAULT NULL
+  ranking INTEGER DEFAULT NUL
 );
 
 
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS friends (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL,
   friend_id INTEGER NOT NULL,
-  status TEXT CHECK(status IN ('pending', 'accepted', 'blocked')) DEFAULT 'pending',
+  status TEXT CHECK(status IN ( 'accepted', 'blocked')) DEFAULT 'accepted',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -46,22 +46,6 @@ CREATE TABLE IF NOT EXISTS tournaments (
   start_date TIMESTAMP NOT NULL,
   end_date TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS tournament_matches (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  tournament_id INTEGER NOT NULL,
-  round TEXT NOT NULL, -- 'semifinal' o 'final'
-  match_number INTEGER NOT NULL, -- 1 o 2 per semifinals, 1 per final
-  player1_id INTEGER,
-  player2_id INTEGER,
-  winner_id INTEGER,
-  match_id INTEGER, -- Referència a la taula 'matches' quan es juga
-  FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
-  FOREIGN KEY (player1_id) REFERENCES users(id),
-  FOREIGN KEY (player2_id) REFERENCES users(id),
-  FOREIGN KEY (winner_id) REFERENCES users(id),
-  FOREIGN KEY (match_id) REFERENCES matches(id)
 );
 
 
