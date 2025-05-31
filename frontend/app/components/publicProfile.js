@@ -1,13 +1,5 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import { fetchPublicProfile } from "../utils/requests.js";
+import { SERVER_IP } from '../config.js';
 class PublicProfileComponent extends HTMLElement {
     constructor() {
         super();
@@ -19,19 +11,15 @@ class PublicProfileComponent extends HTMLElement {
         this.username = this.getAttribute("username");
         this.load();
     }
-    load() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.getPublicProfile();
-            this.render();
-            this.updateData();
-        });
+    async load() {
+        await this.getPublicProfile();
+        this.render();
+        this.updateData();
     }
-    getPublicProfile() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.response = yield fetchPublicProfile(this.username);
-            console.log("en public profile, imprimo user:");
-            console.log(this.response);
-        });
+    async getPublicProfile() {
+        this.response = await fetchPublicProfile(this.username);
+        console.log("en public profile, imprimo user:");
+        console.log(this.response);
     }
     render() {
         if (!this.shadowRoot)
@@ -40,7 +28,7 @@ class PublicProfileComponent extends HTMLElement {
         style.rel = "stylesheet";
         style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
         const avatar = this.response.avatar;
-        const avatarUrl = `http://localhost:8000/static/${avatar}`;
+        const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
         this.shadowRoot.innerHTML = `
 			<div class="group relative block max-w-screen-sm mx-auto h-120 lg:h-150">
 				<span class="absolute inset-0 border-2 border-dashed border-black"></span>
@@ -89,7 +77,7 @@ class PublicProfileComponent extends HTMLElement {
         const img = profilePicContainer === null || profilePicContainer === void 0 ? void 0 : profilePicContainer.querySelector("img");
         if (img instanceof HTMLImageElement) {
             const avatar = this.response.avatar || "avatars/default.jpg";
-            img.src = `http://localhost:8000/static/${avatar}?ts=${Date.now()}`; // Avoid caché
+            img.src = `https://${SERVER_IP}:8443/api/static/${avatar}?ts=${Date.now()}`; // Avoid caché
         }
         const email = this.shadowRoot.querySelector("#email");
         if (email) {

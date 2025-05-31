@@ -1,4 +1,5 @@
 import { fetchUserProfile, fetchUsers, fetchFriends, User } from "../utils/requests.js";
+import { SERVER_IP } from '../config.js';
 
 
 class FriendsComponent extends HTMLElement {
@@ -41,11 +42,11 @@ class FriendsComponent extends HTMLElement {
 		console.log(this.user);
 
 		const avatar = this.user.avatar;
-		const avatarUrl = `http://localhost:8000/static/${avatar}`;
+		const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
 
 		const friendsButtons = this.friends.map((friend: User) => {
 			const avatar = friend.avatar;
-			const avatarUrl = `http://localhost:8000/static/${avatar}`;
+			const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
 			return `
 				<div class="flex m-1 ml-3 items center">
 					<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-black flex items-center justify-center bg-emerald-200">
@@ -64,7 +65,7 @@ class FriendsComponent extends HTMLElement {
 		})
 		.map((user: User) => {
 			const avatar = user.avatar;
-			const avatarUrl = `http://localhost:8000/static/${avatar}`;
+			const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
 			return `
 				<div class="flex m-1 ml-3 items center">
 					<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-black flex items-center justify-center bg-emerald-200">
@@ -158,7 +159,7 @@ class FriendsComponent extends HTMLElement {
 	private async sendFriendRequest(username: string) {
 		console.log("Entro en sendFriendRequest");
 		try {
-			const response = await fetch("http://localhost:8000/users/friends", {
+			const response = await fetch(`https://${SERVER_IP}:8443/api/users/friends`, {
 				method: "POST",
 				headers: {
 					"Content-type": "application/json",

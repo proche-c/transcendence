@@ -1,13 +1,5 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import { fetchUserProfile, fetchUsers, fetchFriends } from "../utils/requests.js";
+import { SERVER_IP } from '../config.js';
 class FriendsComponent extends HTMLElement {
     constructor() {
         super();
@@ -17,28 +9,20 @@ class FriendsComponent extends HTMLElement {
         this.attachShadow({ mode: "open" });
         this.load();
     }
-    load() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.getProfile();
-            yield this.getFriends();
-            yield this.getUsers();
-            this.render();
-        });
+    async load() {
+        await this.getProfile();
+        await this.getFriends();
+        await this.getUsers();
+        this.render();
     }
-    getProfile() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.user = yield fetchUserProfile();
-        });
+    async getProfile() {
+        this.user = await fetchUserProfile();
     }
-    getUsers() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.users = yield fetchUsers();
-        });
+    async getUsers() {
+        this.users = await fetchUsers();
     }
-    getFriends() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.friends = yield fetchFriends();
-        });
+    async getFriends() {
+        this.friends = await fetchFriends();
     }
     render() {
         if (!this.shadowRoot)
@@ -49,10 +33,10 @@ class FriendsComponent extends HTMLElement {
         console.log("El user es :");
         console.log(this.user);
         const avatar = this.user.avatar;
-        const avatarUrl = `http://localhost:8000/static/${avatar}`;
+        const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
         const friendsButtons = this.friends.map((friend) => {
             const avatar = friend.avatar;
-            const avatarUrl = `http://localhost:8000/static/${avatar}`;
+            const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
             return `
 				<div class="flex m-1 ml-3 items center">
 					<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-black flex items-center justify-center bg-emerald-200">
@@ -70,7 +54,7 @@ class FriendsComponent extends HTMLElement {
         })
             .map((user) => {
             const avatar = user.avatar;
-            const avatarUrl = `http://localhost:8000/static/${avatar}`;
+            const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
             return `
 				<div class="flex m-1 ml-3 items center">
 					<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-black flex items-center justify-center bg-emerald-200">
@@ -127,19 +111,19 @@ class FriendsComponent extends HTMLElement {
         var _a, _b;
         const addButtons = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelectorAll(".add-button");
         addButtons === null || addButtons === void 0 ? void 0 : addButtons.forEach((button) => {
-            button.addEventListener("click", (event) => __awaiter(this, void 0, void 0, function* () {
+            button.addEventListener("click", async (event) => {
                 const target = event.currentTarget;
                 const username = target.getAttribute("name-to-add");
                 console.log(`username: $(username)`);
                 if (username) {
-                    yield this.sendFriendRequest(username);
-                    yield this.load();
+                    await this.sendFriendRequest(username);
+                    await this.load();
                 }
-            }));
+            });
         });
         const userButtons = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.querySelectorAll(".user-button");
         userButtons === null || userButtons === void 0 ? void 0 : userButtons.forEach((button) => {
-            button.addEventListener("click", (event) => __awaiter(this, void 0, void 0, function* () {
+            button.addEventListener("click", async (event) => {
                 var _a;
                 const target = event.currentTarget;
                 const username = target.getAttribute("data-username");
@@ -153,34 +137,32 @@ class FriendsComponent extends HTMLElement {
                         profileCard.appendChild(publicProfile);
                     }
                 }
-            }));
+            });
         });
     }
-    sendFriendRequest(username) {
-        return __awaiter(this, void 0, void 0, function* () {
-            console.log("Entro en sendFriendRequest");
-            try {
-                const response = yield fetch("http://localhost:8000/users/friends", {
-                    method: "POST",
-                    headers: {
-                        "Content-type": "application/json",
-                    },
-                    credentials: "include",
-                    body: JSON.stringify({ username }),
-                });
-                const data = yield response.json();
-                if (response.ok) {
-                    alert(`Friend request sent to ${username}`);
-                }
-                else {
-                    alert(`Error: ${data.message}`);
-                }
+    async sendFriendRequest(username) {
+        console.log("Entro en sendFriendRequest");
+        try {
+            const response = await fetch(`https://${SERVER_IP}:8443/api/users/friends`, {
+                method: "POST",
+                headers: {
+                    "Content-type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify({ username }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert(`Friend request sent to ${username}`);
             }
-            catch (error) {
-                console.error("Error sending friend request", error);
-                alert("Failed to send ");
+            else {
+                alert(`Error: ${data.message}`);
             }
-        });
+        }
+        catch (error) {
+            console.error("Error sending friend request", error);
+            alert("Failed to send ");
+        }
     }
 }
 customElements.define("pong-friends", FriendsComponent);

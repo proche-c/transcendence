@@ -1,13 +1,5 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import { fetchUserProfile, fetchUsers, fetchChats, fetchMessages } from "../utils/requests.js";
+import { SERVER_IP } from '../config.js';
 class ChatComponent extends HTMLElement {
     constructor() {
         super();
@@ -26,34 +18,27 @@ class ChatComponent extends HTMLElement {
         this.load();
         ;
     }
-    load() {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.getProfile();
-            yield this.getUsers();
-            yield this.getChats();
-            this.connect(); // <-- Mueve connect aquí
-            this.render();
-        });
+    async load() {
+        await this.getProfile();
+        await this.getUsers();
+        await this.getChats();
+        this.connect(); // <-- Mueve connect aquí
+        this.render();
     }
-    getProfile() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.user = yield fetchUserProfile();
-            // console.log("el user es ");
-            // console.log(this.user);
-        });
+    async getProfile() {
+        this.user = await fetchUserProfile();
+        // console.log("el user es ");
+        // console.log(this.user);
     }
-    getUsers() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.users = yield fetchUsers();
-        });
+    async getUsers() {
+        this.users = await fetchUsers();
     }
-    getChats() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.chats = yield fetchChats();
-        });
+    async getChats() {
+        this.chats = await fetchChats();
     }
     connect() {
-        this.socket = new WebSocket("ws://localhost:8000/chat");
+        this.socket = new WebSocket(`wss://${SERVER_IP}:8443/api/chat`);
+        console.log(this.socket);
         this.socket.onmessage = (event) => {
             console.log("data que recibo:", event.data);
             this.addMessageToMessages(event.data);
@@ -69,7 +54,7 @@ class ChatComponent extends HTMLElement {
         console.log("el user es ");
         console.log(this.user);
         const avatar = this.user.avatar;
-        const avatarUrl = `http://localhost:8000/static/${avatar}`;
+        const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
         this.shadowRoot.innerHTML = `
 			<div class="flex h-screen items-center">
 				<div><pong-menu></pong-menu></div>
@@ -158,14 +143,14 @@ class ChatComponent extends HTMLElement {
                 btn.textContent = chat.other_user;
                 btn.className = "text-left p-2 hover:bg-violet-100 w-full border-b border-gray-300";
                 console.log(`Èl chatId de ${chat.other_user} es ${chat.id} `);
-                btn.addEventListener("click", () => __awaiter(this, void 0, void 0, function* () {
+                btn.addEventListener("click", async () => {
                     console.log("ChatDM seleccionado:", chat.other_user);
                     this.currentChat = chat.other_user;
                     if (this.currentChatHeader)
                         this.currentChatHeader.textContent = this.currentChat;
                     const chatId = chat.id;
-                    yield fetchMessages(chatId);
-                }));
+                    await fetchMessages(chatId);
+                });
                 chatDMs.appendChild(btn);
             }
         }
