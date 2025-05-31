@@ -1,4 +1,3 @@
-import { SERVER_IP } from '../config.js';
 import { fetchUserProfile } from "../utils/requests.js";
 class EditProfileComponent extends HTMLElement {
     constructor() {
@@ -22,13 +21,13 @@ class EditProfileComponent extends HTMLElement {
         style.rel = "stylesheet";
         style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
         const avatar = this.response.avatar;
-        const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
+        const avatarUrl = `http://localhost:8000/static/${avatar}`;
         this.shadowRoot.innerHTML = `
 			<div class="relative flex flex-col h-full w-60 md:w-72 transform border-2 border-black bg-white transition-transform group-hover:scale-105 ">
                 <div class="relative group w-32 h-32 rounded-full overflow-hidden border-4 border-black flex items-center justify-center my-5 mx-auto">
                     <img id="avatar" src="${avatarUrl}" class="w-full h-full object-cover" />
 					<button id="uploadImg" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border-2 border-black rounded-full p-2 bg-white/20 backdrop-blur-sm hover:bg-white/80 transition">
-						<svg xmlns="https://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-16">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-16">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
 						</svg>
 					</button>
@@ -39,8 +38,8 @@ class EditProfileComponent extends HTMLElement {
 					<input type="text" id="username" placeholder="Type new username" value="${this.response.username}" class="border rounded-lg px-3 py-2 mt-1 mx-5 mb-5 text-sm bg-gray-200 focus:border-violet-900 focus:ring-4 focus:ring-violet-900"/>
 				</div>
 				<div class="flex items-center justify-center gap-3 mb-5">
-					<input type="checkbox" id="2fa-checkbox" class="w-5 h-5 text-violet-900 border-gray-300 rounded focus:ring-violet-900">
-					<label for="2fa-checkbox" class="text-sm font-medium text-gray-700">Two-Factor Authentication</label>
+					<input type="checkbox" id="twofa-checkbox" ${this.response.twofa ? "checked" : ""} class="w-5 h-5 text-violet-900 border-gray-300 rounded focus:ring-violet-900">
+					<label for="twofa-checkbox" class="text-sm font-medium text-gray-700">Two-Factor Authentication</label>
 				</div>
 				<div class="flex justify-center items-center gap-12 h-full mb-4">
 				<button id="exit" class="group flex h-fit w-fit flex-col items-center justify-center rounded-2xl bg-violet-200 px-[1em] py-1 border">
@@ -57,13 +56,14 @@ class EditProfileComponent extends HTMLElement {
         this.addEventListeners();
     }
     addEventListeners() {
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _b, _c, _d, _e, _f, _g;
         const uploadImg = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelector("#uploadImg");
         const fileInput = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.querySelector("#fileInput");
         const avatarImg = (_c = this.shadowRoot) === null || _c === void 0 ? void 0 : _c.querySelector("#avatar");
         const exitButton = (_d = this.shadowRoot) === null || _d === void 0 ? void 0 : _d.querySelector("#exit");
         const saveButton = (_e = this.shadowRoot) === null || _e === void 0 ? void 0 : _e.querySelector("#save");
         const usernameInput = (_f = this.shadowRoot) === null || _f === void 0 ? void 0 : _f.querySelector("#username");
+        const twofaCheckbox = (_g = this.shadowRoot) === null || _g === void 0 ? void 0 : _g.querySelector("#twofa-checkbox");
         if (exitButton) {
             exitButton.addEventListener("click", () => {
                 this.remove(); // Elimina el componente del DOM
@@ -78,7 +78,7 @@ class EditProfileComponent extends HTMLElement {
                 const file = (_a = e.target.files) === null || _a === void 0 ? void 0 : _a[0];
                 if (!file)
                     return;
-                const validTypes = ["image/jepg", "image/jpg", "image/png"];
+                const validTypes = ["image/jpeg", "image/jpg", "image/png"];
                 if (!validTypes.includes(file.type)) {
                     alert("Only JPG or PNG.");
                     return;
@@ -90,28 +90,84 @@ class EditProfileComponent extends HTMLElement {
         if (saveButton && fileInput && usernameInput) {
             saveButton.addEventListener("click", async () => {
                 var _a;
-                console.log("presiono save");
                 let username = usernameInput.value.trim();
                 if (username === this.response.username)
                     username = "";
                 const file = (_a = fileInput.files) === null || _a === void 0 ? void 0 : _a[0];
+                // Ici on regarde si la case 2FA est cochée ET que ce n'était pas activé avant
+                if (twofaCheckbox.checked && !this.response.twofa) {
+                    try {
+                        // Setup 2FA seulement maintenant, au moment du "Save"
+                        const res = await fetch("http://localhost:8000/2fa/setup", {
+                            method: "POST",
+                            credentials: "include",
+                        });
+                        if (!res.ok)
+                            throw new Error("Failed to enable 2FA");
+                        const data = await res.json();
+                        // Afficher le QR code et demander le code à l'utilisateur
+                        const userCode = prompt("Scan the QR code with Google Authenticator, then enter the code:\n\n" + data.qrCode);
+                        if (!userCode) {
+                            alert("2FA activation cancelled.");
+                            return; // on stop la sauvegarde si annulation
+                        }
+                        // Vérification du code 2FA
+                        const verifyRes = await fetch("http://localhost:8000/2fa/verify", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ token: userCode }),
+                            credentials: "include",
+                        });
+                        if (!verifyRes.ok) {
+                            alert("Invalid 2FA code. Please try again.");
+                            return; // on stop la sauvegarde si code invalide
+                        }
+                        alert("2FA activated!");
+                        this.response.twofa = true; // update localement
+                    }
+                    catch (err) {
+                        console.error(err);
+                        alert("Error enabling 2FA");
+                        return; // on stop la sauvegarde si erreur
+                    }
+                }
+                // Si la case 2FA est décochée ET que la 2FA était activée avant, alors on désactive maintenant
+                if (!twofaCheckbox.checked && this.response.twofa) {
+                    if (!confirm("Are you sure you want to disable 2FA?")) {
+                        return; // on stop la sauvegarde si annulation
+                    }
+                    try {
+                        const res = await fetch("http://localhost:8000/2fa/disable", {
+                            method: "POST",
+                            credentials: "include",
+                        });
+                        if (!res.ok)
+                            throw new Error("Failed to disable 2FA");
+                        alert("2FA disabled.");
+                        this.response.twofa = false; // update localement
+                    }
+                    catch (err) {
+                        console.error(err);
+                        alert("Error disabling 2FA");
+                        return; // on stop la sauvegarde si erreur
+                    }
+                }
+                // Continuer la sauvegarde du profil (username/avatar)
                 const formData = new FormData();
-                console.log("hago append de formData");
                 formData.append("username", username);
                 if (file)
                     formData.append("avatar", file);
                 try {
-                    console.log("hago request");
-                    const response = await fetch(`https://${SERVER_IP}:8443/api/edit-profile`, {
+                    const response = await fetch("http://localhost:8000/edit-profile", {
                         method: "POST",
                         body: formData,
                         credentials: "include",
                     });
-                    console.log("termina request");
                     if (response.ok) {
-                        console.log("Avatar uploaded successfully");
+                        console.log("Profile saved successfully");
+                        await this.getProfile(); // Recharge profile à jour
                         this.dispatchEvent(new CustomEvent("profile-updated", { bubbles: true }));
-                        this.remove(); // Elimina el componente edit-profile del DOM
+                        this.remove();
                     }
                     else {
                         const errorData = await response.json();
