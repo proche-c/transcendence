@@ -1,4 +1,4 @@
 // Arxiu generat automàticament - No editar manualment
 module.exports = {
-  SERVER_IP: '172.16.118.59',
+  SERVER_IP: '192.168.1.24',
 };
