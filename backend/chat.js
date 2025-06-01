@@ -32,6 +32,12 @@ const {
   handleKickUser
 } = require('./chatroomHandler');
 
+const xss = require('xss');
+function sanitizeInput(input) {
+  return typeof input === 'string' ? xss(input.trim()) : input;
+}
+
+
 async function chatRoutes(fastify, options) {
   const bcrypt = options.bcrypt;
   const db = options.db; 
@@ -39,7 +45,7 @@ async function chatRoutes(fastify, options) {
   const dbRunAsync = options.dbRunAsync;
   const dbAllAsync = options.dbAllAsync;
   const userSockets = new Map();
-
+  
   fastify.get('/', { websocket: true }, async (connection, req) => {
     try {
       const token = req.cookies.token;
@@ -70,7 +76,20 @@ async function chatRoutes(fastify, options) {
           connection.send(JSON.stringify({ type: -1, message: "Invalid message format" }));
           return;
         }
-                  
+
+        if (typeof data.message === 'string') {
+          data.message = sanitizeInput(data.message);
+        }
+        if (typeof data.password === 'string') {
+          data.password = sanitizeInput(data.password);
+        }
+        if (typeof data.destinatary === 'string') {
+          data.destinatary = sanitizeInput(data.destinatary);
+        }
+        if (typeof data.chatroomName === 'string') {
+          data.chatroomName = sanitizeInput(data.chatroom_name);
+        }        
+
         switch (data.type) {
           case 0:
             await handleGlobalMessages(connection, userSockets, data, fastify);
