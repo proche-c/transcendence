@@ -1,3 +1,5 @@
+const TournamentManager = require('./tournamentManager');
+
 async function gameRoutes(fastify, options) {
     const bcrypt = options.bcrypt;
     const db = options.db; 
@@ -19,102 +21,81 @@ async function gameRoutes(fastify, options) {
       scores: { player1: 0, player2: 0 }
     };
   
-    fastify.get('/', { websocket: true }, (connection, req) => {
-      try {
-        const token = req.cookies.token;
-        if (!token) {
-          fastify.log.warn('WebSocket connection rejected: no token');
-          connection.close();
-          return;
-        }
-        let payload;
-        try {
-          payload = fastify.jwt.verify(token);
-        } catch (err) {
-          fastify.log.warn('WebSocket JWT verification failed');
-          connection.close();
-          return;
-        }
-        const { userId, username } = payload;
-        connection.userId = userId;
-        connection.username = username;
-        //userSockets.set(userId, connection);
-        fastify.log.info(`User ${username} connected via WebSocket`);
-      }catch (err) {
-        fastify.log.error({ err }, 'WebSocket error during connection');
-      }
-      
-      try {
-        const playerId = Math.random().toString(36).substring(2, 10);
-        const playerNumber = !fastify.websocketGames.find(c => c.playerNumber === 1) ? 1 : 2;
+    // Crear instancia única del gestor de torneos
+    const tournamentManager = new TournamentManager();
   
-        if (fastify.websocketGames.length >= 2) {
-          connection.send(JSON.stringify({ type: "error", message: "Sala llena" }));
-          connection.close();
-          return;
-        }
-  
-        connection.playerNumber = playerNumber;
-        connection.playerId = playerId;
-  
-        // Afegim primer el jugador i després comprovem si podem començar el joc
-        fastify.websocketGames.push(connection);
-        fastify.log.info(`Jugador ${playerNumber} conectado: ${playerId}`);
-  
-        connection.send(JSON.stringify({ type: "init", playerId, playerNumber, gameState }));
+    fastify.register(async function (fastify) {
+      fastify.get('/game', { websocket: true }, async (connection, req) => {
+        console.log('Nueva conexión WebSocket para juego');
         
-        // Comprovació DESPRÉS d'afegir el jugador a l'array
-        if (fastify.websocketGames.length === 2 && !gameState.running) {
-          fastify.log.info('Dos jugadors connectats. Iniciant el joc automàticament...');
-          gameState.running = true;
-          startGame();
-          
-          // Notificar a tots els jugadors que el joc ha començat
-          fastify.websocketGames.forEach(client => {
-            if (client.readyState === client.OPEN) {
-              client.send(JSON.stringify({ 
-                type: "gameStart", 
-                message: "La partida ha començat!"
-              }));
-            }
-          });
-        }
-  
-        connection.on('message', (message) => {
-          const data = JSON.parse(message);
-  
-          if (data.type === "move") {
-            const pn = connection.playerNumber;
-            if (pn === 1 || pn === 2) {
-              gameState.players[`player${pn}`].y = data.y;
-            }
-          }
-        });
-  
-        connection.on('close', () => {
-          fastify.websocketGames = fastify.websocketGames.filter(client => client !== connection);
-          fastify.log.info(`Jugador desconectado: ${playerId}`);
-          
-          // Si un jugador es desconnecta, aturem el joc
-          if (gameState.running) {
-            gameState.running = false;
-            fastify.log.info('Jugador desconnectat. Aturant el joc.');
+        // Generar ID único para esta conexión
+        const connectionId = `conn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        connection.id = connectionId;
+        
+        // Registrar conexión en el gestor de torneos
+        tournamentManager.registerConnection(connectionId, connection);
+        
+        connection.on('message', async (message) => {
+          try {
+            const data = JSON.parse(message);
+            console.log(`Mensaje recibido [${data.type}] de ${connectionId}`);
             
-            // Notificar a tots els jugadors restants
-            fastify.websocketGames.forEach(client => {
-              if (client.readyState === client.OPEN) {
-                client.send(JSON.stringify({ 
-                  type: "gameEnd", 
-                  message: "Un jugador s'ha desconnectat. La partida ha finalitzat."
+            switch (data.type) {
+              // Casos existentes...
+              
+              // Añadir estos casos:
+              case 'tournament_join':
+                const result = tournamentManager.addPlayer(connectionId, data.playerName);
+                connection.send(JSON.stringify({
+                  type: 'tournament_join_result',
+                  ...result
                 }));
-              }
-            });
+                
+                // Enviar actualización a todos
+                if (result.success) {
+                  tournamentManager.broadcast({
+                    type: 'tournament_update',
+                    state: tournamentManager.getTournamentState()
+                  });
+                }
+                break;
+                
+              case 'tournament_get_state':
+                connection.send(JSON.stringify({
+                  type: 'tournament_state',
+                  state: tournamentManager.getTournamentState()
+                }));
+                break;
+                
+              case 'tournament_reset':
+                tournamentManager.reset();
+                break;
+            }
+            
+          } catch (error) {
+            console.error('Error procesando mensaje:', error);
+            connection.send(JSON.stringify({
+              type: 'error',
+              message: 'Error procesando mensaje'
+            }));
           }
         });
-  
-      } catch (err) {
-        fastify.log.error({ err }, "Error en WebSocket de juego");
-      }
+
+        connection.on('close', () => {
+          console.log(`Conexión WebSocket cerrada: ${connectionId}`);
+          
+          // Notificar al gestor de torneos
+          tournamentManager.handleDisconnect(connectionId);
+          
+          // Código existente para manejo de desconexiones...
+        });
+        
+        // Enviar estado inicial del torneo
+        connection.send(JSON.stringify({
+          type: 'tournament_state',
+          state: tournamentManager.getTournamentState()
+        }));
+      });
     });
   
     function startGame() {
