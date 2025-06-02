@@ -7,7 +7,7 @@ module.exports = function (dbGetAsync, fastify) {
       const token = request.cookies.token;
       //console.log("AFTER SEE TOKEN");
       if (!token)
-        return reply.status(407).send({ message: "No token provided" });
+        return reply.status(401).send({ message: "No token provided" });
       const decoded = await fastify.jwt.verify(token);
       // fastify.log.err('***********decoded');
       console.log("-------------*****ENTRO EN VERIFICAR TOKEN");
@@ -24,7 +24,7 @@ module.exports = function (dbGetAsync, fastify) {
       console.log("imprimo user en middleware");
       console.log(request.user);
     } catch (err) {
-      return reply.status(403).send({ message: "Unauthorized bitch" });
+      return reply.status(401).send({ message: "Unauthorized bitch" });
     }
   };
 };

@@ -1,4 +1,5 @@
 import { fetchUserProfile } from "../utils/requests.js";
+import { SERVER_IP } from '../config.js';
 class EditProfileComponent extends HTMLElement {
     constructor() {
         super();
@@ -21,7 +22,7 @@ class EditProfileComponent extends HTMLElement {
         style.rel = "stylesheet";
         style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
         const avatar = this.response.avatar;
-        const avatarUrl = `http://localhost:8000/static/${avatar}`;
+        const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
         this.shadowRoot.innerHTML = `
 			<div class="relative flex flex-col h-full w-60 md:w-72 transform border-2 border-black bg-white transition-transform group-hover:scale-105 ">
                 <div class="relative group w-32 h-32 rounded-full overflow-hidden border-4 border-black flex items-center justify-center my-5 mx-auto">
@@ -98,7 +99,7 @@ class EditProfileComponent extends HTMLElement {
                 if (twofaCheckbox.checked && !this.response.twofa) {
                     try {
                         // Setup 2FA seulement maintenant, au moment du "Save"
-                        const res = await fetch("http://localhost:8000/2fa/setup", {
+                        const res = await fetch(`https://${SERVER_IP}:8443/api/2fa/setup`, {
                             method: "POST",
                             credentials: "include",
                         });
@@ -112,7 +113,7 @@ class EditProfileComponent extends HTMLElement {
                             return; // on stop la sauvegarde si annulation
                         }
                         // Vérification du code 2FA
-                        const verifyRes = await fetch("http://localhost:8000/2fa/verify", {
+                        const verifyRes = await fetch(`https://${SERVER_IP}:8443/api/2fa/verify`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ token: userCode }),
@@ -137,7 +138,7 @@ class EditProfileComponent extends HTMLElement {
                         return; // on stop la sauvegarde si annulation
                     }
                     try {
-                        const res = await fetch("http://localhost:8000/2fa/disable", {
+                        const res = await fetch(`https://${SERVER_IP}:8443/api/2fa/disable`, {
                             method: "POST",
                             credentials: "include",
                         });
@@ -158,7 +159,7 @@ class EditProfileComponent extends HTMLElement {
                 if (file)
                     formData.append("avatar", file);
                 try {
-                    const response = await fetch("http://localhost:8000/edit-profile", {
+                    const response = await fetch(`https://${SERVER_IP}:8443/api/edit-profile`, {
                         method: "POST",
                         body: formData,
                         credentials: "include",

@@ -63,10 +63,9 @@ module.exports = async function (fastify, options) {
 
       // Set cookie with JWT token
       reply.setCookie("token", token, {
-        httpOnly: false,
+        httpOnly: true,
         secure: true,
         sameSite: "none",
-        domain: SERVER_IP,
         path: "/",
         maxAge: 60 * 70,
       });
