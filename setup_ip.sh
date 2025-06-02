@@ -23,6 +23,11 @@ cat > frontend/app/config.ts << EOF
 export const SERVER_IP = '$SERVER_IP';
 EOF
 
+cat > frontend/app/config.js << EOF
+// Arxiu generat automàticament - No editar manualment
+export const SERVER_IP = '$SERVER_IP';
+EOF
+
 echo "Arxiu de configuració del frontend generat: frontend/app/config.js"
 
 # Crea arxiu de configuració pel backend

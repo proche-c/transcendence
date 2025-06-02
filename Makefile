@@ -7,8 +7,13 @@ RESET := $(shell tput -Txterm sgr0)
 DOCKER_COMPOSE := docker-compose
 DOCKER_COMPOSE_FILE := compose.yaml
 
-start:
+start: setup_ip
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up -d
+
+setup_ip:
+	@echo "$(GREEN)Executant setup_ip.sh...$(RESET)"
+	@chmod +x setup_ip.sh
+	@./setup_ip.sh
 
 down:
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down
@@ -19,6 +24,9 @@ clean:
 	docker rmi -f $$(docker images -qa) || true; \
 	docker volume rm $$(docker volume ls -q) || true; \
 	docker network rm $$(docker network ls -q) 2>/dev/null || true;
+	rm frontend/app/config.js || true; \
+	rm frontend/app/config.ts || true; \
+	rm backend/config.js || true;
 
 fclean: clean
 	@docker system prune -af
