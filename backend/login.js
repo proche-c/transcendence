@@ -73,7 +73,6 @@ module.exports = async function (fastify, options) {
 
       return reply.send({
         message: isTwoFAEnabled ? "2FA required" : "2FA not enabled",
-        token,
         twofa_required: isTwoFAEnabled,
       });
 

@@ -87,7 +87,7 @@ async function chatRoutes(fastify, options) {
         if (typeof data.chatroomName === 'string') {
           data.chatroomName = sanitizeInput(data.chatroom_name);
         }    
-                  
+
         switch (data.type) {
           case 0:
             await handleGlobalMessages(connection, userSockets, data, fastify);
@@ -193,16 +193,6 @@ async function handleDMs(connection, data, dbGetAsync, dbRunAsync, userSockets, 
   }  
   const recipient = await dbGetAsync('SELECT id FROM users WHERE username = ?', [data.destinatary]);
   const isBlocked = await dbGetAsync('SELECT 1 FROM blocked_users WHERE blocker_id = ? AND blocked_id = ?', [recipient.id, connection.userId]);
-  if (isBlocked) {
-    connection.send(JSON.stringify({
-      type: data.type,
-      message: `[DM ERROR] You are blocked by ${data.destinatary}.`,
-      sender: "system"
-    }));
-    fastify.log.warn(`[DM BLOCKED] ${connection.username} tried to DM ${data.destinatary} but was blocked.`);
-    return;
-  }
-  
   if (!recipient) {
     connection.send(JSON.stringify({
       type: data.type,
@@ -213,6 +203,16 @@ async function handleDMs(connection, data, dbGetAsync, dbRunAsync, userSockets, 
     fastify.log.warn(`[DM ERROR] User '${data.destinatary}' not found.`)
     return;
   }
+  if (isBlocked) {
+    connection.send(JSON.stringify({
+      type: data.type,
+      message: `[DM ERROR] You are blocked by ${data.destinatary}.`,
+      sender: "system"
+    }));
+    fastify.log.warn(`[DM BLOCKED] ${connection.username} tried to DM ${data.destinatary} but was blocked.`);
+    return;
+  }
+  
   const user1_id = Math.min(connection.userId, recipient.id);
   const user2_id = Math.max(connection.userId, recipient.id);
  
