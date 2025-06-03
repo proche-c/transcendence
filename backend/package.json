@@ -17,7 +17,8 @@
     "bcrypt": "^5.1.0",
     "fastify": "^5.2.1",
     "sqlite3": "^5.0.0",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "xss": "^1.0.15"
   },
   "devDependencies": {
     "nodemon": "^3.0.0"
