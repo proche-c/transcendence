@@ -110,6 +110,7 @@ class EditProfileComponent extends HTMLElement {
 				if (twofaCheckbox.checked && !this.response.twofa) {
 				  try {
 					// Setup 2FA seulement maintenant, au moment du "Save"
+					console.log("Tentative de setup 2FA avec cookies", document.cookie);
 					const res = await fetch(`https://${SERVER_IP}:8443/api/2fa/setup`, {
 					  method: "POST",
 					  credentials: "include",
@@ -125,6 +126,7 @@ class EditProfileComponent extends HTMLElement {
 					}
 			  
 					// Vérification du code 2FA
+					
 					const verifyRes = await fetch(`https://${SERVER_IP}:8443/api/2fa/verify`, {
 					  method: "POST",
 					  headers: { "Content-Type": "application/json" },

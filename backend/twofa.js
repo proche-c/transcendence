@@ -7,7 +7,7 @@ module.exports = async function (fastify, options) {
 
 // Two-factor authentication route
 fastify.post('/2fa/setup', { preHandler: [fastify.authenticate] }, async (request, reply) => {
-    console.log("Token reçu côté serveur ?", req.cookies.token);
+    console.log("Token reçu côté serveur ?", request.cookies.token);
     const userId = request.user.userId;
 
     const secret = speakeasy.generateSecret({

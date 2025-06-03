@@ -45,24 +45,51 @@ fastify.register(fastifyStatic, {
 
 // Register CORS middleware
 fastify.register(cors, {
-  origin: true, // Especifica el origen permitido
-  credentials: true, // Permite el envío de cookies y cabeceras de autenticación
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Métodos HTTP permitidos
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range']
+  origin: (origin, cb) => {
+    const allowedOrigins = [
+      `https://${SERVER_IP}:8443`,
+      "https://localhost:8443",
+      "https://127.0.0.1:8443",
+      "http://localhost:5500",
+      `https://${SERVER_IP}:3000`,
+      `https://${SERVER_IP}:8000`,
+    ];
+
+    if (!origin || allowedOrigins.includes(origin)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Not allowed"), false);
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+  exposedHeaders: ["Content-Range", "X-Content-Range"]
 });
 
 // Register JWT with a secret key
 fastify.register(jwt, { secret: 'supersecretkey' });
 
 // Decorate Fastify with an authentication middleware
-fastify.decorate("authenticate", async (request, reply) => {
-    try {
-        await request.jwtVerify();
-    } catch (err) {
-        return reply.status(401).send({ message: 'Unauthorized' });
+fastify.decorate("authenticate", async function (request, reply) {
+  try {
+    const token = request.cookies.token;
+    if (!token) throw new Error("Missing token");
+
+    const decoded = await this.jwt.verify(token);
+    const user = await dbGetAsync("SELECT * FROM users WHERE id = ?", [decoded.userId]);
+
+    if (!user) {
+      return reply.status(404).send({ message: "User not found" });
     }
+
+    request.user = user;
+  } catch (err) {
+    request.log.error("Auth error:", err.message);
+    return reply.status(401).send({ message: "Unauthorized" });
+  }
 });
+
 
 // Define a simple route
 fastify.get('/', async (request, reply) => {
@@ -171,6 +198,12 @@ fastify.register(require('./login'), { dbGetAsync });
 fastify.register(require('./register'), { dbGetAsync, dbRunAsync });
 fastify.register(require('./googleAuth'),  {dbGetAsync,dbRunAsync,});
 fastify.register(require('./twofa.js'),  { dbGetAsync, dbRunAsync, dbAllAsync });
+
+fastify.get("/test-auth", { preHandler: [fastify.authenticate] }, async (request, reply) => {
+  return reply.send({ message: "Authenticated!", user: request.user });
+});
+
+
 
 // Get tournaments
 fastify.get("/tournaments", async (request, reply) => {
