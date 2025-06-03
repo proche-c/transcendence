@@ -56,6 +56,37 @@ class EditProfileComponent extends HTMLElement {
         this.shadowRoot.appendChild(style);
         this.addEventListeners();
     }
+    // QR Code generation and modal display
+    showQrModal(qrCodeDataUrl) {
+        return new Promise((resolve) => {
+            const modal = document.createElement("div");
+            modal.className = "fixed top-0 left-0 w-full h-full bg-black/60 flex items-center justify-center z-50";
+            modal.innerHTML = `
+			<div class="bg-white p-6 rounded-lg shadow-lg text-center max-w-sm w-full">
+				<h2 class="text-lg font-bold mb-4">Scan this QR Code</h2>
+				<img src="${qrCodeDataUrl}" alt="QR Code" class="mx-auto mb-4 max-h-64"/>
+				<input type="text" id="qr-code-input" placeholder="Enter 6-digit code" class="border px-4 py-2 rounded w-full mb-4 text-center" />
+				<div class="flex justify-center gap-4">
+					<button id="qr-cancel" class="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+					<button id="qr-confirm" class="bg-violet-500 text-white px-4 py-2 rounded">Confirm</button>
+				</div>
+			</div>
+		`;
+            document.body.appendChild(modal);
+            const input = modal.querySelector("#qr-code-input");
+            const cancel = modal.querySelector("#qr-cancel");
+            const confirm = modal.querySelector("#qr-confirm");
+            cancel.addEventListener("click", () => {
+                modal.remove();
+                resolve(null);
+            });
+            confirm.addEventListener("click", () => {
+                const value = input.value.trim();
+                modal.remove();
+                resolve(value || null);
+            });
+        });
+    }
     addEventListeners() {
         var _a, _b, _c, _d, _e, _f, _g;
         const uploadImg = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelector("#uploadImg");
@@ -108,7 +139,7 @@ class EditProfileComponent extends HTMLElement {
                             throw new Error("Failed to enable 2FA");
                         const data = await res.json();
                         // Afficher le QR code et demander le code à l'utilisateur
-                        const userCode = prompt("Scan the QR code with Google Authenticator, then enter the code:\n\n" + data.qrCode);
+                        const userCode = await this.showQrModal(data.qrCode);
                         if (!userCode) {
                             alert("2FA activation cancelled.");
                             return; // on stop la sauvegarde si annulation
