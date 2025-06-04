@@ -41,9 +41,9 @@ class PlayComponent extends HTMLElement {
                         <button id="crazyBtn" class="p-4 mb-4 text-lg font-bold text-white bg-gray-800 hover:bg-gray-900 transition-colors rounded-lg shadow-md">
                             Crazy Game
                         </button>
-
+                        
                         <button id="tournamentBtn" class="p-4 mb-4 text-lg font-bold text-white bg-gray-800 hover:bg-gray-900 transition-colors rounded-lg shadow-md">
-                            Torneo (4 jugadores)
+                            Tournament
                         </button>
                     </div>
                 </div>
@@ -54,49 +54,43 @@ class PlayComponent extends HTMLElement {
         this.setupMenuListeners();
     }
     setupMenuListeners() {
-        const localBtn = this.shadowRoot?.getElementById('localBtn');
-        const onlineBtn = this.shadowRoot?.getElementById('onlineBtn');
-        const aiBtn = this.shadowRoot?.getElementById('aiBtn');
-        const crazyBtn = this.shadowRoot?.getElementById('crazyBtn');
-        const tournamentBtn = this.shadowRoot?.getElementById('tournamentBtn'); // Añadido
-        const pong3dBtn = this.shadowRoot?.getElementById('3dBtn'); // Nou botó
-
-        localBtn?.addEventListener('click', () => {
+        var _a, _b, _c, _d, _e, _f;
+        const localBtn = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.getElementById('localBtn');
+        const onlineBtn = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.getElementById('onlineBtn');
+        const aiBtn = (_c = this.shadowRoot) === null || _c === void 0 ? void 0 : _c.getElementById('aiBtn');
+        const crazyBtn = (_d = this.shadowRoot) === null || _d === void 0 ? void 0 : _d.getElementById('crazyBtn');
+        const tournamentBtn = (_e = this.shadowRoot) === null || _e === void 0 ? void 0 : _e.getElementById('tournamentBtn');
+        const pong3dBtn = (_f = this.shadowRoot) === null || _f === void 0 ? void 0 : _f.getElementById('3dBtn');
+        localBtn === null || localBtn === void 0 ? void 0 : localBtn.addEventListener('click', () => {
             this.cleanupCurrentGame();
             this.gameMode = 'local';
             this.renderGame();
             this.cleanupFunction = setupLocalGame(this.shadowRoot);
         });
-
-        onlineBtn?.addEventListener('click', () => {
+        onlineBtn === null || onlineBtn === void 0 ? void 0 : onlineBtn.addEventListener('click', () => {
             this.cleanupCurrentGame();
             this.gameMode = 'online';
             this.renderGame();
             this.cleanupFunction = setupOnlineGame(this.shadowRoot);
         });
-
-        aiBtn?.addEventListener('click', () => {
+        aiBtn === null || aiBtn === void 0 ? void 0 : aiBtn.addEventListener('click', () => {
             this.cleanupCurrentGame();
             this.gameMode = 'ai';
             this.renderGame();
             this.cleanupFunction = setupAIGame(this.shadowRoot);
         });
-
-        // Añadir listener para el botón de torneo
-        tournamentBtn?.addEventListener('click', () => {
+        tournamentBtn === null || tournamentBtn === void 0 ? void 0 : tournamentBtn.addEventListener('click', () => {
             this.cleanupCurrentGame();
             this.gameMode = 'tournament';
             this.showTournament();
         });
-
-        crazyBtn?.addEventListener('click', () => {
+        crazyBtn === null || crazyBtn === void 0 ? void 0 : crazyBtn.addEventListener('click', () => {
             this.cleanupCurrentGame();
             this.gameMode = 'crazy';
             this.renderSquareGame();
             this.cleanupFunction = setupCrazyGame(this.shadowRoot);
         });
-
-        pong3dBtn?.addEventListener('click', () => {
+        pong3dBtn === null || pong3dBtn === void 0 ? void 0 : pong3dBtn.addEventListener('click', () => {
             this.cleanupCurrentGame();
             this.gameMode = '3d';
             this.renderSquareGame();
@@ -171,7 +165,7 @@ class PlayComponent extends HTMLElement {
     }
     showTournament() {
         if (!this.shadowRoot) return;
-
+        
         this.shadowRoot.innerHTML = '';
         const tournament = document.createElement('pong-tournament');
         
@@ -179,7 +173,7 @@ class PlayComponent extends HTMLElement {
             this.renderMenu();
             this.setupMenuListeners();
         });
-
+        
         this.shadowRoot.appendChild(tournament);
     }
 }

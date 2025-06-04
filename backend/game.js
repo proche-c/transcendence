@@ -34,18 +34,22 @@ async function gameRoutes(fastify, options) {
         
         // Registrar conexión en el gestor de torneos
         tournamentManager.registerConnection(connectionId, connection);
+        console.log(`[Debug] Conexión registrada: ${connectionId}`);
         
         connection.on('message', async (message) => {
           try {
             const data = JSON.parse(message);
-            console.log(`Mensaje recibido [${data.type}] de ${connectionId}`);
+            console.log(`[Debug] Mensaje recibido [${data.type}] de ${connectionId}`);
             
             switch (data.type) {
               // Casos existentes...
               
               // Añadir estos casos:
               case 'tournament_join':
+                console.log(`[Debug] Intentando unir al jugador ${data.playerName} al torneo`);
                 const result = tournamentManager.addPlayer(connectionId, data.playerName);
+                console.log(`[Debug] Resultado de unirse: ${JSON.stringify(result)}`);
+                
                 connection.send(JSON.stringify({
                   type: 'tournament_join_result',
                   ...result
@@ -61,19 +65,28 @@ async function gameRoutes(fastify, options) {
                 break;
                 
               case 'tournament_get_state':
+                const state = tournamentManager.getTournamentState();
+                console.log(`[Debug] Estado del torneo solicitado: ${JSON.stringify(state)}`);
                 connection.send(JSON.stringify({
                   type: 'tournament_state',
-                  state: tournamentManager.getTournamentState()
+                  state: state
                 }));
                 break;
                 
               case 'tournament_reset':
+                console.log(`[Debug] Reinicio de torneo solicitado por ${connectionId}`);
                 tournamentManager.reset();
+                break;
+                
+              // Otros casos...
+              
+              default:
+                // Continuar con el procesamiento normal...
                 break;
             }
             
           } catch (error) {
-            console.error('Error procesando mensaje:', error);
+            console.error(`[Error] Procesando mensaje: ${error}`);
             connection.send(JSON.stringify({
               type: 'error',
               message: 'Error procesando mensaje'
