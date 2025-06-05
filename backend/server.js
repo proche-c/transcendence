@@ -14,7 +14,16 @@ const cors = require('@fastify/cors'); // CORS plugin
 const fastifyWebsocket = require("@fastify/websocket");
 fastify.register(fastifyWebsocket);
 const fastifyCookie = require("@fastify/cookie");
-fastify.register(fastifyCookie);
+fastify.register(fastifyCookie, {
+  secret: "some-secret",
+  hook: "onRequest",
+  parseOptions: {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none"
+  }
+});
+
 const { SERVER_IP } = require('./config.js');
 
 
@@ -203,6 +212,12 @@ fastify.register(require('./twofa.js'),  { dbGetAsync, dbRunAsync, dbAllAsync })
 fastify.get("/test-auth", { preHandler: [fastify.authenticate] }, async (request, reply) => {
   return reply.send({ message: "Authenticated!", user: request.user });
 });
+
+fastify.get("/debug-token", async (req, res) => {
+    req.log.info("➡️ Route /debug-token appelée");
+    req.log.info({ cookies: req.cookies }, "Cookies reçus");
+    return res.send({ cookies: req.cookies });
+  });
 
 
 

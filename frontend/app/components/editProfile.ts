@@ -163,6 +163,32 @@ class EditProfileComponent extends HTMLElement {
 					  alert("2FA activation cancelled.");
 					  return; // on stop la sauvegarde si annulation
 					}
+
+
+
+					try {
+  const res = await fetch(`https://${SERVER_IP}:8443/api/debug-token`, {
+    credentials: "include",
+  });
+
+  const data = await res.json();
+  console.log("↩️ /debug-token response", data);
+} catch (err) {
+  console.error("❌ Erreur debug-token:", err);
+}
+
+// ✅ Appel à /test-auth AVANT /2fa/verify pour vérifier que l'auth fonctionne bien
+try {
+  const authRes = await fetch(`https://${SERVER_IP}:8443/api/test-auth`, {
+    credentials: "include",
+  });
+
+  const authData = await authRes.json();
+  console.log("🛡️ /test-auth response:", authData);
+} catch (err) {
+  console.error("❌ Erreur test-auth:", err);
+}
+
 			  
 					// Vérification du code 2FA
 					

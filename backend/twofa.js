@@ -28,7 +28,12 @@ fastify.post('/2fa/setup', { preHandler: [fastify.authenticate] }, async (reques
 
 // Verify 2FA code
 fastify.post('/2fa/verify', { preHandler: [fastify.authenticate] }, async (request, reply) => {
+    request.log.info("➡️ /2fa/verify appelé");
+    request.log.info({ cookies: request.cookies, user: request.user }, "🔍 Infos reçues");
+   
     const { token } = request.body;
+    console.log("🔢 Code 2FA reçu:", token);
+
     const userId = request.user.id;
 
 
@@ -41,7 +46,11 @@ fastify.post('/2fa/verify', { preHandler: [fastify.authenticate] }, async (reque
         secret: user.twofa_secret,
         encoding: 'base32',
         token,
+        window: 5
     });
+    console.log("✅ Résultat vérification speakeasy:", verified);
+    request.log.info("✅ Résultat vérification speakeasy:", verified);
+
 
     if (!verified) {
         return reply.status(401).send({ message: 'Invalid 2FA code' });
