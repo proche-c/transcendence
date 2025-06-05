@@ -164,3 +164,25 @@ export async function fetchMessages(chatId: number | null) {
 		return null;
 	}
 }
+
+export async function fetchMessagesChatroom(chatroomId: number | null) {
+	try {
+		const response = await fetch(`http://localhost:8000/users/chatroom-messages?chatroomId=${chatroomId}`, {
+			method: "GET",
+			headers: { "Content-Type": "application/json" },
+			credentials: "include",
+		});
+
+		if (!response.ok) {
+			throw new Error("Error en la respuesta del servidor");
+		}
+
+		const data = await response.json();
+		console.log("Cuando pido messages obtengo: ");
+		console.log(data);
+		return data;
+	} catch (error) {
+		console.error("Error al obtener messages:", error);
+		return null;
+	}
+}

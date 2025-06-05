@@ -133,3 +133,25 @@ export function fetchMessages(chatId) {
         }
     });
 }
+export function fetchMessagesChatroom(chatroomId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const response = yield fetch(`http://localhost:8000/users/chatroom-messages?chatroomId=${chatroomId}`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+            });
+            if (!response.ok) {
+                throw new Error("Error en la respuesta del servidor");
+            }
+            const data = yield response.json();
+            console.log("Cuando pido messages obtengo: ");
+            console.log(data);
+            return data;
+        }
+        catch (error) {
+            console.error("Error al obtener messages:", error);
+            return null;
+        }
+    });
+}

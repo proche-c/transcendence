@@ -7,7 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { fetchUserProfile, fetchUsers, fetchChats, fetchMessages } from "../utils/requests.js";
+import { fetchUserProfile, fetchUsers, fetchChats, fetchMessages, fetchMessagesChatroom } from "../utils/requests.js";
 class ChatComponent extends HTMLElement {
     constructor() {
         super();
@@ -114,6 +114,10 @@ class ChatComponent extends HTMLElement {
 										<button id="new-chat-btn" class="flex flex-col items-center">⊕<span class="text-[10px]">Join channel</span></button>
 										<div id="join-channel-dropdown" class="absolute hidden z-50 bg-white border border-gray-300 rounded shadow flex-col min-w-[100px]"></div>
 									</div>
+									<div id="blockUser" class="relative">
+										<button id="block-user-btn" class="flex flex-col items-center">➖<span class="text-[10px]">Block user</span></button>
+										<div id="block-user-dropdown" class="absolute hidden z-50 bg-white border border-gray-300 rounded shadow flex-col min-w-[100px]"></div>
+									</div>
 								</div>
 							</div>
 							<div class="flex flex-col flex-[1] border-r border-violet-300">
@@ -121,7 +125,16 @@ class ChatComponent extends HTMLElement {
 								<div id="chat-dms" class="flex bg-neutral-50 flex-col flex-grow rounded-b-2xl"></div>
 							</div>
 							<div class="flex flex-col flex-[2]">
-								<h2 id="current-chat" class="text-center border-b border-violet-600 m-2 p-3">${this.currentChat}</h2>
+			
+								<div class="flex items-center justify-between border-b border-violet-600 m-2 p-3">
+									<h2 id="current-chat" class="text-center flex-grow">${this.currentChat}</h2>
+									<button id="chat-settings-btn" class="ml-2 text-gray-700 hover:text-violet-600 p-1">
+										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 size-6">
+											<path stroke-linecap="round" stroke-linejoin="round"
+												d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+										</svg>
+									</button>
+								</div>
 								<div id="messages" class="flex flex-col flex-grow p-2 overflow-y-auto max-h-[400px] bg-white rounded-b-2xl border-b border-gray-300"></div>
 								<div class="flex p-2 border-t border-gray-300">
 									<input id="message" class="flex-grow p-2 border border-gray-300 rounded-l-md" placeholder="Type a message..." />
@@ -141,7 +154,7 @@ class ChatComponent extends HTMLElement {
         this.addEventListeners();
     }
     addEventListeners() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
         const chatroomBtn = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.getElementById('new-chatromm-btn');
         const chatroomDropdown = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.getElementById('new-chatroom');
         const cancelBtn = (_c = this.shadowRoot) === null || _c === void 0 ? void 0 : _c.getElementById('cancel-channel');
@@ -171,9 +184,9 @@ class ChatComponent extends HTMLElement {
                     passwordContainer.classList.remove('hidden');
             });
         }
-        if (createChnBtn && privateRadio && publicRadio && passwordContainer) {
+        if (createChnBtn && privateRadio && publicRadio && passwordContainer && chatroomDropdown) {
             createChnBtn.addEventListener('click', () => {
-                var _a, _b, _c;
+                var _a, _b, _c, _d;
                 const passwordInput = passwordContainer.querySelector("input");
                 const channelNameInput = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.getElementById('channel-name');
                 if (privateRadio.checked && passwordInput && passwordInput.value.trim() === "") {
@@ -188,6 +201,25 @@ class ChatComponent extends HTMLElement {
                     const msg = { type: 3, chatroom_name: channelNameInput.value, password: passwordInput.value };
                     (_c = this.socket) === null || _c === void 0 ? void 0 : _c.send(JSON.stringify(msg));
                 }
+                this.messagesBox.innerHTML = "";
+                this.currentChat = channelNameInput.value;
+                if (this.currentChatHeader)
+                    this.currentChatHeader.textContent = channelNameInput.value;
+                chatroomDropdown.classList.add('hidden');
+                const chatRooms = (_d = this.shadowRoot) === null || _d === void 0 ? void 0 : _d.querySelector("#chat-channels");
+                if (chatRooms) {
+                    const btn = document.createElement("button");
+                    btn.textContent = channelNameInput.value;
+                    btn.className = "text-left p-2 hover:bg-violet-100 w-full border-b border-gray-300";
+                    btn.addEventListener("click", () => {
+                        console.log("Chat one-to-one seleccionado:", channelNameInput.value);
+                        this.currentChat = channelNameInput.value;
+                        this.messagesBox.innerHTML = "";
+                        if (this.currentChatHeader)
+                            this.currentChatHeader.textContent = this.currentChat;
+                    });
+                    chatRooms.appendChild(btn);
+                }
             });
         }
         const chatChannels = (_h = this.shadowRoot) === null || _h === void 0 ? void 0 : _h.querySelector("#chat-channels");
@@ -201,6 +233,7 @@ class ChatComponent extends HTMLElement {
             btn.textContent = "GENERAL";
             btn.className = "text-left p-3 hover:bg-violet-100 w-full border-b border-gray-300";
             btn.addEventListener("click", () => {
+                this.messagesBox.innerHTML = "";
                 console.log("Chatroom seleccted: GENERAL");
                 this.currentChat = "GENERAL";
                 if (this.currentChatHeader)
@@ -212,11 +245,12 @@ class ChatComponent extends HTMLElement {
                 btn.textContent = chatroom.name;
                 btn.className = "text-left p-2 hover:bg-violet-100 w-full border-b border-gray-300";
                 btn.addEventListener("click", () => __awaiter(this, void 0, void 0, function* () {
+                    this.messagesBox.innerHTML = "";
                     console.log("Chatroom seleccionado:", chatroom.name);
                     if (this.currentChatHeader)
                         this.currentChatHeader.textContent = chatroom.name;
                     const chatId = chatroom.id;
-                    const data = yield fetchMessages(chatId);
+                    const data = yield fetchMessagesChatroom(chatId);
                     this.messages = data.messages;
                     this.messagesBox.innerHTML = "";
                     this.messages.forEach(msg => {
@@ -237,6 +271,7 @@ class ChatComponent extends HTMLElement {
                 btn.className = "text-left p-2 hover:bg-violet-100 w-full border-b border-gray-300";
                 console.log(`Èl chatId de ${chat.other_user} es ${chat.id} `);
                 btn.addEventListener("click", () => __awaiter(this, void 0, void 0, function* () {
+                    this.messagesBox.innerHTML = "";
                     console.log("ChatDM seleccionado:", chat.other_user);
                     this.currentChat = chat.other_user;
                     if (this.currentChatHeader)
@@ -264,7 +299,7 @@ class ChatComponent extends HTMLElement {
                     (_g = this.socket) === null || _g === void 0 ? void 0 : _g.send(JSON.stringify(msg));
                 }
                 else if (isChatroom) {
-                    const msg = { type: 5, destinatary: toWho, message: messageToSend };
+                    const msg = { type: 5, chatroom_name: toWho, message: messageToSend };
                     (_h = this.socket) === null || _h === void 0 ? void 0 : _h.send(JSON.stringify(msg));
                 }
                 else {
@@ -289,7 +324,6 @@ class ChatComponent extends HTMLElement {
                     userBtn.textContent = user.username;
                     userBtn.className = "text-left p-2 hover:bg-violet-100 w-full";
                     userBtn.addEventListener("click", () => {
-                        var _a;
                         const newChat = {
                             id: -1,
                             other_user: user.username,
@@ -304,7 +338,7 @@ class ChatComponent extends HTMLElement {
                             this.currentChatHeader.textContent = this.currentChat;
                         console.log("Nuevo chat creado:", newChat);
                         dropdown.classList.add("hidden");
-                        const chatDMS = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelector("#chat-dms");
+                        // const chatDMS = this.shadowRoot?.querySelector("#chat-dms");
                         if (chatDMs) {
                             const btn = document.createElement("button");
                             btn.textContent = user.username;
@@ -312,6 +346,58 @@ class ChatComponent extends HTMLElement {
                             btn.addEventListener("click", () => {
                                 console.log("Chat one-to-one seleccionado:", user.username);
                                 this.currentChat = newChat.other_user;
+                                this.messagesBox.innerHTML = "";
+                                if (this.currentChatHeader)
+                                    this.currentChatHeader.textContent = this.currentChat;
+                            });
+                            chatDMs.appendChild(btn);
+                        }
+                    });
+                    dropdown.appendChild(userBtn);
+                });
+            }
+            const btnRect = newChatBtn.getBoundingClientRect();
+            dropdown.style.position = "absolute";
+            dropdown.style.top = `${newChatBtn.offsetTop}px`;
+            dropdown.style.left = `${newChatBtn.offsetLeft + newChatBtn.offsetWidth + 8}px`;
+        });
+        const blockUserBtn = (_o = this.shadowRoot) === null || _o === void 0 ? void 0 : _o.querySelector("#block-user-btn");
+        const dropdown2 = (_p = this.shadowRoot) === null || _p === void 0 ? void 0 : _p.querySelector("#block-user-dropdown");
+        blockUserBtn === null || blockUserBtn === void 0 ? void 0 : blockUserBtn.addEventListener("click", () => {
+            if (!dropdown)
+                return;
+            dropdown.classList.toggle("hidden");
+            if (dropdown.childNodes.length === 0) {
+                this.users.forEach(user => {
+                    if (user.username === this.user.username)
+                        return;
+                    const userBtn = document.createElement("button");
+                    userBtn.textContent = user.username;
+                    userBtn.className = "text-left p-2 hover:bg-violet-100 w-full";
+                    userBtn.addEventListener("click", () => {
+                        const newChat = {
+                            id: -1,
+                            other_user: user.username,
+                            avatar: "",
+                        };
+                        if (!this.chats) {
+                            this.chats = { oneToOneChats: [], chatrooms: [] };
+                        }
+                        this.chats.oneToOneChats.push(newChat);
+                        this.currentChat = newChat.other_user;
+                        if (this.currentChatHeader)
+                            this.currentChatHeader.textContent = this.currentChat;
+                        console.log("Nuevo chat creado:", newChat);
+                        dropdown.classList.add("hidden");
+                        // const chatDMS = this.shadowRoot?.querySelector("#chat-dms");
+                        if (chatDMs) {
+                            const btn = document.createElement("button");
+                            btn.textContent = user.username;
+                            btn.className = "text-left p-2 hover:bg-violet-100 w-full border-b border-gray-300";
+                            btn.addEventListener("click", () => {
+                                console.log("Chat one-to-one seleccionado:", user.username);
+                                this.currentChat = newChat.other_user;
+                                this.messagesBox.innerHTML = "";
                                 if (this.currentChatHeader)
                                     this.currentChatHeader.textContent = this.currentChat;
                             });

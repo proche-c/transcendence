@@ -363,6 +363,9 @@
   .ml-1 {
     margin-left: calc(var(--spacing) * 1);
   }
+  .ml-2 {
+    margin-left: calc(var(--spacing) * 2);
+  }
   .ml-3 {
     margin-left: calc(var(--spacing) * 3);
   }
@@ -419,6 +422,9 @@
   .h-5\/8 {
     height: calc(5/8 * 100%);
   }
+  .h-6 {
+    height: calc(var(--spacing) * 6);
+  }
   .h-7\/8 {
     height: calc(7/8 * 100%);
   }
@@ -457,6 +463,9 @@
   }
   .w-5 {
     width: calc(var(--spacing) * 5);
+  }
+  .w-6 {
+    width: calc(var(--spacing) * 6);
   }
   .w-7\/12 {
     width: calc(7/12 * 100%);
@@ -1089,6 +1098,13 @@
     &:hover {
       @media (hover: hover) {
         color: var(--color-purple-900);
+      }
+    }
+  }
+  .hover\:text-violet-600 {
+    &:hover {
+      @media (hover: hover) {
+        color: var(--color-violet-600);
       }
     }
   }

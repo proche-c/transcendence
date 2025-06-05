@@ -67,10 +67,10 @@ async function userRoutes(fastify, options) {
   
     if (!chatId) {
       return reply.status(400).send({ message: "chatId is required" });
-    }
+    } 
     try {
       const messages = await dbAllAsync(
-        `SELECT m.id, m.message, m.timestamp, u.username AS sender
+        `SELECT m.id, m.message, m.timestamp, u.username AS sender 
          FROM messages m
          JOIN users u ON u.id = m.sender_id
          WHERE m.chat_id = ?
@@ -82,7 +82,38 @@ async function userRoutes(fastify, options) {
       request.log.error(err);
       return reply.status(500).send({ message: "Failed to fetch messages" });
     }
-  }); 
+  });
+
+  fastify.get("/chatroom-messages", { preHandler: authMiddleware }, async (request, reply) => {
+    const userId = request.user.id;
+    const chatroomId = request.query.chatroomId;
+  
+    if (!chatroomId) {
+      return reply.status(400).send({ message: "chatroomId is required" });
+    }
+  
+    try {
+      const member = await dbGetAsync(
+        `SELECT * FROM chatroom_members WHERE chatroom_id = ? AND user_id = ?`,
+        [chatroomId, userId]
+      );
+      if (!member) {
+        return reply.status(403).send({ message: "You are not a member of this chatroom" });
+      }
+      const messages = await dbAllAsync(
+        `SELECT m.id, m.message, m.created_at, u.username AS sender
+         FROM chatroom_messages m
+         JOIN users u ON u.id = m.sender_id
+         WHERE m.chatroom_id = ?
+         ORDER BY m.created_at ASC`,
+        [chatroomId]
+      );
+      return reply.send({ chatroomId, messages });
+    } catch (err) {
+      request.log.error(err);
+      return reply.status(500).send({ message: "Failed to fetch chatroom messages" });
+    }
+  });  
 }
 
 module.exports = userRoutes;
