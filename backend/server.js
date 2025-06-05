@@ -8,14 +8,15 @@ const path = require('path'); // Path library
 const jwt = require('@fastify/jwt'); // JWT for authentication
 //const oauthPlugin = require('@fastify/oauth2'); // OAuth2 for authentication
 const cors = require('@fastify/cors'); // CORS plugin
-const speakeasy = require('speakeasy'); // Two-factor authentication library
-const qrcode = require('qrcode'); // QR code generation library
+//const speakeasy = require('speakeasy'); // Two-factor authentication library
+//const qrcode = require('qrcode'); // QR code generation library
 //const { z } = require('zod'); // Zod for schema validation
 const fastifyWebsocket = require("@fastify/websocket");
 fastify.register(fastifyWebsocket);
 const fastifyCookie = require("@fastify/cookie");
 fastify.register(fastifyCookie);
 const { SERVER_IP } = require('./config.js');
+
 
 // Afegeix aquesta configuració abans de fastify.listen
 const options = {
@@ -149,7 +150,7 @@ const dbRunAsync = (query, params) => {
   });
 };
 
-const authMiddleware = require('./authMiddleware')(dbGetAsync);
+const authMiddleware = require('./authMiddleware')(dbGetAsync, fastify);
 
 const userRoutes = require("./users");
 fastify.register(userRoutes, {

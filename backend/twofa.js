@@ -8,7 +8,8 @@ module.exports = async function (fastify, options) {
 // Two-factor authentication route
 fastify.post('/2fa/setup', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     console.log("Token reçu côté serveur ?", request.cookies.token);
-    const userId = request.user.userId;
+    const userId = request.user.id;
+
 
     const secret = speakeasy.generateSecret({
         name: `PongApp (${request.user.username})`, // Name printed on Google Authenticator
@@ -28,7 +29,8 @@ fastify.post('/2fa/setup', { preHandler: [fastify.authenticate] }, async (reques
 // Verify 2FA code
 fastify.post('/2fa/verify', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     const { token } = request.body;
-    const userId = request.user.userId;
+    const userId = request.user.id;
+
 
     const user = await dbGetAsync('SELECT twofa_secret FROM users WHERE id = ?', [userId]);
     if (!user || !user.twofa_secret) {
@@ -50,7 +52,8 @@ fastify.post('/2fa/verify', { preHandler: [fastify.authenticate] }, async (reque
 
 // Disable 2FA
 fastify.post('/2fa/disable', { preHandler: [fastify.authenticate] }, async (request, reply) => {
-    const userId = request.user.userId;
+    const userId = request.user.id;
+
 
     await dbRunAsync('UPDATE users SET twofa_secret = NULL, is_twofa_enabled = 0 WHERE id = ?', [userId]);
 
