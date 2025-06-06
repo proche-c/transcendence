@@ -230,6 +230,15 @@ fastify.get("/check-auth", async (request, reply) => {
   }
 });
 
+const tournamentRoutes = require("./tournament");
+fastify.register(tournamentRoutes, {
+  prefix: "/tournament",
+  db,
+  dbGetAsync,
+  dbRunAsync,
+  dbAllAsync,
+});
+
 // Start the server
 const start = async () => {
   try {

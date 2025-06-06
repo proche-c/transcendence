@@ -42,9 +42,12 @@ CREATE TABLE IF NOT EXISTS matches (
 
 CREATE TABLE IF NOT EXISTS tournaments (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL UNIQUE,
-  start_date TIMESTAMP NOT NULL,
-  end_date TIMESTAMP,
+  name TEXT NOT NULL DEFAULT 'Pong Tournament',
+  status TEXT CHECK(status IN ('waiting', 'in_progress', 'completed')) DEFAULT 'waiting',
+  max_players INTEGER DEFAULT 4,
+  current_players INTEGER DEFAULT 0,
+  start_date TIMESTAMP NULL,
+  end_date TIMESTAMP NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -53,10 +56,13 @@ CREATE TABLE IF NOT EXISTS tournament_participants (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   tournament_id INTEGER NOT NULL,
   user_id INTEGER NOT NULL,
+  player_name TEXT NOT NULL,
+  position INTEGER NULL, -- 1st, 2nd, 3rd, 4th place cuando termine
+  is_connected BOOLEAN DEFAULT 1,
   joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  UNIQUE(tournament_id, user_id) -- Un joueur ne peut pas s'inscrire plusieurs fois au même tournoi
+  UNIQUE(tournament_id, user_id)
 );
 
 
