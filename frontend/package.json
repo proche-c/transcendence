@@ -10,13 +10,16 @@
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
     "@tailwindcss/cli": "^4.1.4",
+    "babylonjs": "^8.11.0",
     "cors": "^2.8.5",
     "express": "^4.18.2",
+    "live-server": "^1.2.2",
     "sqlite3": "^5.1.6",
-    "tailwindcss": "^4.1.4",
-    "live-server": "^1.2.2"
+    "tailwindcss": "^4.1.4"
   },
   "devDependencies": {
+    "@babylonjs/gui": "^8.11.0",
+    "@types/babylonjs": "^2.3.31",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "nodemon": "^3.0.0"

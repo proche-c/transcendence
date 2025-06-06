@@ -62,7 +62,7 @@ private renderMenu(): void {
         const onlineBtn = this.shadowRoot?.getElementById('onlineBtn');
         const aiBtn = this.shadowRoot?.getElementById('aiBtn');
         const crazyBtn = this.shadowRoot?.getElementById('crazyBtn');
-        const pong3dBtn = this.shadowRoot?.getElementById('3dBtn');  // Nou botó
+        
 
         localBtn?.addEventListener('click', () => {
             this.cleanupCurrentGame();
@@ -125,7 +125,7 @@ private renderGame(): void {
             <div class="">
                 <pong-menu></pong-menu>
             </div>
-            <div class="grow flex items-center justify-center p-4">
+            <div class="grow flex flex-col items-center justify-center p-4">
                 <div class="w-full max-w-4xl">
                     <div class="relative w-full" style="padding-bottom: 62.5%;">
                         <canvas id="pong" width="800" height="500" 
@@ -133,11 +133,15 @@ private renderGame(): void {
                         </canvas>
                     </div>
                 </div>
+                <button id="backToMenuBtn" class="mt-4 p-4 text-lg font-bold text-white bg-gray-800 hover:bg-gray-900 transition-colors rounded-lg shadow-md">
+                    Volver
+                </button>
             </div>
         </div>
     `;
     
     this.shadowRoot.appendChild(style);
+    this.setupBackButtonListener();
 }
 
 private renderSquareGame(): void {
@@ -152,7 +156,7 @@ private renderSquareGame(): void {
             <div class="">
                 <pong-menu></pong-menu>
             </div>
-            <div class="grow flex items-center justify-center p-4">
+            <div class="grow flex flex-col items-center justify-center p-4">
                 <div class="w-full max-w-4xl">
                     <div class="relative w-full" style="padding-bottom: 100%;">
                         <canvas id="pong" width="800" height="800" 
@@ -160,11 +164,24 @@ private renderSquareGame(): void {
                         </canvas>
                     </div>
                 </div>
+                <button id="backToMenuBtn" class="mt-4 p-4 text-lg font-bold text-white bg-gray-800 hover:bg-gray-900 transition-colors rounded-lg shadow-md">
+                    Volver
+                </button>
             </div>
         </div>
     `;
     
     this.shadowRoot.appendChild(style);
+    this.setupBackButtonListener();
+}
+
+private setupBackButtonListener(): void {
+    const backBtn = this.shadowRoot?.getElementById('backToMenuBtn');
+    backBtn?.addEventListener('click', () => {
+        this.cleanupCurrentGame();
+        this.gameMode = null;
+        this.renderMenu();
+    });
 }
 
 
