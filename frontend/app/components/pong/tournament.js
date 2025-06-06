@@ -40,7 +40,6 @@ class TournamentComponent extends HTMLElement {
                         <div class="relative flex flex-col transform border-2 border-black bg-white transition-transform group-hover:scale-105 p-8">
                             <h2 class="text-2xl font-bold text-center mb-6">Torneo de Pong</h2>
                             
-                            <!-- Solo botón para unirse -->
                             <div id="join-form" class="mb-6">
                                 <button id="join-btn" 
                                     class="p-4 mb-4 text-lg font-bold text-white bg-gray-800 hover:bg-gray-900 transition-colors rounded-lg shadow-md w-full">
@@ -48,7 +47,6 @@ class TournamentComponent extends HTMLElement {
                                 </button>
                             </div>
                             
-                            <!-- Sala de espera -->
                             <div class="mb-6 border border-gray-300 rounded overflow-hidden">
                                 <div class="bg-gray-800 p-3 text-white text-center font-bold">
                                     Jugadores: <span id="player-count">0</span>/4
@@ -103,13 +101,13 @@ class TournamentComponent extends HTMLElement {
                 this.showMessage("Cargando nombre de usuario...");
                 this.loadUsername().then(() => {
                     if (this.username) {
-                        this.joinTournament(this.username);
+                        this.joinTournament();
                     } else {
                         this.showMessage("No se pudo obtener tu nombre de usuario");
                     }
                 });
             } else {
-                this.joinTournament(this.username);
+                this.joinTournament();
             }
         });
         
@@ -128,7 +126,7 @@ class TournamentComponent extends HTMLElement {
 
     connectWebSocket() {
         try {
-            this.socket = new WebSocket(`wss://${SERVER_IP}:8443/api/game`);
+            this.socket = new WebSocket(`wss://${SERVER_IP}:8443/api/tournament`);
             
             this.socket.onopen = () => {
                 console.log('[Torneo] Conexión WebSocket establecida');
@@ -146,14 +144,12 @@ class TournamentComponent extends HTMLElement {
                     
                     case 'tournament_state':
                     case 'tournament_update':
+                        console.log('[Torneo] Actualizando estado desde WebSocket:', data.state);
                         this.updateTournamentState(data.state);
                         break;
                     
-                    case 'tournament_player_left':
-                        this.showMessage(data.message);
-                        if (data.players) {
-                            this.updatePlayersList(data.players);
-                        }
+                    case 'tournament_started':
+                        this.showMessage("¡El torneo ha comenzado!");
                         break;
                     
                     case 'tournament_reset':
@@ -161,25 +157,28 @@ class TournamentComponent extends HTMLElement {
                         this.resetUI();
                         break;
                     
-                    case 'tournament_started':
-                        this.showMessage("¡El torneo ha comenzado!");
+                    case 'error':
+                        this.showMessage(data.message);
                         break;
                 }
             };
             
             this.socket.onerror = (error) => {
                 console.error('[Torneo] Error en WebSocket:', error);
+                this.showMessage("Error de conexión");
             };
             
             this.socket.onclose = () => {
                 console.log('[Torneo] Conexión WebSocket cerrada');
+                this.showMessage("Conexión cerrada");
             };
         } catch (error) {
             console.error('[Torneo] Error al crear WebSocket:', error);
+            this.showMessage("No se pudo conectar al servidor");
         }
     }
 
-    joinTournament(playerName) {
+    joinTournament() {
         const joinBtn = this.shadowRoot.getElementById('join-btn');
         
         joinBtn.disabled = true;
@@ -188,7 +187,7 @@ class TournamentComponent extends HTMLElement {
         if (this.socket && this.socket.readyState === WebSocket.OPEN) {
             this.socket.send(JSON.stringify({
                 type: 'tournament_join',
-                playerName: playerName
+                playerName: this.username
             }));
         } else {
             this.showMessage("No hay conexión con el servidor");
@@ -203,7 +202,7 @@ class TournamentComponent extends HTMLElement {
         const joinBtn = this.shadowRoot.getElementById('join-btn');
         
         if (data.success) {
-            this.showMessage(data.message || "Te has unido al torneo");
+            this.showMessage(data.message);
             this.joined = true;
             
             joinBtn.disabled = true;
@@ -212,9 +211,14 @@ class TournamentComponent extends HTMLElement {
             
             if (data.players) {
                 this.updatePlayersList(data.players);
+                // Actualizar también el contador
+                const playerCount = this.shadowRoot.getElementById('player-count');
+                if (playerCount) {
+                    playerCount.textContent = data.players.length;
+                }
             }
         } else {
-            this.showMessage(data.message || "Error al unirse al torneo");
+            this.showMessage(data.message);
             joinBtn.disabled = false;
             joinBtn.textContent = "Join Tournament";
         }
@@ -222,6 +226,8 @@ class TournamentComponent extends HTMLElement {
 
     updateTournamentState(state) {
         if (!state) return;
+        
+        console.log("[Torneo] Estado actualizado:", state);
         
         if (state.players) {
             const playerCount = this.shadowRoot.getElementById('player-count');
@@ -234,6 +240,8 @@ class TournamentComponent extends HTMLElement {
     }
 
     updatePlayersList(players) {
+        console.log("[Torneo] Actualizando lista de jugadores:", players);
+        
         // Resetear todos los slots primero
         for (let i = 1; i <= 4; i++) {
             const playerSlot = this.shadowRoot.getElementById(`player${i}`);

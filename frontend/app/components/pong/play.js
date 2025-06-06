@@ -41,10 +41,6 @@ class PlayComponent extends HTMLElement {
                         <button id="crazyBtn" class="p-4 mb-4 text-lg font-bold text-white bg-gray-800 hover:bg-gray-900 transition-colors rounded-lg shadow-md">
                             Crazy Game
                         </button>
-                        
-                        <button id="tournamentBtn" class="p-4 mb-4 text-lg font-bold text-white bg-gray-800 hover:bg-gray-900 transition-colors rounded-lg shadow-md">
-                            Tournament
-                        </button>
                     </div>
                 </div>
             </div>
@@ -54,13 +50,12 @@ class PlayComponent extends HTMLElement {
         this.setupMenuListeners();
     }
     setupMenuListeners() {
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _b, _c, _d, _e;
         const localBtn = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.getElementById('localBtn');
         const onlineBtn = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.getElementById('onlineBtn');
         const aiBtn = (_c = this.shadowRoot) === null || _c === void 0 ? void 0 : _c.getElementById('aiBtn');
         const crazyBtn = (_d = this.shadowRoot) === null || _d === void 0 ? void 0 : _d.getElementById('crazyBtn');
-        const tournamentBtn = (_e = this.shadowRoot) === null || _e === void 0 ? void 0 : _e.getElementById('tournamentBtn');
-        const pong3dBtn = (_f = this.shadowRoot) === null || _f === void 0 ? void 0 : _f.getElementById('3dBtn');
+        const pong3dBtn = (_e = this.shadowRoot) === null || _e === void 0 ? void 0 : _e.getElementById('3dBtn'); // Nou botó
         localBtn === null || localBtn === void 0 ? void 0 : localBtn.addEventListener('click', () => {
             this.cleanupCurrentGame();
             this.gameMode = 'local';
@@ -79,22 +74,11 @@ class PlayComponent extends HTMLElement {
             this.renderGame();
             this.cleanupFunction = setupAIGame(this.shadowRoot);
         });
-        tournamentBtn === null || tournamentBtn === void 0 ? void 0 : tournamentBtn.addEventListener('click', () => {
-            this.cleanupCurrentGame();
-            this.gameMode = 'tournament';
-            this.showTournament();
-        });
         crazyBtn === null || crazyBtn === void 0 ? void 0 : crazyBtn.addEventListener('click', () => {
             this.cleanupCurrentGame();
             this.gameMode = 'crazy';
             this.renderSquareGame();
             this.cleanupFunction = setupCrazyGame(this.shadowRoot);
-        });
-        pong3dBtn === null || pong3dBtn === void 0 ? void 0 : pong3dBtn.addEventListener('click', () => {
-            this.cleanupCurrentGame();
-            this.gameMode = '3d';
-            this.renderSquareGame();
-            // this.cleanupFunction = setup3DGame(this.shadowRoot);
         });
     }
     cleanupCurrentGame() {
@@ -162,19 +146,6 @@ class PlayComponent extends HTMLElement {
         </div>
     `;
         this.shadowRoot.appendChild(style);
-    }
-    showTournament() {
-        if (!this.shadowRoot) return;
-        
-        this.shadowRoot.innerHTML = '';
-        const tournament = document.createElement('pong-tournament');
-        
-        tournament.addEventListener('back-to-play', () => {
-            this.renderMenu();
-            this.setupMenuListeners();
-        });
-        
-        this.shadowRoot.appendChild(tournament);
     }
 }
 customElements.define("pong-play", PlayComponent);

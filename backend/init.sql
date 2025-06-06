@@ -131,3 +131,48 @@ CREATE TABLE IF NOT EXISTS blocked_users (
   FOREIGN KEY (blocker_id) REFERENCES users(id),
   FOREIGN KEY (blocked_id) REFERENCES users(id)
 );
+
+/*-----------------TOURNAMENT TABLES---------------------*/
+
+CREATE TABLE IF NOT EXISTS tournaments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL DEFAULT 'Tournament',
+  status TEXT CHECK(status IN ('waiting', 'in_progress', 'completed')) DEFAULT 'waiting',
+  max_players INTEGER DEFAULT 4,
+  current_players INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  started_at TIMESTAMP NULL,
+  completed_at TIMESTAMP NULL
+);
+
+CREATE TABLE IF NOT EXISTS tournament_players (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  tournament_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  player_name TEXT NOT NULL,
+  position INTEGER, -- 1st, 2nd, 3rd, 4th place
+  eliminated_at TIMESTAMP NULL,
+  is_connected BOOLEAN DEFAULT 1,
+  joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(tournament_id, user_id),
+  FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS tournament_matches (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  tournament_id INTEGER NOT NULL,
+  round_number INTEGER NOT NULL, -- 1 = semifinales, 2 = final
+  player1_id INTEGER NOT NULL,
+  player2_id INTEGER NOT NULL,
+  winner_id INTEGER NULL,
+  player1_score INTEGER DEFAULT 0,
+  player2_score INTEGER DEFAULT 0,
+  status TEXT CHECK(status IN ('pending', 'in_progress', 'completed')) DEFAULT 'pending',
+  started_at TIMESTAMP NULL,
+  completed_at TIMESTAMP NULL,
+  FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
+  FOREIGN KEY (player1_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (player2_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (winner_id) REFERENCES users(id) ON DELETE CASCADE
+);
