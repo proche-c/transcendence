@@ -114,6 +114,18 @@ async function userRoutes(fastify, options) {
       return reply.status(500).send({ message: "Failed to fetch chatroom messages" });
     }
   });  
+
+  fastify.get("/chatrooms", { preHandler: authMiddleware }, async (request, reply) => {
+    try {
+      const chatrooms = await dbAllAsync(
+        `SELECT id, name, is_private, FROM chatrooms`
+      );
+      return reply.send({ chatrooms });
+    } catch (err) {
+      request.log.error(err);
+      return reply.status(500).send({ message: "Failed to fetch chatrooms" });
+    }
+  });  
 }
 
 module.exports = userRoutes;
