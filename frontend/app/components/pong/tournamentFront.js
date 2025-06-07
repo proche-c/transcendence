@@ -69,12 +69,9 @@ class TournamentComponent extends HTMLElement {
                                 </div>
                             </div>
                             
-                            <div class="flex justify-between">
+                            <div class="flex justify-center">
                                 <button id="back-btn" class="p-3 text-lg font-bold text-white bg-gray-800 hover:bg-gray-900 transition-colors rounded-lg shadow-md px-6">
                                     Back
-                                </button>
-                                <button id="reset-btn" class="p-3 text-lg font-bold text-white bg-red-600 hover:bg-red-700 transition-colors rounded-lg shadow-md px-6">
-                                    Reset
                                 </button>
                             </div>
                         </div>
@@ -93,13 +90,11 @@ class TournamentComponent extends HTMLElement {
     setupEvents() {
         const joinBtn = this.shadowRoot.getElementById('join-btn');
         const backBtn = this.shadowRoot.getElementById('back-btn');
-        const resetBtn = this.shadowRoot.getElementById('reset-btn');
         
         joinBtn.addEventListener('click', () => this.joinTournament());
         backBtn.addEventListener('click', () => {
             this.dispatchEvent(new CustomEvent('back-to-play', { bubbles: true }));
         });
-        resetBtn.addEventListener('click', () => this.resetTournament());
     }
 
     connectWebSocket() {
@@ -151,14 +146,6 @@ class TournamentComponent extends HTMLElement {
                 type: 'tournament_join',
                 playerName: this.username
             }));
-        }
-    }
-
-    resetTournament() {
-        if (confirm('¿Reiniciar torneo?')) {
-            if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-                this.socket.send(JSON.stringify({ type: 'tournament_reset' }));
-            }
         }
     }
 

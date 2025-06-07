@@ -46,4 +46,4 @@ export interface CrazyGameState {
     loser: 'left' | 'right' | 'top' | 'bottom' | null;
 }
 
-export type GameMode = 'local' | 'online' | 'ai' | 'crazy' | null;
+export type GameMode = 'local' | 'ai' | 'online' | 'crazy' | 'tournament' | null;

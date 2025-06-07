@@ -2,7 +2,6 @@ import { setupLocalGame } from './local_game.js';
 import { setupAIGame } from './ai_game.js';
 import { setupOnlineGame } from './online_game.js';
 import { setupCrazyGame } from './crazy_game.js';
-
 class PlayComponent extends HTMLElement {
     constructor() {
         super();
@@ -12,7 +11,6 @@ class PlayComponent extends HTMLElement {
         this.attachShadow({ mode: "open" });
         this.renderMenu();
     }
-    
     renderMenu() {
         if (!this.shadowRoot)
             return;
@@ -43,8 +41,8 @@ class PlayComponent extends HTMLElement {
                         <button id="crazyBtn" class="p-4 mb-4 text-lg font-bold text-white bg-gray-800 hover:bg-gray-900 transition-colors rounded-lg shadow-md">
                             Crazy Game
                         </button>
-
-                        <button id="tournament-btn" class="p-4 mb-4 text-lg font-bold text-white bg-gray-800 hover:bg-gray-900 transition-colors rounded-lg shadow-md">
+                        
+                        <button id="tournamentBtn" class="p-4 mb-4 text-lg font-bold text-white bg-gray-800 hover:bg-gray-900 transition-colors rounded-lg shadow-md">
                             Tournament
                         </button>
                     </div>
@@ -55,51 +53,43 @@ class PlayComponent extends HTMLElement {
         this.shadowRoot.appendChild(style);
         this.setupMenuListeners();
     }
-    
     setupMenuListeners() {
         var _a, _b, _c, _d, _e;
         const localBtn = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.getElementById('localBtn');
         const onlineBtn = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.getElementById('onlineBtn');
         const aiBtn = (_c = this.shadowRoot) === null || _c === void 0 ? void 0 : _c.getElementById('aiBtn');
         const crazyBtn = (_d = this.shadowRoot) === null || _d === void 0 ? void 0 : _d.getElementById('crazyBtn');
-        const tournamentBtn = (_e = this.shadowRoot) === null || _e === void 0 ? void 0 : _e.getElementById('tournament-btn');
-
+        const tournamentBtn = (_e = this.shadowRoot) === null || _e === void 0 ? void 0 : _e.getElementById('tournamentBtn');
         localBtn === null || localBtn === void 0 ? void 0 : localBtn.addEventListener('click', () => {
             this.cleanupCurrentGame();
             this.gameMode = 'local';
             this.renderGame();
             this.cleanupFunction = setupLocalGame(this.shadowRoot);
         });
-        
         onlineBtn === null || onlineBtn === void 0 ? void 0 : onlineBtn.addEventListener('click', () => {
             this.cleanupCurrentGame();
             this.gameMode = 'online';
             this.renderGame();
             this.cleanupFunction = setupOnlineGame(this.shadowRoot);
         });
-        
         aiBtn === null || aiBtn === void 0 ? void 0 : aiBtn.addEventListener('click', () => {
             this.cleanupCurrentGame();
             this.gameMode = 'ai';
             this.renderGame();
             this.cleanupFunction = setupAIGame(this.shadowRoot);
         });
-        
         crazyBtn === null || crazyBtn === void 0 ? void 0 : crazyBtn.addEventListener('click', () => {
             this.cleanupCurrentGame();
             this.gameMode = 'crazy';
             this.renderSquareGame();
             this.cleanupFunction = setupCrazyGame(this.shadowRoot);
         });
-
-        // Añadir el evento para el botón del torneo
         tournamentBtn === null || tournamentBtn === void 0 ? void 0 : tournamentBtn.addEventListener('click', () => {
             this.cleanupCurrentGame();
             this.gameMode = 'tournament';
             this.renderTournament();
         });
     }
-    
     cleanupCurrentGame() {
         if (this.cleanupFunction) {
             this.cleanupFunction();
@@ -118,7 +108,6 @@ class PlayComponent extends HTMLElement {
             });
         }
     }
-    
     renderGame() {
         if (!this.shadowRoot)
             return;
@@ -147,7 +136,6 @@ class PlayComponent extends HTMLElement {
         this.shadowRoot.appendChild(style);
         this.setupBackButtonListener();
     }
-    
     renderSquareGame() {
         if (!this.shadowRoot)
             return;
@@ -176,31 +164,23 @@ class PlayComponent extends HTMLElement {
         this.shadowRoot.appendChild(style);
         this.setupBackButtonListener();
     }
-
-    // Nuevo método para renderizar el torneo
     renderTournament() {
-        if (!this.shadowRoot) return;
-        
+        if (!this.shadowRoot)
+            return;
         const style = document.createElement("link");
         style.rel = "stylesheet";
         style.href = "./app/tailwind.css";
-
         this.shadowRoot.innerHTML = `
-            <div class="w-full h-screen">
-                <pong-tournament></pong-tournament>
-            </div>
+        <pong-tournament></pong-tournament>
         `;
-
         this.shadowRoot.appendChild(style);
-        
-        // Escuchar el evento para volver al menú
-        this.addEventListener('back-to-play', () => {
-            this.cleanupCurrentGame();
+        // Escuchar evento para volver al menú
+        const tournamentComponent = this.shadowRoot.querySelector('pong-tournament');
+        tournamentComponent === null || tournamentComponent === void 0 ? void 0 : tournamentComponent.addEventListener('back-to-play', () => {
             this.gameMode = null;
             this.renderMenu();
         });
     }
-    
     setupBackButtonListener() {
         var _a;
         const backBtn = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.getElementById('backToMenuBtn');
@@ -211,5 +191,4 @@ class PlayComponent extends HTMLElement {
         });
     }
 }
-
 customElements.define("pong-play", PlayComponent);
