@@ -14,20 +14,12 @@ const cors = require('@fastify/cors'); // CORS plugin
 const fastifyWebsocket = require("@fastify/websocket");
 fastify.register(fastifyWebsocket);
 const fastifyCookie = require("@fastify/cookie");
-fastify.register(fastifyCookie, {
-  secret: "some-secret",
-  hook: "onRequest",
-  parseOptions: {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none"
-  }
-});
+fastify.register(fastifyCookie);
 
 const { SERVER_IP } = require('./config.js');
 
 
-// Afegeix aquesta configuració abans de fastify.listen
+// self-signed certificates for HTTPS
 const options = {
   https: {
     key: fs.readFileSync(path.join(__dirname, 'certificates/key.pem')),
@@ -58,11 +50,11 @@ fastify.register(cors, {
   origin: (origin, cb) => {
     const allowedOrigins = [
       `https://${SERVER_IP}:8443`,
-      "https://localhost:8443",
-      "https://127.0.0.1:8443",
-      "http://localhost:5500",
-      `https://${SERVER_IP}:3000`,
-      `https://${SERVER_IP}:8000`,
+      //"https://localhost:8443",
+      //"https://127.0.0.1:8443",
+      //"http://localhost:5500",
+      //`https://${SERVER_IP}:3000`,
+      //`https://${SERVER_IP}:8000`,
     ];
 
     if (!origin || allowedOrigins.includes(origin)) {
@@ -77,8 +69,8 @@ fastify.register(cors, {
   exposedHeaders: ["Content-Range", "X-Content-Range"]
 });
 
-// Register JWT with a secret key
-fastify.register(jwt, { secret: 'supersecretkey' });
+// Register JWT with a environment variable secret
+fastify.register(jwt, { secret: process.env.JWT_SECRET });
 
 // Decorate Fastify with an authentication middleware
 fastify.decorate("authenticate", async function (request, reply) {
@@ -92,8 +84,10 @@ fastify.decorate("authenticate", async function (request, reply) {
     if (!user) {
       return reply.status(404).send({ message: "User not found" });
     }
-
     request.user = user;
+    delete request.user.password_hash; // Remove password hash for security
+    delete request.user.twofa_secret; // Remove 2FA secret for security
+    console.log("Authenticated user:", request.user);
   } catch (err) {
     request.log.error("Auth error:", err.message);
     return reply.status(401).send({ message: "Unauthorized" });
@@ -206,8 +200,8 @@ fastify.register(gameRoutes, {
 
 fastify.register(require('./login'), { dbGetAsync });
 fastify.register(require('./register'), { dbGetAsync, dbRunAsync });
-fastify.register(require('./googleAuth'),  {dbGetAsync,dbRunAsync,});
-fastify.register(require('./twofa.js'),  { dbGetAsync, dbRunAsync, dbAllAsync });
+fastify.register(require('./googleAuth'),  {dbGetAsync,dbRunAsync});
+fastify.register(require('./twofa.js'),  { dbGetAsync, dbRunAsync, dbAllAsync});
 
 fastify.get("/test-auth", { preHandler: [fastify.authenticate] }, async (request, reply) => {
   return reply.send({ message: "Authenticated!", user: request.user });

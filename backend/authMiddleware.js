@@ -21,8 +21,8 @@ module.exports = function (dbGetAsync, fastify) {
       }
 
       request.user = user;
-      //delete request.user.password_hash; // Remove password from user object
-      //delete request.user.twofa_secret; // Remove 2FA secret from user object
+      delete request.user.password_hash; // Remove password from user object
+      delete request.user.twofa_secret; // Remove 2FA secret from user object
       //console.log("imprimo user en middleware");
       console.log(request.user);
     } catch (err) {

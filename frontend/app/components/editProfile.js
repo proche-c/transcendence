@@ -20,7 +20,7 @@ class EditProfileComponent extends HTMLElement {
             return;
         const style = document.createElement("link");
         style.rel = "stylesheet";
-        style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
+        style.href = "./app/tailwind.css";
         const avatar = this.response.avatar;
         const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
         this.shadowRoot.innerHTML = `
@@ -65,7 +65,7 @@ class EditProfileComponent extends HTMLElement {
 			<div class="bg-white p-6 rounded-lg shadow-lg text-center max-w-sm w-full">
 				<h2 class="text-lg font-bold mb-4">Scan this QR Code</h2>
 				<img src="${qrCodeDataUrl}" alt="QR Code" class="mx-auto mb-4 max-h-64"/>
-				<input type="text" id="qr-code-input" placeholder="Enter 6-digit code" class="border px-4 py-2 rounded w-full mb-4 text-center" />
+				<input type="text" id="qr-code-input" autocomplete="off" placeholder="Enter 6-digit code" class="border px-4 py-2 rounded w-full mb-4 text-center" />
 				<div class="flex justify-center gap-4">
 					<button id="qr-cancel" class="bg-gray-300 px-4 py-2 rounded">Cancel</button>
 					<button id="qr-confirm" class="bg-violet-500 text-white px-4 py-2 rounded">Confirm</button>
@@ -74,6 +74,7 @@ class EditProfileComponent extends HTMLElement {
 		`;
             document.body.appendChild(modal);
             const input = modal.querySelector("#qr-code-input");
+            input.value = ""; // Clear input field initially
             const cancel = modal.querySelector("#qr-cancel");
             const confirm = modal.querySelector("#qr-confirm");
             cancel.addEventListener("click", () => {

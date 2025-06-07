@@ -5,3 +5,4 @@ sqlite_data/
 .env.shared
 replace-ngrok.sh
 backend.env
+certificates/

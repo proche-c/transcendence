@@ -27,14 +27,11 @@ module.exports = async function (fastify, options) {
 
     try {
       const user = await dbGetAsync("SELECT * FROM users WHERE email = ?", [email]);
-      if (!user) {
-        return reply.status(404).send({ message: "User not found" });
-      }
 
-      const match = await bcrypt.compare(password, user.password_hash);
-      if (!match) {
-        return reply.status(401).send({ message: "Incorrect password" });
-      }
+      // bruteforce protection 
+      if (!user || !(await bcrypt.compare(password, user.password_hash))) {
+        return reply.status(401).send({ message: "Invalid credentials" });
+    } 
 
       // check if 2FA is enabled
       if (user.is_twofa_enabled) {
@@ -72,7 +69,7 @@ module.exports = async function (fastify, options) {
 
       return reply.send({
         message: isTwoFAEnabled ? "2FA required" : "2FA not enabled",
-        token,
+        //token, // has been removed for security reasons in production
         twofa_required: isTwoFAEnabled,
       });
 
