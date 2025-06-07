@@ -40,7 +40,7 @@ class EditProfileComponent extends HTMLElement {
 				</div>
 				<div class="flex items-center justify-center gap-3 mb-5">
 					<input type="checkbox" id="twofa-checkbox" ${this.response.twofa ? "checked" : ""} class="w-5 h-5 text-violet-900 border-gray-300 rounded focus:ring-violet-900">
-					<label for="twofa-checkbox" class="text-sm font-medium text-gray-700">Two-Factor Authentication</label>
+					<label for="twofa-checkbox" autocomplete="one-time-code" class="text-sm font-medium text-gray-700">Two-Factor Authentication</label>
 				</div>
 				<div class="flex justify-center items-center gap-12 h-full mb-4">
 				<button id="exit" class="group flex h-fit w-fit flex-col items-center justify-center rounded-2xl bg-violet-200 px-[1em] py-1 border">

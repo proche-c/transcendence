@@ -33,21 +33,21 @@ render() {
                       <div class="mt-1">
                           <label for="email" class="font-semibold text-sm text-gray-400 pb-1 block">E-mail</label>
                           <input id="email" type="text"
-                              class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+                              class="border autocomplete=email rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
                           <p class="text-sm text-red-500 mb-2" id="emailError"></p>
 
                           <label for="username" class="font-semibold text-sm text-gray-400 pb-1 block">Username</label>
-                          <input id="username" type="text"
+                          <input id="username" autocomplete=username type="text"
                               class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>                    
                           <p class="text-sm text-red-500 mb-2" id="usernameError"></p>
 
                           <label for="password" class="font-semibold text-sm text-gray-400 pb-1 block">Password</label>
-                          <input id="password" type="password"
+                          <input id="password" autocomplete=new-password type="password"
                               class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
                           <p class="text-sm text-red-500 mb-2" id="passwordError"></p>
                           
                           <label for="password2" class="font-semibold text-sm text-gray-400 pb-1 block">Confirm Password</label>
-                          <input id="password2" type="password"
+                          <input id="password2" autocomplete=new-password type="password"
                               class="border rounded-lg px-3 py-2 mt-1 mb-1 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
                           <p class="text-sm text-red-500" id="password2Error"></p>
                       </div>

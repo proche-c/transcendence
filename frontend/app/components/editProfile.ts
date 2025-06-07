@@ -46,7 +46,7 @@ class EditProfileComponent extends HTMLElement {
 				</div>
 				<div class="flex items-center justify-center gap-3 mb-5">
 					<input type="checkbox" id="twofa-checkbox" ${this.response.twofa ? "checked" : ""} class="w-5 h-5 text-violet-900 border-gray-300 rounded focus:ring-violet-900">
-					<label for="twofa-checkbox" class="text-sm font-medium text-gray-700">Two-Factor Authentication</label>
+					<label for="twofa-checkbox" autocomplete="one-time-code" class="text-sm font-medium text-gray-700">Two-Factor Authentication</label>
 				</div>
 				<div class="flex justify-center items-center gap-12 h-full mb-4">
 				<button id="exit" class="group flex h-fit w-fit flex-col items-center justify-center rounded-2xl bg-violet-200 px-[1em] py-1 border">
@@ -115,7 +115,7 @@ class EditProfileComponent extends HTMLElement {
 
 		if (exitButton) {
 			exitButton.addEventListener("click", () => {
-				this.remove(); // Elimina el componente del DOM
+				this.remove(); // destroy the component
 			});
 		}
 
@@ -149,7 +149,7 @@ class EditProfileComponent extends HTMLElement {
 				if (twofaCheckbox.checked && !this.response.twofa) {
 				  try {
 					// Setup 2FA seulement maintenant, au moment du "Save"
-					console.log("Tentative de setup 2FA avec cookies", document.cookie);
+					console.log("Setup 2FA attempt with cookies", document.cookie);
 					const res = await fetch(`https://${SERVER_IP}:8443/api/2fa/setup`, {
 					  method: "POST",
 					  credentials: "include",
@@ -157,65 +157,63 @@ class EditProfileComponent extends HTMLElement {
 					if (!res.ok) throw new Error("Failed to enable 2FA");
 					const data = await res.json();
 			  
-					// Afficher le QR code et demander le code à l'utilisateur
+					// QR Code window
 					const userCode = await this.showQrModal(data.qrCode);
 
 					if (!userCode) {
 					  alert("2FA activation cancelled.");
-					  return; // on stop la sauvegarde si annulation
+					  return;
 					}
 
-
-
 					try {
-  const res = await fetch(`https://${SERVER_IP}:8443/api/debug-token`, {
-    credentials: "include",
-  });
+  					const res = await fetch(`https://${SERVER_IP}:8443/api/debug-token`, {
+    				credentials: "include",
+					});
 
-  const data = await res.json();
-  console.log("↩️ /debug-token response", data);
-} catch (err) {
-  console.error("❌ Erreur debug-token:", err);
-}
+  					const data = await res.json();
+  					console.log("↩️ /debug-token response", data);
+					} catch (err) {
+  					console.error("❌ Erreur debug-token:", err);
+					}
 
-// ✅ Appel à /test-auth AVANT /2fa/verify pour vérifier que l'auth fonctionne bien
-try {
-  const authRes = await fetch(`https://${SERVER_IP}:8443/api/test-auth`, {
-    credentials: "include",
-  });
+				// Auth check
+				try {
+  				const authRes = await fetch(`https://${SERVER_IP}:8443/api/test-auth`, {
+    			credentials: "include",
+  			});
 
-  const authData = await authRes.json();
-  console.log("🛡️ /test-auth response:", authData);
-} catch (err) {
-  console.error("❌ Erreur test-auth:", err);
-}
+  				const authData = await authRes.json();
+  				console.log("🛡️ /test-auth response:", authData);
+				} catch (err) {
+  				console.error("❌ Erreur test-auth:", err);
+				}
 
 			  
-					// Vérification du code 2FA
+				// 2FA verification
 					
-					const verifyRes = await fetch(`https://${SERVER_IP}:8443/api/2fa/verify`, {
+				const verifyRes = await fetch(`https://${SERVER_IP}:8443/api/2fa/verify`, {
 					  method: "POST",
 					  headers: { "Content-Type": "application/json" },
 					  body: JSON.stringify({ token: userCode }),
 					  credentials: "include",
 					});
-					if (!verifyRes.ok) {
+				if (!verifyRes.ok) {
 					  alert("Invalid 2FA code. Please try again.");
-					  return; // on stop la sauvegarde si code invalide
+					  return;
 					}
-					alert("2FA activated!");
-					this.response.twofa = true; // update localement
+				alert("2FA activated!");
+					this.response.twofa = true; // database updated
 				  } catch (err) {
 					console.error(err);
 					alert("Error enabling 2FA");
-					return; // on stop la sauvegarde si erreur
+					return;
 				  }
 				}
 			  
-				// Si la case 2FA est décochée ET que la 2FA était activée avant, alors on désactive maintenant
+				// If the checkbox is unchecked and 2FA was enabled before, we disable it
 				if (!twofaCheckbox.checked && this.response.twofa) {
 				  if (!confirm("Are you sure you want to disable 2FA?")) {
-					return; // on stop la sauvegarde si annulation
+					return;
 				  }
 				  try {
 					const res = await fetch(`https://${SERVER_IP}:8443/api/2fa/disable`, {
@@ -224,15 +222,15 @@ try {
 					});
 					if (!res.ok) throw new Error("Failed to disable 2FA");
 					alert("2FA disabled.");
-					this.response.twofa = false; // update localement
+					this.response.twofa = false; // database updated
 				  } catch (err) {
 					console.error(err);
 					alert("Error disabling 2FA");
-					return; // on stop la sauvegarde si erreur
+					return;
 				  }
 				}
 			  
-				// Continuer la sauvegarde du profil (username/avatar)
+				// Continue the Profile load (username/avatar)
 				const formData = new FormData();
 				formData.append("username", username);
 				if (file) formData.append("avatar", file);
@@ -245,7 +243,7 @@ try {
 				  });
 				  if (response.ok) {
 					console.log("Profile saved successfully");
-					await this.getProfile(); // Recharge profile à jour
+					await this.getProfile(); // Refresh profile
 					this.dispatchEvent(new CustomEvent("profile-updated", { bubbles: true }));
 					this.remove();
 				  } else {
