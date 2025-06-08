@@ -44,7 +44,7 @@ fastify.post('/2fa/verify', { preHandler: [fastify.authenticate] }, async (reque
         secret: user.twofa_secret,
         encoding: 'base32',
         token,
-        window: 5
+        window: 2
     });
     console.log("✅ speakeasy check:", verified);
 
