@@ -28,10 +28,10 @@ class LoginComponent extends HTMLElement {
     <form id="loginForm">
         <div class="mt-1">
             <label for="email" class="font-semibold text-sm text-gray-400 pb-1 block">E-mail</label>
-            <input id="email" type="text"
+            <input id="email" autocomplete=email type="text"
                 class="border rounded-lg px-3 py-2 mb-2 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
             <label for="password" class="font-semibold text-sm text-gray-400 pb-1 block">Password</label>
-            <input id="password" type="password"
+            <input id="password" autocomplete=current-password type="password"
                 class="border rounded-lg px-3 py-2 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
         </div>
         <div class="mt-5">
@@ -97,7 +97,7 @@ class LoginComponent extends HTMLElement {
         });
     
         if (this.googleButton) {
-            console.log("Google button found"); // Vérifiez si ce log s'affiche
+            console.log("Google button found");
             this.googleButton.addEventListener("click", () => {
                 console.log("Google button clicked");
                 window.location.href = `https://${SERVER_IP}:8443/api/login/google`;

@@ -54,9 +54,7 @@ module.exports = async function (fastify, options) {
         .status(201)
         .send({ message: "User created", userId: result.lastID });
     } catch (err) {
-      return reply
-        .status(500)
-        .send({ message: "Error processing request", error: err.message });
+      return reply.status(500).send({ message: "Internal server error" }); //removed error details for security
     }
   });
 

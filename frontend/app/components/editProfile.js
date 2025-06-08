@@ -1,4 +1,5 @@
 import { fetchUserProfile } from "../utils/requests.js";
+import { SERVER_IP } from '../config.js';
 class EditProfileComponent extends HTMLElement {
     constructor() {
         super();
@@ -19,9 +20,9 @@ class EditProfileComponent extends HTMLElement {
             return;
         const style = document.createElement("link");
         style.rel = "stylesheet";
-        style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
+        style.href = "./app/tailwind.css";
         const avatar = this.response.avatar;
-        const avatarUrl = `http://localhost:8000/static/${avatar}`;
+        const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
         this.shadowRoot.innerHTML = `
 			<div class="relative flex flex-col h-full w-60 md:w-72 transform border-2 border-black bg-white transition-transform group-hover:scale-105 ">
                 <div class="relative group w-32 h-32 rounded-full overflow-hidden border-4 border-black flex items-center justify-center my-5 mx-auto">
@@ -39,7 +40,7 @@ class EditProfileComponent extends HTMLElement {
 				</div>
 				<div class="flex items-center justify-center gap-3 mb-5">
 					<input type="checkbox" id="twofa-checkbox" ${this.response.twofa ? "checked" : ""} class="w-5 h-5 text-violet-900 border-gray-300 rounded focus:ring-violet-900">
-					<label for="twofa-checkbox" class="text-sm font-medium text-gray-700">Two-Factor Authentication</label>
+					<label for="twofa-checkbox" autocomplete="one-time-code" class="text-sm font-medium text-gray-700">Two-Factor Authentication</label>
 				</div>
 				<div class="flex justify-center items-center gap-12 h-full mb-4">
 				<button id="exit" class="group flex h-fit w-fit flex-col items-center justify-center rounded-2xl bg-violet-200 px-[1em] py-1 border">
@@ -55,6 +56,68 @@ class EditProfileComponent extends HTMLElement {
         this.shadowRoot.appendChild(style);
         this.addEventListeners();
     }
+    // QR Code generation and modal display
+    showQrModal(qrCodeDataUrl) {
+        return new Promise((resolve) => {
+            const modal = document.createElement("div");
+            modal.className = "fixed top-0 left-0 w-full h-full bg-black/60 flex items-center justify-center z-50";
+            modal.innerHTML = `
+			<div class="bg-white p-6 rounded-lg shadow-lg text-center max-w-sm w-full">
+				<h2 class="text-lg font-bold mb-4">Scan this QR Code</h2>
+				<img src="${qrCodeDataUrl}" alt="QR Code" class="mx-auto mb-4 max-h-64"/>
+				<input type="text" id="qr-code-input" autocomplete="off" placeholder="Enter 6-digit code" class="border px-4 py-2 rounded w-full mb-4 text-center" />
+				<div class="flex justify-center gap-4">
+					<button id="qr-cancel" class="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+					<button id="qr-confirm" class="bg-violet-500 text-white px-4 py-2 rounded">Confirm</button>
+				</div>
+			</div>
+		`;
+            document.body.appendChild(modal);
+            const input = modal.querySelector("#qr-code-input");
+            input.value = ""; // Clear input field initially
+            const cancel = modal.querySelector("#qr-cancel");
+            const confirm = modal.querySelector("#qr-confirm");
+            cancel.addEventListener("click", () => {
+                modal.remove();
+                resolve(null);
+            });
+            confirm.addEventListener("click", () => {
+                const value = input.value.trim();
+                modal.remove();
+                resolve(value || null);
+            });
+        });
+    }
+    //password check for 2FA disable
+    askPassword() {
+        return new Promise((resolve) => {
+            const modal = document.createElement("div");
+            modal.className = "fixed top-0 left-0 w-full h-full bg-black/60 flex items-center justify-center z-50";
+            modal.innerHTML = `
+      <div class="bg-white p-6 rounded-lg shadow-lg text-center max-w-sm w-full">
+        <h2 class="text-lg font-bold mb-4">Enter your password to disable 2FA</h2>
+        <input type="password" id="password-input" autocomplete="current-password" placeholder="Password" class="border px-4 py-2 rounded w-full mb-4 text-center" />
+        <div class="flex justify-center gap-4">
+          <button id="cancel" class="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+          <button id="confirm" class="bg-red-500 text-white px-4 py-2 rounded">Confirm</button>
+        </div>
+      </div>
+    `;
+            document.body.appendChild(modal);
+            const input = modal.querySelector("#password-input");
+            const cancel = modal.querySelector("#cancel");
+            const confirm = modal.querySelector("#confirm");
+            cancel.addEventListener("click", () => {
+                modal.remove();
+                resolve(null);
+            });
+            confirm.addEventListener("click", () => {
+                const pwd = input.value.trim();
+                modal.remove();
+                resolve(pwd || null);
+            });
+        });
+    }
     addEventListeners() {
         var _a, _b, _c, _d, _e, _f, _g;
         const uploadImg = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelector("#uploadImg");
@@ -66,7 +129,7 @@ class EditProfileComponent extends HTMLElement {
         const twofaCheckbox = (_g = this.shadowRoot) === null || _g === void 0 ? void 0 : _g.querySelector("#twofa-checkbox");
         if (exitButton) {
             exitButton.addEventListener("click", () => {
-                this.remove(); // Elimina el componente del DOM
+                this.remove(); // destroy the component
             });
         }
         if (uploadImg && fileInput && avatarImg) {
@@ -98,21 +161,43 @@ class EditProfileComponent extends HTMLElement {
                 if (twofaCheckbox.checked && !this.response.twofa) {
                     try {
                         // Setup 2FA seulement maintenant, au moment du "Save"
-                        const res = await fetch("http://localhost:8000/2fa/setup", {
+                        console.log("Setup 2FA attempt with cookies", document.cookie);
+                        const res = await fetch(`https://${SERVER_IP}:8443/api/2fa/setup`, {
                             method: "POST",
                             credentials: "include",
                         });
                         if (!res.ok)
                             throw new Error("Failed to enable 2FA");
                         const data = await res.json();
-                        // Afficher le QR code et demander le code à l'utilisateur
-                        const userCode = prompt("Scan the QR code with Google Authenticator, then enter the code:\n\n" + data.qrCode);
+                        // QR Code window
+                        const userCode = await this.showQrModal(data.qrCode);
                         if (!userCode) {
                             alert("2FA activation cancelled.");
-                            return; // on stop la sauvegarde si annulation
+                            return;
                         }
-                        // Vérification du code 2FA
-                        const verifyRes = await fetch("http://localhost:8000/2fa/verify", {
+                        try {
+                            const res = await fetch(`https://${SERVER_IP}:8443/api/debug-token`, {
+                                credentials: "include",
+                            });
+                            const data = await res.json();
+                            console.log("↩️ /debug-token response", data);
+                        }
+                        catch (err) {
+                            console.error("❌ Erreur debug-token:", err);
+                        }
+                        // Auth check
+                        try {
+                            const authRes = await fetch(`https://${SERVER_IP}:8443/api/test-auth`, {
+                                credentials: "include",
+                            });
+                            const authData = await authRes.json();
+                            console.log("🛡️ /test-auth response:", authData);
+                        }
+                        catch (err) {
+                            console.error("❌ Erreur test-auth:", err);
+                        }
+                        // 2FA verification
+                        const verifyRes = await fetch(`https://${SERVER_IP}:8443/api/2fa/verify`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ token: userCode }),
@@ -120,52 +205,56 @@ class EditProfileComponent extends HTMLElement {
                         });
                         if (!verifyRes.ok) {
                             alert("Invalid 2FA code. Please try again.");
-                            return; // on stop la sauvegarde si code invalide
+                            return;
                         }
                         alert("2FA activated!");
-                        this.response.twofa = true; // update localement
+                        this.response.twofa = true; // database updated
                     }
                     catch (err) {
                         console.error(err);
                         alert("Error enabling 2FA");
-                        return; // on stop la sauvegarde si erreur
+                        return;
                     }
                 }
-                // Si la case 2FA est décochée ET que la 2FA était activée avant, alors on désactive maintenant
+                // If the checkbox is unchecked and 2FA was enabled before, we disable it
                 if (!twofaCheckbox.checked && this.response.twofa) {
-                    if (!confirm("Are you sure you want to disable 2FA?")) {
-                        return; // on stop la sauvegarde si annulation
-                    }
+                    const password = await this.askPassword();
+                    if (!password)
+                        return;
                     try {
-                        const res = await fetch("http://localhost:8000/2fa/disable", {
+                        const res = await fetch(`https://${SERVER_IP}:8443/api/2fa/disable`, {
                             method: "POST",
                             credentials: "include",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({ password })
                         });
                         if (!res.ok)
                             throw new Error("Failed to disable 2FA");
                         alert("2FA disabled.");
-                        this.response.twofa = false; // update localement
+                        this.response.twofa = false; // database updated
                     }
                     catch (err) {
                         console.error(err);
                         alert("Error disabling 2FA");
-                        return; // on stop la sauvegarde si erreur
+                        return;
                     }
                 }
-                // Continuer la sauvegarde du profil (username/avatar)
+                // Continue the Profile load (username/avatar)
                 const formData = new FormData();
                 formData.append("username", username);
                 if (file)
                     formData.append("avatar", file);
                 try {
-                    const response = await fetch("http://localhost:8000/edit-profile", {
+                    const response = await fetch(`https://${SERVER_IP}:8443/api/edit-profile`, {
                         method: "POST",
                         body: formData,
                         credentials: "include",
                     });
                     if (response.ok) {
                         console.log("Profile saved successfully");
-                        await this.getProfile(); // Recharge profile à jour
+                        await this.getProfile(); // Refresh profile
                         this.dispatchEvent(new CustomEvent("profile-updated", { bubbles: true }));
                         this.remove();
                     }

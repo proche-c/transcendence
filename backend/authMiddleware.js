@@ -1,4 +1,4 @@
-// TENGO QUE QUITAR EL PASSWORD DE LA RESPONSE!!!!!
+//JWT Verification Middleware
 
 module.exports = function (dbGetAsync, fastify) {
   return async function verifyJWT(request, reply) {
@@ -7,11 +7,11 @@ module.exports = function (dbGetAsync, fastify) {
       const token = request.cookies.token;
       //console.log("AFTER SEE TOKEN");
       if (!token)
-        return reply.status(407).send({ message: "No token provided" });
+        return reply.status(401).send({ message: "No token provided" });
       const decoded = await fastify.jwt.verify(token);
-      // fastify.log.err('***********decoded');
-      console.log("-------------*****ENTRO EN VERIFICAR TOKEN");
-      console.log("********estoy en decoded");
+      //fastify.log.err('***********decoded');
+      console.log("Auth Middleware check");
+      //console.log("********estoy en decoded");
       const user = await dbGetAsync("SELECT * FROM users WHERE id = ?", [
         decoded.userId,
       ]);
@@ -21,10 +21,12 @@ module.exports = function (dbGetAsync, fastify) {
       }
 
       request.user = user;
-      console.log("imprimo user en middleware");
+      delete request.user.password_hash; // Remove password from user object
+      delete request.user.twofa_secret; // Remove 2FA secret from user object
+      //console.log("imprimo user en middleware");
       console.log(request.user);
     } catch (err) {
-      return reply.status(403).send({ message: "Unauthorized bitch" });
+      return reply.status(401).send({ message: "Unauthorized" });
     }
   };
 };

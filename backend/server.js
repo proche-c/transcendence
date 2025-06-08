@@ -1,23 +1,21 @@
 // Fastify server using Node.js that manages an API listening on port 8000
+
 const dotenv = require('dotenv').config(); // Load environment variables from a .env file into process.env
 const fastify = require('fastify')({ logger: true }); // Loading Fastify framework with logging enabled
 const sqlite3 = require('sqlite3').verbose(); // SQLite3 library
 const fs = require('fs'); // File system library
 const path = require('path'); // Path library
-//const bcrypt = require('bcrypt'); // Bcrypt for password hashing
 const jwt = require('@fastify/jwt'); // JWT for authentication
-//const oauthPlugin = require('@fastify/oauth2'); // OAuth2 for authentication
 const cors = require('@fastify/cors'); // CORS plugin
-const speakeasy = require('speakeasy'); // Two-factor authentication library
-const qrcode = require('qrcode'); // QR code generation library
-//const { z } = require('zod'); // Zod for schema validation
-const fastifyWebsocket = require("@fastify/websocket");
-fastify.register(fastifyWebsocket);
-const fastifyCookie = require("@fastify/cookie");
-fastify.register(fastifyCookie);
+const fastifyWebsocket = require("@fastify/websocket"); // WebSocket support for Fastify
+fastify.register(fastifyWebsocket); 
+const fastifyCookie = require("@fastify/cookie"); // Cookie support for Fastify
+fastify.register(fastifyCookie); 
+
 const { SERVER_IP } = require('./config.js');
 
-// Afegeix aquesta configuració abans de fastify.listen
+
+// self-signed certificates for HTTPS
 const options = {
   https: {
     key: fs.readFileSync(path.join(__dirname, 'certificates/key.pem')),
@@ -45,24 +43,53 @@ fastify.register(fastifyStatic, {
 
 // Register CORS middleware
 fastify.register(cors, {
-  origin: true, // Especifica el origen permitido
-  credentials: true, // Permite el envío de cookies y cabeceras de autenticación
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Métodos HTTP permitidos
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range']
+  origin: (origin, cb) => {
+    const allowedOrigins = [
+      `https://${SERVER_IP}:8443`,
+      //"https://localhost:8443",
+      //"https://127.0.0.1:8443",
+      //"http://localhost:5500",
+      //`https://${SERVER_IP}:3000`,
+      //`https://${SERVER_IP}:8000`,
+    ];
+
+    if (!origin || allowedOrigins.includes(origin)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Not allowed"), false);
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+  exposedHeaders: ["Content-Range", "X-Content-Range"]
 });
 
-// Register JWT with a secret key
-fastify.register(jwt, { secret: 'supersecretkey' });
+// Register JWT with a environment variable secret
+fastify.register(jwt, { secret: process.env.JWT_SECRET });
 
 // Decorate Fastify with an authentication middleware
-fastify.decorate("authenticate", async (request, reply) => {
-    try {
-        await request.jwtVerify();
-    } catch (err) {
-        return reply.status(401).send({ message: 'Unauthorized' });
+fastify.decorate("authenticate", async function (request, reply) {
+  try {
+    const token = request.cookies.token;
+    if (!token) throw new Error("Missing token");
+
+    const decoded = await this.jwt.verify(token);
+    const user = await dbGetAsync("SELECT * FROM users WHERE id = ?", [decoded.userId]);
+
+    if (!user) {
+      return reply.status(404).send({ message: "User not found" });
     }
+    request.user = user;
+    delete request.user.password_hash; // Remove password hash for security
+    delete request.user.twofa_secret; // Remove 2FA secret for security
+    console.log("Authenticated user:", request.user);
+  } catch (err) {
+    request.log.error("Auth error:", err.message);
+    return reply.status(401).send({ message: "Unauthorized" });
+  }
 });
+
 
 // Define a simple route
 fastify.get('/', async (request, reply) => {
@@ -122,7 +149,7 @@ const dbRunAsync = (query, params) => {
   });
 };
 
-const authMiddleware = require('./authMiddleware')(dbGetAsync);
+const authMiddleware = require('./authMiddleware')(dbGetAsync, fastify);
 
 const userRoutes = require("./users");
 fastify.register(userRoutes, {
@@ -169,8 +196,22 @@ fastify.register(gameRoutes, {
 
 fastify.register(require('./login'), { dbGetAsync });
 fastify.register(require('./register'), { dbGetAsync, dbRunAsync });
-fastify.register(require('./googleAuth'),  {dbGetAsync,dbRunAsync,});
-fastify.register(require('./twofa.js'),  { dbGetAsync, dbRunAsync, dbAllAsync });
+fastify.register(require('./googleAuth'),  {dbGetAsync,dbRunAsync});
+fastify.register(require('./twofa.js'),  { dbGetAsync, dbRunAsync, dbAllAsync});
+
+// test route to check if authentication works
+fastify.get("/test-auth", { preHandler: [fastify.authenticate] }, async (request, reply) => {
+  return reply.send({ message: "Authenticated!", user: request.user });
+});
+
+// Debug route to check cookies
+fastify.get("/debug-token", async (req, res) => {
+    req.log.info("➡️ Route /debug-token appelée");
+    req.log.info({ cookies: req.cookies }, "Cookies reçus");
+    return res.send({ cookies: req.cookies });
+  });
+
+
 
 // Get tournaments
 fastify.get("/tournaments", async (request, reply) => {
@@ -208,10 +249,10 @@ fastify.post("/tournaments", async (request, reply) => {
   }
 });
 
-//Added by paula to verify authentication througt frontend request
+// Check authentication status
 fastify.get("/check-auth", async (request, reply) => {
   try {
-    const token = request.cookies.token; // Leer la cookie del request
+    const token = request.cookies.token; // Get the token from cookies
     console.log("**Cookies in check-auth:");
     console.log(token);
     if (!token) {
@@ -223,7 +264,7 @@ fastify.get("/check-auth", async (request, reply) => {
 
     return reply.send({
       message: "Authenticated",
-      user: decoded, // Enviar datos del usuario autenticado
+      user: decoded, // Return user information from the token
     });
   } catch (error) {
     return reply.status(401).send({ message: "Invalid or expired token" });
