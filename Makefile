@@ -13,7 +13,7 @@ start: setup_ip
 setup_ip:
 	@echo "$(GREEN)Executant setup_ip.sh...$(RESET)"
 	@chmod +x setup_ip.sh
-	@./setup_ip.sh
+	./setup_ip.sh
 
 down:
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down

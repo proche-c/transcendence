@@ -1,4 +1,4 @@
-#!/bin/bash# Detecta la IP segons el sistema operatiu
+#!/bin/bash
 get_ip() {
   if [ "$(uname)" = "Darwin" ]; then
     # Mac OS X
