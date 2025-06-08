@@ -88,6 +88,36 @@ class EditProfileComponent extends HTMLElement {
             });
         });
     }
+    //password check for 2FA disable
+    askPassword() {
+        return new Promise((resolve) => {
+            const modal = document.createElement("div");
+            modal.className = "fixed top-0 left-0 w-full h-full bg-black/60 flex items-center justify-center z-50";
+            modal.innerHTML = `
+      <div class="bg-white p-6 rounded-lg shadow-lg text-center max-w-sm w-full">
+        <h2 class="text-lg font-bold mb-4">Enter your password to disable 2FA</h2>
+        <input type="password" id="password-input" autocomplete="current-password" placeholder="Password" class="border px-4 py-2 rounded w-full mb-4 text-center" />
+        <div class="flex justify-center gap-4">
+          <button id="cancel" class="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+          <button id="confirm" class="bg-red-500 text-white px-4 py-2 rounded">Confirm</button>
+        </div>
+      </div>
+    `;
+            document.body.appendChild(modal);
+            const input = modal.querySelector("#password-input");
+            const cancel = modal.querySelector("#cancel");
+            const confirm = modal.querySelector("#confirm");
+            cancel.addEventListener("click", () => {
+                modal.remove();
+                resolve(null);
+            });
+            confirm.addEventListener("click", () => {
+                const pwd = input.value.trim();
+                modal.remove();
+                resolve(pwd || null);
+            });
+        });
+    }
     addEventListeners() {
         var _a, _b, _c, _d, _e, _f, _g;
         const uploadImg = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelector("#uploadImg");
@@ -99,7 +129,7 @@ class EditProfileComponent extends HTMLElement {
         const twofaCheckbox = (_g = this.shadowRoot) === null || _g === void 0 ? void 0 : _g.querySelector("#twofa-checkbox");
         if (exitButton) {
             exitButton.addEventListener("click", () => {
-                this.remove(); // Elimina el componente del DOM
+                this.remove(); // destroy the component
             });
         }
         if (uploadImg && fileInput && avatarImg) {
@@ -131,7 +161,7 @@ class EditProfileComponent extends HTMLElement {
                 if (twofaCheckbox.checked && !this.response.twofa) {
                     try {
                         // Setup 2FA seulement maintenant, au moment du "Save"
-                        console.log("Tentative de setup 2FA avec cookies", document.cookie);
+                        console.log("Setup 2FA attempt with cookies", document.cookie);
                         const res = await fetch(`https://${SERVER_IP}:8443/api/2fa/setup`, {
                             method: "POST",
                             credentials: "include",
@@ -139,11 +169,11 @@ class EditProfileComponent extends HTMLElement {
                         if (!res.ok)
                             throw new Error("Failed to enable 2FA");
                         const data = await res.json();
-                        // Afficher le QR code et demander le code à l'utilisateur
+                        // QR Code window
                         const userCode = await this.showQrModal(data.qrCode);
                         if (!userCode) {
                             alert("2FA activation cancelled.");
-                            return; // on stop la sauvegarde si annulation
+                            return;
                         }
                         try {
                             const res = await fetch(`https://${SERVER_IP}:8443/api/debug-token`, {
@@ -155,7 +185,7 @@ class EditProfileComponent extends HTMLElement {
                         catch (err) {
                             console.error("❌ Erreur debug-token:", err);
                         }
-                        // ✅ Appel à /test-auth AVANT /2fa/verify pour vérifier que l'auth fonctionne bien
+                        // Auth check
                         try {
                             const authRes = await fetch(`https://${SERVER_IP}:8443/api/test-auth`, {
                                 credentials: "include",
@@ -166,7 +196,7 @@ class EditProfileComponent extends HTMLElement {
                         catch (err) {
                             console.error("❌ Erreur test-auth:", err);
                         }
-                        // Vérification du code 2FA
+                        // 2FA verification
                         const verifyRes = await fetch(`https://${SERVER_IP}:8443/api/2fa/verify`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
@@ -175,39 +205,43 @@ class EditProfileComponent extends HTMLElement {
                         });
                         if (!verifyRes.ok) {
                             alert("Invalid 2FA code. Please try again.");
-                            return; // on stop la sauvegarde si code invalide
+                            return;
                         }
                         alert("2FA activated!");
-                        this.response.twofa = true; // update localement
+                        this.response.twofa = true; // database updated
                     }
                     catch (err) {
                         console.error(err);
                         alert("Error enabling 2FA");
-                        return; // on stop la sauvegarde si erreur
+                        return;
                     }
                 }
-                // Si la case 2FA est décochée ET que la 2FA était activée avant, alors on désactive maintenant
+                // If the checkbox is unchecked and 2FA was enabled before, we disable it
                 if (!twofaCheckbox.checked && this.response.twofa) {
-                    if (!confirm("Are you sure you want to disable 2FA?")) {
-                        return; // on stop la sauvegarde si annulation
-                    }
+                    const password = await this.askPassword();
+                    if (!password)
+                        return;
                     try {
                         const res = await fetch(`https://${SERVER_IP}:8443/api/2fa/disable`, {
                             method: "POST",
                             credentials: "include",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({ password })
                         });
                         if (!res.ok)
                             throw new Error("Failed to disable 2FA");
                         alert("2FA disabled.");
-                        this.response.twofa = false; // update localement
+                        this.response.twofa = false; // database updated
                     }
                     catch (err) {
                         console.error(err);
                         alert("Error disabling 2FA");
-                        return; // on stop la sauvegarde si erreur
+                        return;
                     }
                 }
-                // Continuer la sauvegarde du profil (username/avatar)
+                // Continue the Profile load (username/avatar)
                 const formData = new FormData();
                 formData.append("username", username);
                 if (file)
@@ -220,7 +254,7 @@ class EditProfileComponent extends HTMLElement {
                     });
                     if (response.ok) {
                         console.log("Profile saved successfully");
-                        await this.getProfile(); // Recharge profile à jour
+                        await this.getProfile(); // Refresh profile
                         this.dispatchEvent(new CustomEvent("profile-updated", { bubbles: true }));
                         this.remove();
                     }

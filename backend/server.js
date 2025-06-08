@@ -1,20 +1,16 @@
 // Fastify server using Node.js that manages an API listening on port 8000
+
 const dotenv = require('dotenv').config(); // Load environment variables from a .env file into process.env
 const fastify = require('fastify')({ logger: true }); // Loading Fastify framework with logging enabled
 const sqlite3 = require('sqlite3').verbose(); // SQLite3 library
 const fs = require('fs'); // File system library
 const path = require('path'); // Path library
-//const bcrypt = require('bcrypt'); // Bcrypt for password hashing
 const jwt = require('@fastify/jwt'); // JWT for authentication
-//const oauthPlugin = require('@fastify/oauth2'); // OAuth2 for authentication
 const cors = require('@fastify/cors'); // CORS plugin
-//const speakeasy = require('speakeasy'); // Two-factor authentication library
-//const qrcode = require('qrcode'); // QR code generation library
-//const { z } = require('zod'); // Zod for schema validation
-const fastifyWebsocket = require("@fastify/websocket");
-fastify.register(fastifyWebsocket);
-const fastifyCookie = require("@fastify/cookie");
-fastify.register(fastifyCookie);
+const fastifyWebsocket = require("@fastify/websocket"); // WebSocket support for Fastify
+fastify.register(fastifyWebsocket); 
+const fastifyCookie = require("@fastify/cookie"); // Cookie support for Fastify
+fastify.register(fastifyCookie); 
 
 const { SERVER_IP } = require('./config.js');
 
@@ -203,10 +199,12 @@ fastify.register(require('./register'), { dbGetAsync, dbRunAsync });
 fastify.register(require('./googleAuth'),  {dbGetAsync,dbRunAsync});
 fastify.register(require('./twofa.js'),  { dbGetAsync, dbRunAsync, dbAllAsync});
 
+// test route to check if authentication works
 fastify.get("/test-auth", { preHandler: [fastify.authenticate] }, async (request, reply) => {
   return reply.send({ message: "Authenticated!", user: request.user });
 });
 
+// Debug route to check cookies
 fastify.get("/debug-token", async (req, res) => {
     req.log.info("➡️ Route /debug-token appelée");
     req.log.info({ cookies: req.cookies }, "Cookies reçus");
@@ -251,10 +249,10 @@ fastify.post("/tournaments", async (request, reply) => {
   }
 });
 
-//Added by paula to verify authentication througt frontend request
+// Check authentication status
 fastify.get("/check-auth", async (request, reply) => {
   try {
-    const token = request.cookies.token; // Leer la cookie del request
+    const token = request.cookies.token; // Get the token from cookies
     console.log("**Cookies in check-auth:");
     console.log(token);
     if (!token) {
@@ -266,7 +264,7 @@ fastify.get("/check-auth", async (request, reply) => {
 
     return reply.send({
       message: "Authenticated",
-      user: decoded, // Enviar datos del usuario autenticado
+      user: decoded, // Return user information from the token
     });
   } catch (error) {
     return reply.status(401).send({ message: "Invalid or expired token" });

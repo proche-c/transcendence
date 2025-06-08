@@ -1,5 +1,6 @@
 const speakeasy = require('speakeasy');
 const qrcode = require('qrcode');
+const bcrypt = require('bcrypt');
 
 module.exports = async function (fastify, options) {
     const { dbGetAsync, dbRunAsync } = options;
@@ -54,9 +55,25 @@ fastify.post('/2fa/verify', { preHandler: [fastify.authenticate] }, async (reque
     return reply.send({ message: '2FA verified successfully' });
 });
 
-// Disable 2FA
+// Disable 2FA with password confirmation
 fastify.post('/2fa/disable', { preHandler: [fastify.authenticate] }, async (request, reply) => {
     const userId = request.user.id;
+    const { password } = request.body;
+
+    if (!password) {
+    return reply.status(400).send({ message: 'Password is required to disable 2FA' });
+  }
+
+  const user = await dbGetAsync('SELECT password_hash FROM users WHERE id = ?', [userId]);
+  if (!user) {
+    return reply.status(404).send({ message: 'User not found' });
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password_hash);
+  
+  if (!isMatch) {
+    return reply.status(401).send({ message: 'Invalid password' });
+  }
 
     await dbRunAsync('UPDATE users SET twofa_secret = NULL, is_twofa_enabled = 0 WHERE id = ?', [userId]);
 

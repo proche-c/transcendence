@@ -755,6 +755,9 @@
   .bg-purple-400 {
     background-color: var(--color-purple-400);
   }
+  .bg-red-500 {
+    background-color: var(--color-red-500);
+  }
   .bg-violet-100 {
     background-color: var(--color-violet-100);
   }

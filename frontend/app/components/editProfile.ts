@@ -102,6 +102,44 @@ class EditProfileComponent extends HTMLElement {
 	});
 }
 
+//password check for 2FA disable
+private askPassword(): Promise<string | null> {
+  return new Promise((resolve) => {
+    const modal = document.createElement("div");
+    modal.className = "fixed top-0 left-0 w-full h-full bg-black/60 flex items-center justify-center z-50";
+
+    modal.innerHTML = `
+      <div class="bg-white p-6 rounded-lg shadow-lg text-center max-w-sm w-full">
+        <h2 class="text-lg font-bold mb-4">Enter your password to disable 2FA</h2>
+        <input type="password" id="password-input" autocomplete="current-password" placeholder="Password" class="border px-4 py-2 rounded w-full mb-4 text-center" />
+        <div class="flex justify-center gap-4">
+          <button id="cancel" class="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+          <button id="confirm" class="bg-red-500 text-white px-4 py-2 rounded">Confirm</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const input = modal.querySelector("#password-input") as HTMLInputElement;
+    const cancel = modal.querySelector("#cancel") as HTMLButtonElement;
+    const confirm = modal.querySelector("#confirm") as HTMLButtonElement;
+
+    cancel.addEventListener("click", () => {
+      modal.remove();
+      resolve(null);
+    });
+
+    confirm.addEventListener("click", () => {
+      const pwd = input.value.trim();
+      modal.remove();
+      resolve(pwd || null);
+    });
+  });
+}
+
+
+
 
 	private addEventListeners(): void {
 		const uploadImg = this.shadowRoot?.querySelector("#uploadImg") as HTMLButtonElement;
@@ -212,14 +250,19 @@ class EditProfileComponent extends HTMLElement {
 			  
 				// If the checkbox is unchecked and 2FA was enabled before, we disable it
 				if (!twofaCheckbox.checked && this.response.twofa) {
-				  if (!confirm("Are you sure you want to disable 2FA?")) {
-					return;
-				  }
+				  	const password = await this.askPassword();
+					if (!password) return;
+
 				  try {
-					const res = await fetch(`https://${SERVER_IP}:8443/api/2fa/disable`, {
-					  method: "POST",
-					  credentials: "include",
-					});
+  					const res = await fetch(`https://${SERVER_IP}:8443/api/2fa/disable`, {
+    				method: "POST",
+    				credentials: "include",
+    				headers: {
+      				"Content-Type": "application/json"
+    				},
+    				body: JSON.stringify({ password })	
+  					});
+
 					if (!res.ok) throw new Error("Failed to disable 2FA");
 					alert("2FA disabled.");
 					this.response.twofa = false; // database updated
