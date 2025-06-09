@@ -1,0 +1,21 @@
+<svg width="400" height="120" viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .title {
+      font-family: 'Press Start 2P', monospace;
+      fill: #A020F0;
+      font-size: 40px;
+    }
+  </style>
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <text x="50%" y="65%" class="title" filter="url(#glow)" dominant-baseline="middle" text-anchor="middle">
+    PONG
+  </text>
+</svg>

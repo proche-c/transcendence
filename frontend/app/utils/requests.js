@@ -155,3 +155,22 @@ export function fetchMessagesChatroom(chatroomId) {
         }
     });
 }
+export function fetchChatRooms() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const response = yield fetch("http://localhost:8000/users/chatrooms", {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+            });
+            const data = yield response.json();
+            console.log("en requests chatrooms:");
+            console.log(data);
+            return data.chatrooms;
+        }
+        catch (error) {
+            console.error("Error fetching users:", error);
+            return [];
+        }
+    });
+}

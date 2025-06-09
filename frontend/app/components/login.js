@@ -29,43 +29,43 @@ class LoginComponent extends HTMLElement {
         style.rel = "stylesheet";
         style.href = "./app/tailwind.css";
         this.shadowRoot.innerHTML = `
-<div class="max-w-md mx-auto text-white bg-black p-8 rounded-lg">
-    <form id="loginForm">
-        <div class="mt-1">
-            <label for="email" class="font-semibold text-sm text-gray-400 pb-1 block">E-mail</label>
-            <input id="email" type="text"
-                class="border rounded-lg px-3 py-2 mb-2 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
-            <label for="password" class="font-semibold text-sm text-gray-400 pb-1 block">Password</label>
-            <input id="password" type="password"
-                class="border rounded-lg px-3 py-2 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+        <div class="max-w-md mx-auto text-white bg-black p-8 rounded-lg">
+            <form id="loginForm">
+                <div class="mt-1">
+                    <label for="email" class="font-semibold text-sm text-gray-400 pb-1 block">E-mail</label>
+                    <input id="email" type="text"
+                        class="border rounded-lg px-3 py-2 mb-2 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+                    <label for="password" class="font-semibold text-sm text-gray-400 pb-1 block">Password</label>
+                    <input id="password" type="password"
+                        class="border rounded-lg px-3 py-2 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+                </div>
+                <div class="mt-5">
+                    <button id="login" type="submit"
+                        class="py-2 px-4 bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg">
+                        Log in
+                    </button>
+                </div>
+            </form>
+            <div class="text-red-600 mt-1">
+            <p id="error" class="text-left text-sm"></p>
+            </div>
+
+            <hr class="border-gray-600 my-5" />
+
+            <div class="flex justify-center items-center">
+                <button id="google-login" class="mb-5 flex flex-row items-center justify-center py-2 px-4 bg-white hover:bg-gray-200 focus:ring-blue-500 focus:ring-offset-blue-200 text-gray-700 w-full transition ease-in duration-200 text-center text-sm font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg space-x-3">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon" class="w-5 h-5" />
+                    <span>Sign in with Google</span>
+                </button>
+            </div>
+
+            <div>
+                <button id="register" class="flex items-center justify-center py-2 px-10 bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg">
+                    <span>Sign up</span>
+                </button>
+            </div>
         </div>
-        <div class="mt-5">
-            <button id="login" type="submit"
-                class="py-2 px-4 bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-blue-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg">
-                Log in
-            </button>
-        </div>
-    </form>
-    <div class="text-red-600 mt-1">
-      <p id="error" class="text-left text-sm"></p>
-    </div>
-
-    <hr class="border-gray-600 my-5" />
-
-    <div class="flex justify-center items-center">
-        <button id="google-login" class="mb-5 flex flex-row items-center justify-center py-2 px-4 bg-white hover:bg-gray-200 focus:ring-blue-500 focus:ring-offset-blue-200 text-gray-700 w-full transition ease-in duration-200 text-center text-sm font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg space-x-3">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon" class="w-5 h-5" />
-            <span>Sign in with Google</span>
-        </button>
-    </div>
-
-    <div>
-        <button id="register" class="flex items-center justify-center py-2 px-10 bg-green-600 hover:bg-green-700 focus:ring-green-500 focus:ring-offset-green-200 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-lg">
-            <span>Sign up</span>
-        </button>
-    </div>
-</div>
-`;
+        `;
         this.shadowRoot.appendChild(style);
         this.emailInput = this.shadowRoot.querySelector("#email");
         this.passwordInput = this.shadowRoot.querySelector("#password");

@@ -32,7 +32,8 @@ export interface OneToOneChat {
 export interface ChatRoom {
 	id: number;
 	name: string;
-	members: User[];
+	is_private: boolean;
+
 }
 
 export interface ChatData {
@@ -184,5 +185,22 @@ export async function fetchMessagesChatroom(chatroomId: number | null) {
 	} catch (error) {
 		console.error("Error al obtener messages:", error);
 		return null;
+	}
+}
+
+export async function fetchChatRooms(): Promise<ChatRoom[]> {
+	try {
+		const response = await fetch("http://localhost:8000/users/chatrooms", {
+			method: "GET",
+			headers: { "Content-Type": "application/json" },
+			credentials: "include",
+		});
+		const data = await response.json();
+		console.log("en requests chatrooms:");
+		console.log(data);
+		return data.chatrooms;
+	} catch (error: any) {
+		console.error("Error fetching users:", error);
+		return [];
 	}
 }

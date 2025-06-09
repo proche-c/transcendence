@@ -1,8 +1,9 @@
-import { fetchUserProfile, fetchUsers, fetchChats, fetchMessages, fetchMessagesChatroom, User, Chat, Message, ChatData, OneToOneChat } from "../utils/requests.js";
+import { fetchUserProfile, fetchUsers, fetchChats, fetchMessages, fetchMessagesChatroom, fetchChatRooms, User, ChatRoom, Message, ChatData, OneToOneChat } from "../utils/requests.js";
 
 class ChatComponent extends HTMLElement {
 	private user: User | any | null = null;
 	private users: Array<User> = [];
+	private chatRooms: Array<ChatRoom> = [];
 	private messages: Array<Message> = [];
 	private chats: ChatData | null = null;
 	private messagesBox: HTMLElement | null = null;
@@ -11,6 +12,8 @@ class ChatComponent extends HTMLElement {
 	private socket: WebSocket | null = null;
 	private currentChat: string = "GENERAL";
 	private currentChatHeader: HTMLElement | null = null;
+	private chatChannels: HTMLElement | null | undefined = null;
+	private chatDMs: HTMLElement | null | undefined = null;
 
 	constructor() {
 		super();
@@ -22,6 +25,7 @@ class ChatComponent extends HTMLElement {
 		await this.getProfile();
 		await this.getUsers();
 		await this.getChats();
+		await this.getChatRooms();
 		this.connect(); 
 		this.render();
 	}
@@ -38,10 +42,15 @@ class ChatComponent extends HTMLElement {
 		this.chats = await fetchChats();
 	}
 
+	private async getChatRooms() {
+		this.chatRooms = await fetchChatRooms();
+	}	
+
 	private connect() {
 		this.socket = new WebSocket("ws://localhost:8000/chat");
 
 		this.socket.onmessage = (event) => {
+			console.log(event);
 			const data = JSON.parse(event.data);
 			this.addMessageToList(data.sender, data.message);
 		};
@@ -104,8 +113,8 @@ class ChatComponent extends HTMLElement {
 										</div>
 									</div>
 									<div id="joinChannel" class="relative">
-										<button id="new-chat-btn" class="flex flex-col items-center">⊕<span class="text-[10px]">Join channel</span></button>
-										<div id="join-channel-dropdown" class="absolute hidden z-50 bg-white border border-gray-300 rounded shadow flex-col min-w-[100px]"></div>
+										<button id="join-chatroom-btn" class="flex flex-col items-center">⊕<span class="text-[10px]">Join channel</span></button>
+										<div id="join-chatroom-dropdown" class="absolute hidden z-50 bg-white border border-gray-300 rounded shadow flex-col min-w-[100px]"></div>
 									</div>
 									<div id="blockUser" class="relative">
 										<button id="block-user-btn" class="flex flex-col items-center">➖<span class="text-[10px]">Block user</span></button>
@@ -121,12 +130,6 @@ class ChatComponent extends HTMLElement {
 			
 								<div class="flex items-center justify-between border-b border-violet-600 m-2 p-3">
 									<h2 id="current-chat" class="text-center flex-grow">${this.currentChat}</h2>
-									<button id="chat-settings-btn" class="ml-2 text-gray-700 hover:text-violet-600 p-1">
-										<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 size-6">
-											<path stroke-linecap="round" stroke-linejoin="round"
-												d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-										</svg>
-									</button>
 								</div>
 								<div id="messages" class="flex flex-col flex-grow p-2 overflow-y-auto max-h-[400px] bg-white rounded-b-2xl border-b border-gray-300"></div>
 								<div class="flex p-2 border-t border-gray-300">
@@ -150,6 +153,131 @@ class ChatComponent extends HTMLElement {
 	}
 
 	private addEventListeners(): void {
+		this.printListChannels();
+		this.newChat();
+		this.createChannel();
+		this.joinChannel();
+		this.blockUser();
+
+
+		this.sendButton?.addEventListener("click", () => {
+			let toWho: string  = this.currentChatHeader?.textContent ?? "";
+			const isChatroom = this.chats?.chatrooms?.some(chatroom => chatroom.name === toWho) ?? false;
+			console.log(`El destinatary seria: ${toWho}`);
+			const messageToSend = this.messageInput?.value || "";
+			if (messageToSend) {
+				if (toWho === "GENERAL") {
+					const msg = { type: 0, message: messageToSend };
+					this.socket?.send(JSON.stringify(msg));
+				} else if (isChatroom) {
+					const msg = { type: 5, chatroom_name: toWho, message: messageToSend };
+					this.socket?.send(JSON.stringify(msg));
+				} else {
+					const msg = { type: 1, destinatary: toWho, message: messageToSend };
+					this.socket?.send(JSON.stringify(msg));					
+				}
+				if (this.messageInput) this.messageInput.value = "";
+			}
+		});
+	}
+
+	private async printListChannels() {
+
+		this.chatChannels = this.shadowRoot?.querySelector("#chat-channels");
+		this.chatDMs = this.shadowRoot?.querySelector("#chat-dms");
+
+		if (this.chatChannels && this.chatDMs) {
+			this.chatChannels.innerHTML = "";
+			this.chatDMs.innerHTML = "";
+		  }
+
+		  if (this.chatChannels && this.chats) {
+			const labelChannels = document.createElement("h2");
+			labelChannels.textContent = "Channels";
+			labelChannels.className = "text-left italic font-bold p-2 w-full border-b border-gray-400 bg-gray-100";
+			this.chatChannels.appendChild(labelChannels);
+
+			const btn = document.createElement("button");
+			btn.textContent = "GENERAL";
+			btn.className = "text-left p-3 hover:bg-violet-100 w-full border-b border-gray-300";
+			btn.addEventListener("click", () => {
+				this.updateCurrentChat("GENERAL");
+			});
+			this.chatChannels.appendChild(btn);
+
+			for (const chatroom of this.chats.chatrooms) {
+				const btn = document.createElement("button");
+				btn.textContent = chatroom.name;
+				btn.className = "text-left p-2 hover:bg-violet-100 w-full border-b border-gray-300";
+				btn.addEventListener("click", async () => {
+					this.updateCurrentChat(chatroom.name);
+					this.printChatroomMessages(chatroom.id);
+				});
+				this.chatChannels.appendChild(btn);
+			}
+		}
+
+		if (this.chatDMs && this.chats) {
+			const labelDMs = document.createElement("h2");
+			labelDMs.textContent = "DMs";
+			labelDMs.className = "text-left italic font-bold p-2 w-full border-b border-gray-400 bg-gray-100";
+			this.chatDMs.appendChild(labelDMs);
+		
+			for (const chat of this.chats.oneToOneChats) {
+				const btn = document.createElement("button");
+				btn.textContent = chat.other_user;
+				btn.className = "text-left p-2 hover:bg-violet-100 w-full border-b border-gray-300";
+				btn.addEventListener("click",async () => {
+					this.updateCurrentChat(chat.other_user);
+					this.printChatMessages(chat.id);
+				});
+				this.chatDMs.appendChild(btn);
+			}
+		}
+		  
+	}
+
+	private async newChat() {
+		await this.getUsers();
+		const newChatBtn = this.shadowRoot?.querySelector("#new-chat-btn") as HTMLElement;
+		const dropdown = this.shadowRoot?.querySelector("#new-chat-dropdown") as HTMLElement;
+
+		newChatBtn?.addEventListener("click", () => {
+			if (!dropdown) return;
+
+			dropdown.classList.toggle("hidden");
+			dropdown.innerHTML = "";
+
+			if (dropdown.childNodes.length === 0) {
+				this.users.forEach(user => {
+					if (user.username === this.user.username || this.chats?.oneToOneChats.some(chat => chat.other_user === user.username))
+						return;
+					const userBtn = document.createElement("button");
+					userBtn.textContent = user.username;
+					userBtn.className = "text-left p-2 hover:bg-violet-100 w-full";
+					userBtn.addEventListener("click", () => {
+						const newChat: OneToOneChat = { id: -1, other_user: user.username, avatar: "" };
+						if (!this.chats) {
+							this.chats = { oneToOneChats: [], chatrooms: [] };
+						}
+						this.chats.oneToOneChats.push(newChat);
+						this.updateCurrentChat(newChat.other_user);
+						dropdown.classList.add("hidden");        
+						this.printListChannels();
+					});
+					dropdown.appendChild(userBtn);
+				});
+			}
+
+			const btnRect = newChatBtn.getBoundingClientRect();
+			dropdown.style.position = "absolute";
+			dropdown.style.top = `${newChatBtn.offsetTop}px`;
+			dropdown.style.left = `${newChatBtn.offsetLeft + newChatBtn.offsetWidth + 8}px`;
+		});
+
+	}
+
+	private createChannel() {
 		const chatroomBtn = this.shadowRoot?.getElementById('new-chatromm-btn');
 		const chatroomDropdown = this.shadowRoot?.getElementById('new-chatroom');
 		const cancelBtn = this.shadowRoot?.getElementById('cancel-channel');
@@ -184,6 +312,7 @@ class ChatComponent extends HTMLElement {
 
 		if (createChnBtn && privateRadio && publicRadio && passwordContainer && chatroomDropdown) {
 			createChnBtn.addEventListener('click', () => {
+				chatroomDropdown.classList.add('hidden');
 				const passwordInput = passwordContainer.querySelector("input") as HTMLInputElement;
 				const channelNameInput = this.shadowRoot?.getElementById('channel-name') as HTMLInputElement;
 				if (privateRadio.checked && passwordInput && passwordInput.value.trim() === "") {
@@ -194,183 +323,112 @@ class ChatComponent extends HTMLElement {
 					const msg = { type: 3, chatroom_name: channelNameInput.value };
 					this.socket?.send(JSON.stringify(msg));
 				} else {
-					const msg = { type: 3, chatroom_name: channelNameInput.value, password: passwordInput.value };
+					const msg = { type: 3, chatroom_name: channelNameInput.value, password: passwordInput.value, is_private: true };
 					this.socket?.send(JSON.stringify(msg));					
 				}
-				this.messagesBox!.innerHTML = "";
-				this.currentChat = channelNameInput.value;
-				if (this.currentChatHeader)
-					this.currentChatHeader.textContent = channelNameInput.value;
+				this.updateCurrentChat(channelNameInput.value);
+				const newChatroom = { id: -1, name: channelNameInput.value, is_private: privateRadio.checked};
+				this.chats?.chatrooms.push(newChatroom);
+				this.updateCurrentChat(channelNameInput.value);
 				chatroomDropdown.classList.add('hidden');
-
-				const chatRooms = this.shadowRoot?.querySelector("#chat-channels");
-				if (chatRooms) {
-					const btn = document.createElement("button");
-					btn.textContent = channelNameInput.value;
-					btn.className = "text-left p-2 hover:bg-violet-100 w-full border-b border-gray-300";
-					btn.addEventListener("click", () => {
-						console.log("Chat one-to-one seleccionado:", channelNameInput.value);
-						this.currentChat = channelNameInput.value;
-						this.messagesBox!.innerHTML = "";
-						if (this.currentChatHeader)
-							this.currentChatHeader.textContent = this.currentChat;
-					});
-					chatRooms.appendChild(btn);
-				}
+				this.printListChannels();
 			});
 		}
 
-		const chatChannels = this.shadowRoot?.querySelector("#chat-channels");
-		const chatDMs = this.shadowRoot?.querySelector("#chat-dms");
+	}
 
-		if (chatChannels && this.chats) {
-			const labelChannels = document.createElement("h2");
-			labelChannels.textContent = "Channels";
-			labelChannels.className = "text-left italic font-bold p-2 w-full border-b border-gray-400 bg-gray-100";
-			chatChannels.appendChild(labelChannels);
+	private async joinChannel() {
+		await this.getChatRooms();
+		console.log("en web component this.chatrooms:");
+		console.log(this.chatRooms);
+		const newChatroomBtn = this.shadowRoot?.querySelector("#join-chatroom-btn") as HTMLElement;
+		const dropdown = this.shadowRoot?.querySelector("#join-chatroom-dropdown") as HTMLElement;
 
-			const btn = document.createElement("button");
-			btn.textContent = "GENERAL";
-			btn.className = "text-left p-3 hover:bg-violet-100 w-full border-b border-gray-300";
-			btn.addEventListener("click", () => {
-				this.messagesBox!.innerHTML = "";
-				console.log("Chatroom seleccted: GENERAL");
-				this.currentChat = "GENERAL";
-				if (this.currentChatHeader)
-					this.currentChatHeader.textContent = "GENERAL";
-			});
-			chatChannels.appendChild(btn);
-
-			for (const chatroom of this.chats.chatrooms) {
-				const btn = document.createElement("button");
-				btn.textContent = chatroom.name;
-				btn.className = "text-left p-2 hover:bg-violet-100 w-full border-b border-gray-300";
-				btn.addEventListener("click", async () => {
-					this.messagesBox!.innerHTML = "";
-					console.log("Chatroom seleccionado:", chatroom.name);
-					if (this.currentChatHeader)
-						this.currentChatHeader.textContent = chatroom.name;
-					const chatId = chatroom.id;
-					const data = await fetchMessagesChatroom(chatId);
-					this.messages = data.messages;
-					this.messagesBox!.innerHTML = "";
-					this.messages.forEach(msg => {
-						this.addMessageToList(msg.sender, msg.message);
-					});
-				});
-				chatChannels.appendChild(btn);
-			}
-		}
-
-		if (chatDMs && this.chats) {
-			const labelDMs = document.createElement("h2");
-			labelDMs.textContent = "DMs";
-			labelDMs.className = "text-left italic font-bold p-2 w-full border-b border-gray-400 bg-gray-100";
-			chatDMs.appendChild(labelDMs);
-		
-			for (const chat of this.chats.oneToOneChats) {
-				const btn = document.createElement("button");
-				btn.textContent = chat.other_user;
-				btn.className = "text-left p-2 hover:bg-violet-100 w-full border-b border-gray-300";
-				console.log(`Èl chatId de ${chat.other_user} es ${chat.id} `);
-				btn.addEventListener("click",async () => {
-					this.messagesBox!.innerHTML = "";
-					console.log("ChatDM seleccionado:", chat.other_user);
-					this.currentChat = chat.other_user;
-					if (this.currentChatHeader)
-						this.currentChatHeader.textContent = this.currentChat;
-					const chatId = chat.id;
-					const data = await fetchMessages(chatId);
-					this.messages = data.messages;
-					this.messagesBox!.innerHTML = "";
-					this.messages.forEach(msg => {
-						this.addMessageToList(msg.sender, msg.message);
-					});
-					
-				});
-				chatDMs.appendChild(btn);
-			}
-		}
-
-		this.sendButton?.addEventListener("click", () => {
-			let toWho: string  = this.currentChatHeader?.textContent ?? "";
-			const isChatroom = this.chats?.chatrooms?.some(chatroom => chatroom.name === toWho) ?? false;
-			console.log(`El destinatary seria: ${toWho}`);
-			const messageToSend = this.messageInput?.value || "";
-			if (messageToSend) {
-				if (toWho === "GENERAL") {
-					const msg = { type: 0, message: messageToSend };
-					this.socket?.send(JSON.stringify(msg));
-				} else if (isChatroom) {
-					const msg = { type: 5, chatroom_name: toWho, message: messageToSend };
-					this.socket?.send(JSON.stringify(msg));
-				} else {
-					const msg = { type: 1, destinatary: toWho, message: messageToSend };
-					this.socket?.send(JSON.stringify(msg));					
-				}
-				if (this.messageInput) this.messageInput.value = "";
-			}
-		});
-
-		const newChatBtn = this.shadowRoot?.querySelector("#new-chat-btn") as HTMLElement;
-		const dropdown = this.shadowRoot?.querySelector("#new-chat-dropdown") as HTMLElement;
-
-		newChatBtn?.addEventListener("click", () => {
+		newChatroomBtn?.addEventListener("click", () => {
 			if (!dropdown) return;
 
 			dropdown.classList.toggle("hidden");
+			dropdown.innerHTML = "";
 
 			if (dropdown.childNodes.length === 0) {
-				this.users.forEach(user => {
-					if (user.username === this.user.username) return;
+				this.chatRooms.forEach(chatroom => {
+					if (this.chats?.chatrooms.some(chat => chat.name === chatroom.name))
+						return;
+					const wrapper = document.createElement("div");
+					wrapper.className = "flex flex-col p-2 border-b border-gray-200";
 					const userBtn = document.createElement("button");
-					userBtn.textContent = user.username;
+					userBtn.textContent = chatroom.name;
 					userBtn.className = "text-left p-2 hover:bg-violet-100 w-full";
+					wrapper.appendChild(userBtn);
+					dropdown.appendChild(wrapper);
+					
 					userBtn.addEventListener("click", () => {
-						const newChat: OneToOneChat = {
-							id: -1,
-							other_user: user.username,
-							avatar: "",
-						};
-						if (!this.chats) {
-							this.chats = { oneToOneChats: [], chatrooms: [] };
+						console.log("en join channel, el chatroom que he pulsado:");
+						console.log(chatroom);
+						if (!chatroom.is_private) {
+							const msg = { type: 4, chatroom_name: chatroom.name };
+							this.socket?.send(JSON.stringify(msg));
+							const newChatroom: ChatRoom = { id: -1, name: chatroom.name , is_private: false };
+							if (!this.chats) {
+								this.chats = { oneToOneChats: [], chatrooms: [] };
+							}
+							this.chats.chatrooms.push(newChatroom);
+							this.updateCurrentChat(chatroom.name);
+							dropdown.classList.add("hidden");
+							this.printListChannels();
+							return;
 						}
-						this.chats.oneToOneChats.push(newChat);
-						this.currentChat = newChat.other_user;
-						if (this.currentChatHeader)
-							this.currentChatHeader.textContent = this.currentChat;
-						console.log("Nuevo chat creado:", newChat);
-						dropdown.classList.add("hidden");
 
-						// const chatDMS = this.shadowRoot?.querySelector("#chat-dms");
-						if (chatDMs) {
-							const btn = document.createElement("button");
-							btn.textContent = user.username;
-							btn.className = "text-left p-2 hover:bg-violet-100 w-full border-b border-gray-300";
-							btn.addEventListener("click", () => {
-								console.log("Chat one-to-one seleccionado:", user.username);
-								this.currentChat = newChat.other_user;
-								this.messagesBox!.innerHTML = "";
-								if (this.currentChatHeader)
-									this.currentChatHeader.textContent = this.currentChat;
-							});
-							chatDMs.appendChild(btn);
-						}
+						if (wrapper.querySelector("input"))
+							return;
+
+						const passwordInput = document.createElement("input");
+						passwordInput.type = "password";
+						passwordInput.placeholder = "Password";
+						passwordInput.className = "border p-1 rounded w-full mt-2";
+
+						const joinBtn = document.createElement("button");
+						joinBtn.textContent = "Join";
+						joinBtn.className = "bg-violet-500 text-white px-3 py-1 rounded mt-2 hover:bg-violet-600";
+
+						joinBtn.addEventListener("click", () => {
+							const password = passwordInput.value;
+							const msg = {
+								type: 4,
+								chatroom_name: chatroom.name,
+								password: password,
+							};
+							this.socket?.send(JSON.stringify(msg));
+							const newChatroom: ChatRoom = { id: -1, name: chatroom.name , is_private: true };
+							if (!this.chats) {
+								this.chats = { oneToOneChats: [], chatrooms: [] };
+							}
+							this.chats.chatrooms.push(newChatroom);
+							this.updateCurrentChat(chatroom.name);
+							dropdown.classList.add("hidden");
+							this.printListChannels();
+						});
+
+						wrapper.appendChild(passwordInput);
+						wrapper.appendChild(joinBtn);
 					});
 					dropdown.appendChild(userBtn);
 				});
 			}
 
-			const btnRect = newChatBtn.getBoundingClientRect();
+			const btnRect = newChatroomBtn.getBoundingClientRect();
 			dropdown.style.position = "absolute";
-			dropdown.style.top = `${newChatBtn.offsetTop}px`;
-			dropdown.style.left = `${newChatBtn.offsetLeft + newChatBtn.offsetWidth + 8}px`;
+			dropdown.style.top = `${newChatroomBtn.offsetTop}px`;
+			dropdown.style.left = `${newChatroomBtn.offsetLeft + newChatroomBtn.offsetWidth + 8}px`;
 		});
 
+	}
 
+	private async blockUser() {
+		await this.getUsers();
 
 		const blockUserBtn = this.shadowRoot?.querySelector("#block-user-btn") as HTMLElement;
-		const dropdown2 = this.shadowRoot?.querySelector("#block-user-dropdown") as HTMLElement;
+		const dropdown = this.shadowRoot?.querySelector("#block-user-dropdown") as HTMLElement;
 
 		blockUserBtn?.addEventListener("click", () => {
 			if (!dropdown) return;
@@ -384,50 +442,45 @@ class ChatComponent extends HTMLElement {
 					userBtn.textContent = user.username;
 					userBtn.className = "text-left p-2 hover:bg-violet-100 w-full";
 					userBtn.addEventListener("click", () => {
-						const newChat: OneToOneChat = {
-							id: -1,
-							other_user: user.username,
-							avatar: "",
-						};
-						if (!this.chats) {
-							this.chats = { oneToOneChats: [], chatrooms: [] };
-						}
-						this.chats.oneToOneChats.push(newChat);
-						this.currentChat = newChat.other_user;
-						if (this.currentChatHeader)
-							this.currentChatHeader.textContent = this.currentChat;
-						console.log("Nuevo chat creado:", newChat);
+						const msg = { type: 7, destinatary: user.username };
+						this.socket?.send(JSON.stringify(msg));
 						dropdown.classList.add("hidden");
-
-						// const chatDMS = this.shadowRoot?.querySelector("#chat-dms");
-						if (chatDMs) {
-							const btn = document.createElement("button");
-							btn.textContent = user.username;
-							btn.className = "text-left p-2 hover:bg-violet-100 w-full border-b border-gray-300";
-							btn.addEventListener("click", () => {
-								console.log("Chat one-to-one seleccionado:", user.username);
-								this.currentChat = newChat.other_user;
-								this.messagesBox!.innerHTML = "";
-								if (this.currentChatHeader)
-									this.currentChatHeader.textContent = this.currentChat;
-							});
-							chatDMs.appendChild(btn);
-						}
 					});
 					dropdown.appendChild(userBtn);
 				});
 			}
 
-			const btnRect = newChatBtn.getBoundingClientRect();
+			const btnRect = blockUserBtn.getBoundingClientRect();
 			dropdown.style.position = "absolute";
-			dropdown.style.top = `${newChatBtn.offsetTop}px`;
-			dropdown.style.left = `${newChatBtn.offsetLeft + newChatBtn.offsetWidth + 8}px`;
+			dropdown.style.top = `${blockUserBtn.offsetTop}px`;
+			dropdown.style.left = `${blockUserBtn.offsetLeft + blockUserBtn.offsetWidth + 8}px`;
+		});
+	}
+
+	private updateCurrentChat(name: string): void {
+		this.messagesBox!.innerHTML = "";
+		console.log("Chat seleccionado:", name);
+		this.currentChat = name;
+		if (this.currentChatHeader)
+			this.currentChatHeader.textContent = this.currentChat;
+
+	}
+
+	private async printChatroomMessages(chatroomId: number) {
+		const data = await fetchMessagesChatroom(chatroomId);
+		this.messages = data.messages;
+		this.messages.forEach(msg => {
+			this.addMessageToList(msg.sender, msg.message);
 		});
 
+	}
 
-
-
-
+	private async printChatMessages(chatId: number) {
+		const data = await fetchMessages(chatId);
+		this.messages = data.messages;
+		this.messages.forEach(msg => {
+			this.addMessageToList(msg.sender, msg.message);
+		});
 
 	}
 
