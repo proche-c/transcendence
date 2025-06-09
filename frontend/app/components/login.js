@@ -4,12 +4,13 @@ class LoginComponent extends HTMLElement {
         super();
         this.emailInput = null;
         this.passwordInput = null;
+        this.twofaInput = null;
         this.loginButton = null;
         this.registerButton = null;
-        this.inputData = null;
         this.errorMsg = null;
-        this.response = null;
         this.googleButton = null;
+        this.twofaWrapper = null;
+        this.twofaRequired = false;
         this.attachShadow({ mode: "open" });
         this.render();
     }
@@ -24,11 +25,17 @@ class LoginComponent extends HTMLElement {
     <form id="loginForm">
         <div class="mt-1">
             <label for="email" class="font-semibold text-sm text-gray-400 pb-1 block">E-mail</label>
-            <input id="email" autocomplete=email type="text"
+            <input id="email" autocomplete="email" type="text"
                 class="border rounded-lg px-3 py-2 mb-2 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
             <label for="password" class="font-semibold text-sm text-gray-400 pb-1 block">Password</label>
-            <input id="password" autocomplete=current-password type="password"
-                class="border rounded-lg px-3 py-2 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+            <input id="password" autocomplete="current-password" type="password"
+                class="border rounded-lg px-3 py-2 mb-2 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+
+            <div id="twofa-wrapper" style="display:none;">
+                <label for="twofa" class="font-semibold text-sm text-gray-400 pb-1 block">2FA Code</label>
+                <input id="twofa" type="text"
+                    class="border rounded-lg px-3 py-2 mb-2 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+            </div>
         </div>
         <div class="mt-5">
             <button id="login" type="submit"
@@ -60,69 +67,70 @@ class LoginComponent extends HTMLElement {
         this.shadowRoot.appendChild(style);
         this.emailInput = this.shadowRoot.querySelector("#email");
         this.passwordInput = this.shadowRoot.querySelector("#password");
+        this.twofaInput = this.shadowRoot.querySelector("#twofa");
+        this.twofaWrapper = this.shadowRoot.querySelector("#twofa-wrapper");
         this.loginButton = this.shadowRoot.querySelector("#login");
-        this.inputData = this.shadowRoot.querySelector("#inputData");
         this.registerButton = this.shadowRoot.querySelector("#register");
         this.errorMsg = this.shadowRoot.querySelector("#error");
         this.googleButton = this.shadowRoot.querySelector("#google-login");
         this.addEventListeners();
     }
     addEventListeners() {
-        var _a, _b;
+        var _a, _b, _c;
         const loginForm = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelector("#loginForm");
         loginForm === null || loginForm === void 0 ? void 0 : loginForm.addEventListener("submit", async (event) => {
-            var _a, _b;
+            var _a, _b, _c;
             event.preventDefault();
             const email = ((_a = this.emailInput) === null || _a === void 0 ? void 0 : _a.value) || "";
             const password = ((_b = this.passwordInput) === null || _b === void 0 ? void 0 : _b.value) || "";
-            if (email && password) {
-                await this.postData(email, password);
-            }
-            else {
+            const twofa_token = ((_c = this.twofaInput) === null || _c === void 0 ? void 0 : _c.value) || "";
+            if (!email || !password) {
                 this.errorMsg.textContent = "All fields are required";
+                return;
             }
+            const data = { email, password };
+            if (this.twofaRequired && twofa_token) {
+                data.twofa_token = twofa_token;
+            }
+            await this.postData(data);
         });
         (_b = this.registerButton) === null || _b === void 0 ? void 0 : _b.addEventListener("click", () => {
-            console.log("he pulsado sign in");
             window.location.hash = "#register";
         });
-        if (this.googleButton) {
-            console.log("Google button found");
-            this.googleButton.addEventListener("click", () => {
-                console.log("Google button clicked");
-                window.location.href = `https://${SERVER_IP}:8443/api/login/google`;
-            });
-        }
-        else {
-            console.error("Google button not found");
-        }
+        (_c = this.googleButton) === null || _c === void 0 ? void 0 : _c.addEventListener("click", () => {
+            window.location.href = `https://${SERVER_IP}:8443/api/login/google`;
+        });
     }
-    async postData(email, password) {
-        const data = { "email": email, "password": password };
+    async postData(data) {
         try {
-            // Esta url sera el endpoint que configure el servidor
             const response = await fetch(`https://${SERVER_IP}:8443/api/login`, {
                 method: "POST",
                 body: JSON.stringify(data),
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
             });
-            this.response = await response.json();
-            // location.hash = "#profile"; // Cambiar la vista
-            // Aqui el backend hará las validaciones de email y password y me enviara un error
-            // en caso de que haya algun problema
-            // Si la autenticacion es valida, el backend creara un token jwt y lo guardara en las cookies
-            console.log(response);
+            const result = await response.json();
             if (response.ok) {
                 location.hash = "#profile";
             }
-            if (response.status === 404 || response.status === 401) {
-                this.errorMsg.textContent = "Incorrect email or password";
-                //this.resetValues();
+            else if (result.message === "2FA token required") {
+                this.twofaRequired = true;
+                this.twofaWrapper.style.display = "block";
+                this.errorMsg.textContent = "2FA required. Please enter your code.";
+            }
+            else if (result.message === "Invalid 2FA token") {
+                this.errorMsg.textContent = "Invalid 2FA code.";
+            }
+            else if (result.message === "Invalid credentials") {
+                this.errorMsg.textContent = "Incorrect email or password.";
+            }
+            else {
+                this.errorMsg.textContent = "Login failed.";
             }
         }
         catch (error) {
-            console.log("error en la peticion");
+            console.error("Login request failed", error);
+            this.errorMsg.textContent = "Network error. Please try again.";
         }
     }
 }

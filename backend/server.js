@@ -46,7 +46,7 @@ fastify.register(cors, {
   origin: (origin, cb) => {
     const allowedOrigins = [
       `https://${SERVER_IP}:8443`,
-      //"https://localhost:8443",
+      //`https://localhost:8443`,
       //"https://127.0.0.1:8443",
       //"http://localhost:5500",
       //`https://${SERVER_IP}:3000`,
