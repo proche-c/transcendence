@@ -34,7 +34,8 @@ export interface OneToOneChat {
 export interface ChatRoom {
 	id: number;
 	name: string;
-	members: User[];
+	is_private: boolean;
+
 }
 
 export interface ChatData {
@@ -44,7 +45,7 @@ export interface ChatData {
 
 export async function fetchUserProfile() {
 	try {
-		const response = await fetch(`https://${SERVER_IP}:8443/api/profile`, {
+		const response = await fetch("http://localhost:8000/profile", {
 			method: "GET",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include",
@@ -64,7 +65,7 @@ export async function fetchUserProfile() {
 
 export async function fetchUsers(): Promise<User[]> {
 	try {
-		const response = await fetch(`https://${SERVER_IP}:8443/api/users`, {
+		const response = await fetch("http://localhost:8000/users", {
 			method: "GET",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include",
@@ -81,7 +82,7 @@ export async function fetchUsers(): Promise<User[]> {
 
 export async function fetchFriends() {
 	try {
-		const response = await fetch(`https://${SERVER_IP}:8443/api/users/friends`, {
+		const response = await fetch("http://localhost:8000/users/friends", {
 			method: "GET",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include",
@@ -101,7 +102,7 @@ export async function fetchFriends() {
 
 export async function fetchPublicProfile(user: string | null) {
 	try {
-		const response = await fetch(`https://${SERVER_IP}:8443/api/public-profile?username=${encodeURIComponent(user ?? "")}`, {
+		const response = await fetch(`http://localhost:8000/public-profile?username=${encodeURIComponent(user ?? "")}`, {
 			method: "GET",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include",
@@ -121,7 +122,7 @@ export async function fetchPublicProfile(user: string | null) {
 
 export async function fetchChats(): Promise<any | ChatData | null> {
 	try {
-		const response = await fetch(`https://${SERVER_IP}:8443/api/chats`, {
+		const response = await fetch("http://localhost:8000/chats", {
 			method: "GET",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include", // importante para que se envíen las cookies
@@ -147,7 +148,7 @@ export async function fetchChats(): Promise<any | ChatData | null> {
 
 export async function fetchMessages(chatId: number | null) {
 	try {
-		const response = await fetch(`https://${SERVER_IP}:8443/api/users/messages?chatId=${chatId}`, {
+		const response = await fetch(`http://localhost:8000/users/messages?chatId=${chatId}`, {
 			method: "GET",
 			headers: { "Content-Type": "application/json" },
 			credentials: "include",
@@ -164,5 +165,44 @@ export async function fetchMessages(chatId: number | null) {
 	} catch (error) {
 		console.error("Error al obtener messages:", error);
 		return null;
+	}
+}
+
+export async function fetchMessagesChatroom(chatroomId: number | null) {
+	try {
+		const response = await fetch(`http://localhost:8000/users/chatroom-messages?chatroomId=${chatroomId}`, {
+			method: "GET",
+			headers: { "Content-Type": "application/json" },
+			credentials: "include",
+		});
+
+		if (!response.ok) {
+			throw new Error("Error en la respuesta del servidor");
+		}
+
+		const data = await response.json();
+		console.log("Cuando pido messages obtengo: ");
+		console.log(data);
+		return data;
+	} catch (error) {
+		console.error("Error al obtener messages:", error);
+		return null;
+	}
+}
+
+export async function fetchChatRooms(): Promise<ChatRoom[]> {
+	try {
+		const response = await fetch("http://localhost:8000/users/chatrooms", {
+			method: "GET",
+			headers: { "Content-Type": "application/json" },
+			credentials: "include",
+		});
+		const data = await response.json();
+		console.log("en requests chatrooms:");
+		console.log(data);
+		return data.chatrooms;
+	} catch (error: any) {
+		console.error("Error fetching users:", error);
+		return [];
 	}
 }

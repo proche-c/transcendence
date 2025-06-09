@@ -16,16 +16,41 @@ class HomeComponent extends HTMLElement {
 
         this.shadowRoot.innerHTML = `
         <section class="h-screen">
-            <div class="container h-full px-6 py-24">
-                <div class="flex h-full flex-wrap items-center justify-center lg:justify-between">
-                    <div class="mb-12 md:mb-0 md:w-8/12 lg:w-6/12">
-                        <img src="./app/assets/chica.svg" class="w-full"/>
-                    </div>
-                    <div id="dataContainer"></div>
-                </div>
+          <div class="container h-full px-6 py-24">
+            <div class="flex flex-col h-full items-center justify-center space-y-12 text-center">
+              <div class="flex justify-center w-full">
+                <svg 
+                  class="max-w-[700px] w-full h-auto" 
+                  viewBox="0 0 400 120" 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  preserveAspectRatio="xMidYMid meet">
+                  <style>
+                    .title {
+                      font-family: 'Press Start 2P', monospace;
+                      fill: #A020F0;
+                      font-size: 40px;
+                      animation: blink 1s steps(1, start) infinite;
+                    }
+                    @keyframes blink {
+                      50% {
+                        opacity: 0;
+                      }
+                    }
+                  </style>
+                  <text x="50%" y="50%" class="title" text-anchor="middle" dominant-baseline="middle">
+                    PONG
+                  </text>
+                </svg>
+              </div>
+              <div id="dataContainer" class="w-full flex justify-center items-center px-4"></div>
             </div>
+          </div>
         </section>
-        `;
+      `;
+      
+      
+        
+        
 
         this.dataContainer = this.shadowRoot.querySelector("#dataContainer");
         if (window.location.hash === "#register") {
@@ -33,8 +58,8 @@ class HomeComponent extends HTMLElement {
         } else {
             this.dataContainer?.appendChild(document.createElement("pong-login"));
         }
-        this.shadowRoot.appendChild(style);
 
+        this.shadowRoot.appendChild(style);
     }
 }
 
