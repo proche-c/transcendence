@@ -7,53 +7,228 @@ export function setupOnlineGame(shadowRoot: ShadowRoot | null) {
     const canvas = shadowRoot.querySelector('canvas') as HTMLCanvasElement;
     const ctx = canvas.getContext('2d')!;
     
-    const serverIP = window.location.hostname;
+    // Elements de la interfície amb estil Tailwind consistent
+    const statusElement = document.createElement('div');
+    statusElement.className = 'text-center font-bold text-xl mt-2 mb-4 text-violet-900';
+    statusElement.textContent = 'Connectant al servidor...';
+    
+    const instructionsElement = document.createElement('div');
+    instructionsElement.className = 'text-center text-gray-700 mt-2';
+    
+    // Contenidor d'estat del joc
+    const gameStatusContainer = document.createElement('div');
+    gameStatusContainer.className = 'flex flex-col items-center justify-center space-y-2 mb-4';
+    gameStatusContainer.appendChild(statusElement);
+    gameStatusContainer.appendChild(instructionsElement);
+    
+    // Afegir un indicador de sala
+    const roomIndicator = document.createElement('div');
+    roomIndicator.className = 'bg-violet-200 text-violet-900 px-3 py-1 rounded-lg font-semibold text-sm';
+    roomIndicator.textContent = 'Esperant sala...';
+    gameStatusContainer.appendChild(roomIndicator);
+    
+    // Afegir elements a la interfície
+    const gameContainer = shadowRoot.querySelector('.grow');
+    if (gameContainer) {
+        const infoContainer = document.createElement('div');
+        infoContainer.className = 'w-full max-w-lg mx-auto text-center';
+        infoContainer.appendChild(gameStatusContainer);
+        gameContainer.insertBefore(infoContainer, gameContainer.firstChild);
+    }
+    
+    // Connexió al servidor
     const socket = new WebSocket(`wss://${SERVER_IP}:8443/api/game`);
-    console.log(`Connecting to server at wss://${SERVER_IP}:8443/game`);
+    console.log(`Connectant al servidor a wss://${SERVER_IP}:8443/api/game`);
     
     let playerNumber: number | null = null;
     let gameState: GameState | null = null;
-    let playerY = 150;
-
-    socket.onopen = () => socket.send(JSON.stringify({ type: 'start', message: 'jugar' }));
+    let playerY = 200;
+    let roomId: string | null = null;
+    let gameStarted = false;
+    
+    socket.onopen = () => {
+        statusElement.textContent = 'Buscant oponent...';
+        // El servidor assigna automàticament una sala
+    };
+    
+    socket.onclose = () => {
+        statusElement.textContent = 'Connexió tancada';
+        statusElement.className = 'text-center font-bold text-xl mt-2 mb-4 text-red-600';
+    };
+    
+    socket.onerror = () => {
+        statusElement.textContent = 'Error de connexió';
+        statusElement.className = 'text-center font-bold text-xl mt-2 mb-4 text-red-600';
+    };
     
     socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.type === 'init') {
-            playerNumber = data.playerNumber;
-            gameState = data.gameState;
-            requestAnimationFrame(draw);
-        } else if (data.type === 'update') {
-            gameState = data.gameState;
-        } else if (data.type === 'end') {
-            alert(data.message);
+        try {
+            const data = JSON.parse(event.data);
+            console.log("Missatge rebut:", data); // Per depuració
+            
+            switch (data.type) {
+                case 'init':
+                    playerNumber = data.playerNumber;
+                    gameState = data.gameState;
+                    roomId = data.roomId;
+                    
+                    console.log(`Inicialitzat com a Jugador ${playerNumber} a sala ${roomId}`);
+                    
+                    roomIndicator.textContent = `Sala: ${roomId || 'desconeguda'}`;
+                    statusElement.textContent = `Jugador ${playerNumber}`;
+                    updateInstructions();
+                    
+                    if (data.gameState.running) {
+                        gameStarted = true;
+                        statusElement.className = 'text-center font-bold text-xl mt-2 mb-4 text-green-700';
+                    } else {
+                        statusElement.textContent += ' - Esperant oponent...';
+                    }
+                    
+                    requestAnimationFrame(draw);
+                    break;
+                
+                case 'gameStart':
+                    gameStarted = true;
+                    statusElement.textContent = `Jugador ${playerNumber} - Partida en curs`;
+                    statusElement.className = 'text-center font-bold text-xl mt-2 mb-4 text-green-700';
+                    break;
+                
+                case 'update':
+                    if (data.gameState) {
+                        gameState = data.gameState;
+                    }
+                    break;
+                
+                case 'score':
+                    if (gameState && data.scores) {
+                        gameState.scores = data.scores;
+                    }
+                    break;
+                
+                case 'end':
+                    gameStarted = false;
+                    const resultText = data.finalScore ? 
+                        ` (${data.finalScore.player1} - ${data.finalScore.player2})` : '';
+                    statusElement.textContent = `${data.message}${resultText}`;
+                    statusElement.className = 'text-center font-bold text-xl mt-2 mb-4 text-violet-900';
+                    instructionsElement.textContent = 'Nova partida començarà en uns segons...';
+                    
+                    // Animació per mostrar el guanyador
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 28px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(data.message, canvas.width / 2, canvas.height / 2);
+                    break;
+                
+                case 'gameEnd':
+                    gameStarted = false;
+                    statusElement.textContent = data.message;
+                    statusElement.className = 'text-center font-bold text-xl mt-2 mb-4 text-red-600';
+                    instructionsElement.textContent = 'Esperant nous jugadors...';
+                    break;
+            }
+        } catch (error) {
+            console.error("Error processant missatge:", error);
         }
     };
+    
+    function updateInstructions() {
+        instructionsElement.textContent = 'Controla amb las flechas ↑↓ o las teclas W/S';
+    }
 
-    const keydownHandler = (e: KeyboardEvent) => {
-        if (!playerNumber) return;
-        const key = e.key.toLowerCase();
-        if ((playerNumber === 1 && (key === "arrowup" || key === "arrowdown")) ||
-            (playerNumber === 2 && (key === "w" || key === "s"))) {
-            playerY = Math.max(0, Math.min(320, playerY + (key === "arrowup" || key === "w" ? -20 : 20)));
-            socket.send(JSON.stringify({ type: 'move', y: playerY }));
+const keydownHandler = (e: KeyboardEvent) => {
+    if (!playerNumber || !gameStarted)
+        return;
+    
+    const key = e.key.toLowerCase();
+    let moved = false;
+    
+    // Ambdós jugadors poden utilitzar ambdós controls
+    if (playerNumber === 1) {
+        if (key === "arrowup" || key === "w") {
+            playerY = Math.max(0, Math.min(420, playerY - 20));
+            moved = true;
+        } else if (key === "arrowdown" || key === "s") {
+            playerY = Math.max(0, Math.min(420, playerY + 20));
+            moved = true;
         }
-    };
+    } else if (playerNumber === 2) {
+        if (key === "arrowup" || key === "w") {
+            playerY = Math.max(0, Math.min(420, playerY - 20));
+            moved = true;
+        } else if (key === "arrowdown" || key === "s") {
+            playerY = Math.max(0, Math.min(420, playerY + 20));
+            moved = true;
+        }
+    }
+    
+    if (moved) {
+        socket.send(JSON.stringify({ type: 'move', y: playerY }));
+    }
+};
+
 
     window.addEventListener('keydown', keydownHandler);
 
     const draw = () => {
         if (!gameState) return;
+        
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Dibuixar el camp amb l'estil que segueix els colors de l'app
+        ctx.fillStyle = '#1e293b'; // Un fons més fosc (slate-800)
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Línia central amb estil consistent
+        ctx.strokeStyle = '#ffffff';
+        ctx.setLineDash([10, 10]);
+        ctx.beginPath();
+        ctx.moveTo(canvas.width / 2, 0);
+        ctx.lineTo(canvas.width / 2, canvas.height);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // Pales dels jugadors
         ctx.fillStyle = '#ffffff';
-        Object.values(gameState.players).forEach(p => ctx.fillRect(p.x, p.y, 10, 80));
+        Object.values(gameState.players).forEach(p => {
+            ctx.fillRect(p.x, p.y, 10, 80);
+        });
+        
+        // Pilota amb efecte de brillantor
         const ball = gameState.ball;
         ctx.beginPath();
         ctx.arc(ball.x, ball.y, 8, 0, Math.PI * 2);
         ctx.fill();
-        ctx.font = '24px Arial';
-        ctx.fillText(`${gameState.scores.player1}`, 150, 30);
-        ctx.fillText(`${gameState.scores.player2}`, 450, 30);
+        
+        // Afegir un efecte de brillantor a la pilota
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, 12, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.fill();
+        
+        // Puntuacions amb estil consistent
+        ctx.font = 'bold 32px Arial';
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${gameState.scores.player1}`, canvas.width / 4, 50);
+        ctx.fillText(`${gameState.scores.player2}`, (canvas.width / 4) * 3, 50);
+        
+        // Indicador de jugador actual
+        if (playerNumber) {
+            const isPlayer1 = playerNumber === 1;
+            const x = isPlayer1 ? canvas.width / 4 : (canvas.width / 4) * 3;
+            
+            ctx.fillStyle = '#4ade80'; // Color verd per l'indicador (green-400)
+            ctx.beginPath();
+            ctx.moveTo(x, 60);
+            ctx.lineTo(x - 10, 70);
+            ctx.lineTo(x + 10, 70);
+            ctx.fill();
+        }
+        
         requestAnimationFrame(draw);
     };
     
@@ -61,5 +236,13 @@ export function setupOnlineGame(shadowRoot: ShadowRoot | null) {
     return () => {
         window.removeEventListener('keydown', keydownHandler);
         socket.close();
+        
+        // Eliminar elements afegits
+        if (gameContainer) {
+            const infoContainer = gameContainer.querySelector('.w-full.max-w-lg');
+            if (infoContainer) {
+                gameContainer.removeChild(infoContainer);
+            }
+        }
     };
 }
