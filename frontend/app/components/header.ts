@@ -30,7 +30,7 @@ class HeaderComponent extends HTMLElement {
 		const avatarUrl = `http://localhost:8000/static/${avatar}`;
 
 		this.shadowRoot.innerHTML = `
-		<div class="flex flex-col items-center w-full h-full my-2">
+		<div class="flex flex-col items-center w-full h-full my-2 bg-amber-500">
 			<div class="md:w-16 md:h-16 w-8 h-8 rounded-full overflow-hidden border-2 border-black flex items-center justify-center bg-emerald-200">
 				<img src="${avatarUrl}" class="w-full h-full object-cover" />
 			</div>

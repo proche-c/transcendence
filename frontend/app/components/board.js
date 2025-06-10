@@ -53,10 +53,10 @@ class BoardComponent extends HTMLElement {
         const avatar = this.user.avatar;
         const avatarUrl = `http://localhost:8000/static/${avatar}`;
         this.shadowRoot.innerHTML = `
-		<div class="flex h-screen">
+		<div class="flex h-screen items-center bg-amber-200">
 			<div><pong-menu></pong-menu></div>
-			<div class="flex flex-col w-74 md:w-200">
-				<div><pong-header></div>
+			<div class="flex flex-col flex-grow h-[87%] bg-blue-300">
+				<pong-header></pong-header>
 
 				<div class="flex flex-col md:flex-row bg-violet-600">
 
