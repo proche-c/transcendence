@@ -135,7 +135,7 @@ export async function fetchMessagesChatroom(chatroomId) {
 }
 export async function fetchChatRooms() {
     try {
-        const response = await fetch(`https://${SERVER_IP}:8443/apiusers/chatrooms`, {
+        const response = await fetch(`https://${SERVER_IP}:8443/api/users/chatrooms`, {
             method: "GET",
             headers: { "Content-Type": "application/json" },
             credentials: "include",

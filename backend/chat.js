@@ -130,7 +130,9 @@ async function chatRoutes(fastify, options) {
             break;
           case 13:
             await handleKickUser(connection, data, dbGetAsync, dbRunAsync,fastify, userSockets)
-            break; 
+            break;
+          case 'ping':
+            break;
           default:
             connection.send(JSON.stringify({ type: data.type, message: "Unknown message type" }));    
         }

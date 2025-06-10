@@ -118,7 +118,7 @@ async function userRoutes(fastify, options) {
   fastify.get("/chatrooms", { preHandler: authMiddleware }, async (request, reply) => {
     try {
       const chatrooms = await dbAllAsync(
-        `SELECT id, name, is_private, FROM chatrooms`
+        `SELECT id, name, is_private FROM chatrooms`
       );
       return reply.send({ chatrooms });
     } catch (err) {

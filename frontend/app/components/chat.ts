@@ -49,8 +49,17 @@ class ChatComponent extends HTMLElement {
 	}	
 
 	private connect() {
-		this.socket = new WebSocket(`wss://${SERVER_IP}:8443/chat`);
+		this.socket = new WebSocket(`wss://${SERVER_IP}:8443/api/chat`);
+		const pingInterval = setInterval(() => {
+			if (this.socket && this.socket.readyState === WebSocket.OPEN){
+					this.socket.send(JSON.stringify({ type: "ping"}));
+		}
+	}, 30000)
 
+		this.socket.onclose = () => {
+			clearInterval(pingInterval);
+			console.log("Websocket connection closed");
+		}
 		this.socket.onmessage = (event) => {
 			console.log(event);
 			const data = JSON.parse(event.data);
