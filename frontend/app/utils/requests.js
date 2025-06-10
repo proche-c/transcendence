@@ -113,3 +113,40 @@ export async function fetchMessages(chatId) {
         return null;
     }
 }
+export async function fetchMessagesChatroom(chatroomId) {
+    try {
+        const response = await fetch(`https://${SERVER_IP}:8443/api/users/chatroom-messages?chatroomId=${chatroomId}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+        });
+        if (!response.ok) {
+            throw new Error("Error en la respuesta del servidor");
+        }
+        const data = await response.json();
+        console.log("Cuando pido messages obtengo: ");
+        console.log(data);
+        return data;
+    }
+    catch (error) {
+        console.error("Error al obtener messages:", error);
+        return null;
+    }
+}
+export async function fetchChatRooms() {
+    try {
+        const response = await fetch(`https://${SERVER_IP}:8443/apiusers/chatrooms`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+        });
+        const data = await response.json();
+        console.log("en requests chatrooms:");
+        console.log(data);
+        return data.chatrooms;
+    }
+    catch (error) {
+        console.error("Error fetching users:", error);
+        return [];
+    }
+}

@@ -49,7 +49,7 @@ class ChatComponent extends HTMLElement {
 	}	
 
 	private connect() {
-		this.socket = new WebSocket("ws://localhost:8000/chat");
+		this.socket = new WebSocket(`wss://${SERVER_IP}:8443/chat`);
 
 		this.socket.onmessage = (event) => {
 			console.log(event);
@@ -68,7 +68,7 @@ class ChatComponent extends HTMLElement {
 		console.log(this.user);
 
 		const avatar = this.user.avatar;
-		const avatarUrl = `http://localhost:8000/static/${avatar}`;
+		const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
 
 		this.shadowRoot.innerHTML = `
 			<div class="flex h-screen items-center">
