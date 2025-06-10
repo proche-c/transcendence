@@ -9,7 +9,6 @@
       "Courier New", monospace;
     --color-red-500: oklch(63.7% 0.237 25.331);
     --color-red-600: oklch(57.7% 0.245 27.325);
-    --color-amber-50: oklch(98.7% 0.022 95.277);
     --color-green-200: oklch(92.5% 0.084 155.995);
     --color-green-500: oklch(72.3% 0.219 149.579);
     --color-green-600: oklch(62.7% 0.194 149.214);
@@ -264,24 +263,6 @@
   .z-50 {
     z-index: 50;
   }
-  .container {
-    width: 100%;
-    @media (width >= 40rem) {
-      max-width: 40rem;
-    }
-    @media (width >= 48rem) {
-      max-width: 48rem;
-    }
-    @media (width >= 64rem) {
-      max-width: 64rem;
-    }
-    @media (width >= 80rem) {
-      max-width: 80rem;
-    }
-    @media (width >= 96rem) {
-      max-width: 96rem;
-    }
-  }
   .m-1 {
     margin: calc(var(--spacing) * 1);
   }
@@ -415,6 +396,9 @@
   }
   .h-5\/8 {
     height: calc(5/8 * 100%);
+  }
+  .h-6\/8 {
+    height: calc(6/8 * 100%);
   }
   .h-7\/8 {
     height: calc(7/8 * 100%);
@@ -594,11 +578,11 @@
       margin-block-end: calc(calc(var(--spacing) * 2) * calc(1 - var(--tw-space-y-reverse)));
     }
   }
-  .space-y-12 {
+  .space-y-4 {
     :where(& > :not(:last-child)) {
       --tw-space-y-reverse: 0;
-      margin-block-start: calc(calc(var(--spacing) * 12) * var(--tw-space-y-reverse));
-      margin-block-end: calc(calc(var(--spacing) * 12) * calc(1 - var(--tw-space-y-reverse)));
+      margin-block-start: calc(calc(var(--spacing) * 4) * var(--tw-space-y-reverse));
+      margin-block-end: calc(calc(var(--spacing) * 4) * calc(1 - var(--tw-space-y-reverse)));
     }
   }
   .space-x-1 {
@@ -831,9 +815,6 @@
   }
   .py-4 {
     padding-block: calc(var(--spacing) * 4);
-  }
-  .py-24 {
-    padding-block: calc(var(--spacing) * 24);
   }
   .pt-4 {
     padding-top: calc(var(--spacing) * 4);
@@ -1190,10 +1171,10 @@
       margin-inline: calc(var(--spacing) * 0);
     }
   }
-  .md\:size-16 {
+  .md\:size-10 {
     @media (width >= 48rem) {
-      width: calc(var(--spacing) * 16);
-      height: calc(var(--spacing) * 16);
+      width: calc(var(--spacing) * 10);
+      height: calc(var(--spacing) * 10);
     }
   }
   .md\:h-16 {
@@ -1209,11 +1190,6 @@
   .md\:w-24 {
     @media (width >= 48rem) {
       width: calc(var(--spacing) * 24);
-    }
-  }
-  .md\:w-32 {
-    @media (width >= 48rem) {
-      width: calc(var(--spacing) * 32);
     }
   }
   .md\:w-72 {

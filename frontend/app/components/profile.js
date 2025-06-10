@@ -37,6 +37,8 @@ class ProfileComponent extends HTMLElement {
         style.href = "./app/tailwind.css";
         const avatar = this.response.avatar || "avatars/default.jpg";
         const avatarUrl = `http://localhost:8000/static/${avatar}`;
+        console.log("url de avatar:");
+        console.log(avatarUrl);
         this.shadowRoot.innerHTML = `
 			<div class="flex h-screen justify-between">
 				<div class="">

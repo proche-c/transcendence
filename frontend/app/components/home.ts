@@ -15,9 +15,9 @@ class HomeComponent extends HTMLElement {
         style.href = "./app/tailwind.css";
 
         this.shadowRoot.innerHTML = `
-        <section class="h-screen">
-          <div class="container h-full px-6 py-24">
-            <div class="flex flex-col h-full items-center justify-center space-y-12 text-center">
+
+          <div class="h-full w-full">
+            <div class="flex flex-col h-full items-center justify-center space-y-4 text-center">
               <div class="flex justify-center w-full">
                 <svg 
                   class="max-w-[700px] w-full h-auto" 
@@ -45,7 +45,7 @@ class HomeComponent extends HTMLElement {
               <div id="dataContainer" class="w-full flex justify-center items-center px-4"></div>
             </div>
           </div>
-        </section>
+ 
       `;
       
       

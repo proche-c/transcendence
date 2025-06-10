@@ -58,7 +58,7 @@ fastify.post("/edit-profile", { preHandler: authMiddleware }, async (request, re
       const fileName = crypto.randomBytes(16).toString("hex") + ext;
       const uploadPath = path.join(uploadssPath, fileName);
       await pump(uploadedFile, fs.createWriteStream(uploadPath));
-      const avatarPath = `/static/avatars/${fileName}`;
+      const avatarPath = `avatars/${fileName}`;
       await dbRunAsync("UPDATE users SET avatar = ? WHERE id = ?", [avatarPath, userId]);
     }
 
