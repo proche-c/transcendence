@@ -14,7 +14,7 @@ module.exports = async function (fastify, options) {
   const { dbGetAsync } = options;
 
   fastify.post("/login", async (request, reply) => {
-    // Validation of request data 
+    // Validate request body 
     const parseResult = loginSchema.safeParse(request.body);
     if (!parseResult.success) {
       return reply.status(400).send({
@@ -56,7 +56,7 @@ module.exports = async function (fastify, options) {
         { expiresIn: "1h" }
       );
 
-      const isTwoFAEnabled = user.is_twofa_enabled === 1;
+      //const isTwoFAEnabled = user.is_twofa_enabled === 1;
 
       // Set cookie with JWT token
       reply.setCookie("token", token, {
@@ -64,13 +64,13 @@ module.exports = async function (fastify, options) {
         secure: true,
         sameSite: "none",
         path: "/",
-        maxAge: 60 * 70,
+        maxAge: 60 * 60,
       });
 
       return reply.send({
-        message: isTwoFAEnabled ? "2FA required" : "2FA not enabled",
+        message: "Login successful",
         //token, // has been removed for security reasons in production
-        twofa_required: isTwoFAEnabled,
+        twofa_required: false,
       });
 
     } catch (err) {

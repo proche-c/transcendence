@@ -1,14 +1,15 @@
 import { SERVER_IP } from '../config.js';
+
 class LoginComponent extends HTMLElement {
     private emailInput: HTMLInputElement | null = null;
     private passwordInput: HTMLInputElement | null = null;
+    private twofaInput: HTMLInputElement | null = null;
     private loginButton: HTMLElement | null = null;
     private registerButton: HTMLElement | null = null;
-    private inputData: HTMLElement | null = null;
     private errorMsg: HTMLElement | null = null;
-    private response: Promise<Response> | null = null;
     private googleButton: HTMLElement | null = null;
-
+    private twofaWrapper: HTMLElement | null = null;
+    private twofaRequired = false;
 
     constructor() {
         super();
@@ -28,11 +29,17 @@ class LoginComponent extends HTMLElement {
     <form id="loginForm">
         <div class="mt-1">
             <label for="email" class="font-semibold text-sm text-gray-400 pb-1 block">E-mail</label>
-            <input id="email" autocomplete=email type="text"
+            <input id="email" autocomplete="email" type="text"
                 class="border rounded-lg px-3 py-2 mb-2 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
             <label for="password" class="font-semibold text-sm text-gray-400 pb-1 block">Password</label>
-            <input id="password" autocomplete=current-password type="password"
-                class="border rounded-lg px-3 py-2 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+            <input id="password" autocomplete="current-password" type="password"
+                class="border rounded-lg px-3 py-2 mb-2 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+
+            <div id="twofa-wrapper" style="display:none;">
+                <label for="twofa" class="font-semibold text-sm text-gray-400 pb-1 block">2FA Code</label>
+                <input id="twofa" type="text"
+                    class="border rounded-lg px-3 py-2 mb-2 text-sm w-full bg-gray-700 text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500"/>
+            </div>
         </div>
         <div class="mt-5">
             <button id="login" type="submit"
@@ -62,15 +69,15 @@ class LoginComponent extends HTMLElement {
 </div>
 `;
 
-
         this.shadowRoot.appendChild(style);
 
-        this.emailInput = this.shadowRoot.querySelector("#email") as HTMLInputElement;
-        this.passwordInput = this.shadowRoot.querySelector("#password") as HTMLInputElement;
+        this.emailInput = this.shadowRoot.querySelector("#email");
+        this.passwordInput = this.shadowRoot.querySelector("#password");
+        this.twofaInput = this.shadowRoot.querySelector("#twofa");
+        this.twofaWrapper = this.shadowRoot.querySelector("#twofa-wrapper");
         this.loginButton = this.shadowRoot.querySelector("#login");
-        this.inputData = this.shadowRoot.querySelector("#inputData");
         this.registerButton = this.shadowRoot.querySelector("#register");
-        this.errorMsg = this.shadowRoot.querySelector("#error") as HTMLElement;
+        this.errorMsg = this.shadowRoot.querySelector("#error");
         this.googleButton = this.shadowRoot.querySelector("#google-login");
 
         this.addEventListeners();
@@ -80,38 +87,35 @@ class LoginComponent extends HTMLElement {
         const loginForm = this.shadowRoot?.querySelector("#loginForm") as HTMLFormElement;
         loginForm?.addEventListener("submit", async (event) => {
             event.preventDefault();
-    
+
             const email = this.emailInput?.value || "";
             const password = this.passwordInput?.value || "";
-    
-            if (email && password) {
-                await this.postData(email, password);
-            } else {
+            const twofa_token = this.twofaInput?.value || "";
+
+            if (!email || !password) {
                 this.errorMsg!.textContent = "All fields are required";
+                return;
             }
+
+            const data: any = { email, password };
+            if (this.twofaRequired && twofa_token) {
+                data.twofa_token = twofa_token;
+            }
+
+            await this.postData(data);
         });
-    
+
         this.registerButton?.addEventListener("click", () => {
-            console.log("he pulsado sign in");
             window.location.hash = "#register";
         });
-    
-        if (this.googleButton) {
-            console.log("Google button found");
-            this.googleButton.addEventListener("click", () => {
-                console.log("Google button clicked");
-                window.location.href = `https://${SERVER_IP}:8443/api/login/google`;
-            });
-        } else {
-            console.error("Google button not found");
-        }
+
+        this.googleButton?.addEventListener("click", () => {
+            window.location.href = `https://${SERVER_IP}:8443/api/login/google`;
+        });
     }
 
-    private async postData(email: string, password: string) {
-        const data = { "email": email, "password": password };
-
+    private async postData(data: { email: string; password: string; twofa_token?: string }) {
         try {
-            // Esta url sera el endpoint que configure el servidor
             const response = await fetch(`https://${SERVER_IP}:8443/api/login`, {
                 method: "POST",
                 body: JSON.stringify(data),
@@ -119,31 +123,26 @@ class LoginComponent extends HTMLElement {
                 credentials: "include",
             });
 
-            this.response = await response.json();
-            // location.hash = "#profile"; // Cambiar la vista
-            // Aqui el backend hará las validaciones de email y password y me enviara un error
-            // en caso de que haya algun problema
-            // Si la autenticacion es valida, el backend creara un token jwt y lo guardara en las cookies
-            console.log(response);
+            const result = await response.json();
+
             if (response.ok) {
                 location.hash = "#profile";
-            }
-            if (response.status === 404 || response.status === 401) {
-                this.errorMsg!.textContent = "Incorrect email or password";
-                //this.resetValues();
+            } else if (result.message === "2FA token required") {
+                this.twofaRequired = true;
+                this.twofaWrapper!.style.display = "block";
+                this.errorMsg!.textContent = "2FA required. Please enter your code.";
+            } else if (result.message === "Invalid 2FA token") {
+                this.errorMsg!.textContent = "Invalid 2FA code.";
+            } else if (result.message === "Invalid credentials") {
+                this.errorMsg!.textContent = "Incorrect email or password.";
+            } else {
+                this.errorMsg!.textContent = "Login failed.";
             }
         } catch (error: any) {
-            console.log("error en la peticion");
+            console.error("Login request failed", error);
+            this.errorMsg!.textContent = "Network error. Please try again.";
         }
     }
-    /*
-    private resetValues() {
-        if (this.emailInput)
-            this.emailInput.value = "";
-        if (this.passwordInput)
-            this.passwordInput.value = "";
-    } */
-
 }
 
 customElements.define("pong-login", LoginComponent);
