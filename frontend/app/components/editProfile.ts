@@ -27,7 +27,9 @@ class EditProfileComponent extends HTMLElement {
 		style.href = "./app/tailwind.css";
 
 		const avatar = this.response.avatar;
-		const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
+		const avatarUrl = avatar && avatar.startsWith('/static/') 
+        ? `https://${SERVER_IP}:8443/api${avatar}`
+        : `https://${SERVER_IP}:8443/api/static/${avatar}`;
 
 		this.shadowRoot.innerHTML = `
 			<div class="relative flex flex-col h-full w-60 md:w-72 transform border-2 border-black bg-white transition-transform group-hover:scale-105 ">
