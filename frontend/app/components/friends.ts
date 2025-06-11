@@ -48,10 +48,10 @@ class FriendsComponent extends HTMLElement {
 			const avatarUrl = `http://localhost:8000/static/${avatar}`;
 			return `
 				<div class="flex m-1 ml-3 items center">
-					<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-black flex items-center justify-center bg-emerald-200">
+					<div class="w-6 h-6 md:w-8 md:h-8 rounded-full overflow-hidden border-1 md:border-2 border-black flex items-center justify-center bg-emerald-200">
 						<img src="${avatarUrl}" class="w-full h-full object-cover" />
 					</div>
-					<button class="friend-button ml-1 flex-1 text-left "  data-friendname="${friend.username}">${friend.username}</button>
+					<button class="friend-button ml-1 flex-1 text-left text-[10px] md:text-[14px]"  data-friendname="${friend.username}">${friend.username}</button>
 				</div>
 				`;
 		}).join("");
@@ -67,15 +67,15 @@ class FriendsComponent extends HTMLElement {
 			const avatarUrl = `http://localhost:8000/static/${avatar}`;
 			return `
 				<div class="flex m-1 ml-3 items center">
-					<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-black flex items-center justify-center bg-emerald-200">
+					<div class="w-6 h-6 md:w-8 md:h-8 rounded-full overflow-hidden border-1 md:border-2 border-black flex items-center justify-center bg-emerald-200">
 						<img src="${avatarUrl}" class="w-full h-full object-cover" />
 					</div>
-					<button class="user-button ml-1 flex-1 text-left" data-username="${user.username}">${user.username}</button>
+					<button class="user-button ml-1 flex-1 text-left text-[10px] md:text-[14px]" data-username="${user.username}">${user.username}</button>
 					<div class="ml-auto flex items-center space-x-1">
 						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="size-6">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
 						</svg>
-						<button class="add-button text-xs text-green-700 font-bold italic" name-to-add="${user.username}">Add friend</button>
+						<button class="add-button text-[10px] md:text-[14px] text-green-700 font-bold italic" name-to-add="${user.username}">Add friend</button>
 					</div>
 				</div>
 			`;
@@ -84,22 +84,24 @@ class FriendsComponent extends HTMLElement {
 	
 
 		this.shadowRoot.innerHTML = `
-			<div class="flex h-screen items-center bg-amber-200">
+			<div class="flex h-screen items-center">
 				<div>
 					<pong-menu></pong-menu>
 				</div>
-				<div class="flex flex-col flex-grow h-[87%] bg-blue-300">
+				<div class="flex flex-col flex-grow h-[87%]">
 					<pong-header></pong-header>
-					<div class="flex grow bg-green-300">
-						<div class=" bg-neutral-50 m-4 rounded-2xl flex flex-col flex-1 max-w-sm border-2 border-violet-600">
-							<h2 class="text-center border-b-1 border-violet-600 m-2 p-3">Friends</h2>
-							<div class="flex bg-neutral-50 flex-col flex-grow rounded-b-2xl">
+					<div class="flex grow justify-center md:gap-4 h-120 md:h-100">
+						<div class=" bg-neutral-50 m-1 rounded-2xl flex flex-col flex-1 max-w-sm border-2 border-violet-600">
+							<h2 class="text-center text-[10px] md:text-[14px] border-b-1 border-violet-600 m-1 p-1 font-bold">Friends</h2>
+							<div class="flex bg-neutral-50 flex-col flex-grow overflow-y-auto rounded-b-2xl">
 							${friendsButtons}
 							</div>
 						</div>
-						<div class=" bg-neutral-50 m-4 rounded-2xl flex flex-col flex-1 max-w-sm border-2 border-violet-600">
-							<h2 class="text-center border-b-1 border-violet-600 m-2 p-3">Users</h2>
-							<div class="flex bg-neutral-50 flex-col flex-grow rounded-b-2xl px-2">
+						<div id="profileCard" class="fixed z-50 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-orange-200"></div>
+
+						<div class=" bg-neutral-50 m-1 rounded-2xl flex flex-col flex-2 max-w-sm border-2 border-violet-600">
+							<h2 class="text-center text-[10px] md:text-[14px] border-b-1 border-violet-600 m-1 p-1 font-bold">Users</h2>
+							<div class="flex bg-neutral-50 flex-col flex-grow overflow-y-auto rounded-b-2xl px-2">
 							${usersButtons}
 							</div>
 						</div>
@@ -114,38 +116,45 @@ class FriendsComponent extends HTMLElement {
 	}
 
 	private addEventListeners() {
-
 		const addButtons = this.shadowRoot?.querySelectorAll(".add-button");
 		addButtons?.forEach((button) => {
 			button.addEventListener("click", async (event) => {
 				const target = event.currentTarget as HTMLElement;
 				const username = target.getAttribute("name-to-add");
-				console.log(`username: $(username)`);
 				if (username) {
 					await this.sendFriendRequest(username);
 					await this.load();
 				}
 			});
 		});
-
-		const userButtons = this.shadowRoot?.querySelectorAll(".user-button");
-		userButtons?.forEach((button) => {
-			button.addEventListener("click", async (event) => {
+	
+		// Listeners para user y friend buttons
+		const allProfileButtons = [
+			...this.shadowRoot?.querySelectorAll(".user-button") ?? [],
+			...this.shadowRoot?.querySelectorAll(".friend-button") ?? []
+		];
+	
+		allProfileButtons.forEach((button) => {
+			button.addEventListener("click", (event) => {
 				const target = event.currentTarget as HTMLElement;
-				const username = target.getAttribute("data-username");
-				console.log(`Username: ${username}`);
+				const username = target.getAttribute("data-username") || target.getAttribute("data-friendname");
 				if (username) {
-					const profileCard = this.shadowRoot?.querySelector("#profileCard");
-					if (profileCard) {
-						profileCard.innerHTML = "";
-						const publicProfile = document.createElement("pong-public-profile");
-						publicProfile.setAttribute("username", username);
-						profileCard.appendChild(publicProfile);
-					}
+					this.showUserProfile(username);
 				}
 			});
 		});
 	}
+
+	private showUserProfile(username: string): void {
+		const profileCard = this.shadowRoot?.querySelector("#profileCard");
+		if (profileCard) {
+			profileCard.innerHTML = "";
+			const publicProfile = document.createElement("pong-public-profile");
+			publicProfile.setAttribute("username", username);
+			profileCard.appendChild(publicProfile);
+		}
+	}
+	
 
 	private async sendFriendRequest(username: string) {
 		console.log("Entro en sendFriendRequest");
@@ -160,11 +169,10 @@ class FriendsComponent extends HTMLElement {
 			});
 
 			const data = await response.json();
-			if (response.ok) {
-				alert(`Friend request sent to ${username}`);
-			} else {
+			if (!response.ok) {
 				alert(`Error: ${data.message}`);
 			}
+			
 		} catch(error: any) {
 			console.error("Error sending friend request", error);
 			alert("Failed to send ")
