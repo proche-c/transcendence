@@ -15,20 +15,6 @@ fastify.register(fastifyCookie);
 const { SERVER_IP } = require('./config.js');
 
 
-// self-signed certificates for HTTPS
-const options = {
-  https: {
-    key: fs.readFileSync(path.join(__dirname, 'certificates/key.pem')),
-    cert: fs.readFileSync(path.join(__dirname, 'certificates/cert.pem')),
-    minVersion: 'TLSv1.2', // Minimum TLS version
-    maxVersion: 'TLSv1.3',
-    ciphers: 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384',
-    honorCipherOrder: true
-  },
-  port: 8000,
-  host: "0.0.0.0"
-};
-
 //********************TO SERVE STATIC FILES(AVATAR IMGS)******************** */
 
 const fastifyStatic = require('@fastify/static');
@@ -270,6 +256,11 @@ fastify.get("/check-auth", async (request, reply) => {
     return reply.status(401).send({ message: "Invalid or expired token" });
   }
 });
+
+const options = {
+  host: '0.0.0.0',  // Permet connexions des de la xarxa interna de Docker
+  port: 8000        // Port intern (només accessible dins de Docker)
+};
 
 // Start the server
 const start = async () => {
