@@ -29,30 +29,29 @@ class PublicProfileComponent extends HTMLElement {
         style.href = "./app/tailwind.css"; // Asegúrate de que la ruta sea correcta
         const avatar = this.response.avatar;
         const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
-        this.shadowRoot.innerHTML = `
-			<div class="group relative block max-w-screen-sm mx-auto h-120 lg:h-150">
-				<span class="absolute inset-0 border-2 border-dashed border-black"></span>
-				<div class="relative flex flex-col h-full w-60 md:w-72 transform border-2 border-black bg-white transition-transform group-hover:scale-105">
-					<div id="profile-picture" class="w-32 h-32 rounded-full overflow-hidden border-4 border-black flex items-center justify-center my-5 mx-auto">
-						<img src="${avatarUrl}" class="w-full h-full object-cover" />
-					</div>
-					<div id="username" class="text-2xl font-bold text-center mt-4">usuario</div>
-					<div id="rank" class="text-xl text-center mt-4 font-bold text-violet-900">Rank</div>
+        this.shadowRoot.innerHTML = `	
+		
+		<div class="relative flex flex-col h-90 w-40 md:h-110 md:w-50 border-2 border-black bg-white">
+				<div id="profile-picture" class="w-16 h-16 rounded-full overflow-hidden border-2 border-black flex items-center justify-center my-2 mx-auto">
+					<img src="${avatarUrl}" class="w-full h-full object-cover" />
+				</div>
+				<div id="username" class="font-bold text-center mt-1 md:text-lg">usuario</div>
+				
+				<div id="rank" class="text-center mt-2 font-bold text-violet-900  md:text-lg">Rank</div>
 
-						<div class="text-xl text-center mt-2">Total games: <span id="totalGames" class="font-bold">0</span></div>
-						<div class="text-xl text-center mt-2">Total wins: <span id="wins" class="font-bold">0</span></div>
-						<div class="text-xl text-center mt-2">Total losses: <span id="losses" class="font-bold">0</span></div>
-						<div class="text-xl text-center mt-2 mb-4">Win rate: <span id="rate" class="font-bold">0</span></div>
-						<div class="text-xl text-center mt-2">Goals for: <span id="goalsFor" class="font-bold">0</span></div>
-						<div class="text-xl text-center mt-2">Goals against: <span id="goalsAgainst" class="font-bold">0</span></div>
-						<div class="mt-4">
-				<button id="close" class="align-center justify-center rounded-2xl bg-violet-200 px-[1em] py-1 border">
-					<p class="font-semibold text-violet-900 duration-200 group-active:translate-y-[5%]">Close</p>
-				</button>
-						</div>
+				<div class="text-xs md:text-base text-center mt-2">Total games: <span id="totalGames" class="font-bold">0</span></div>
+				<div class="text-xs md:text-base  text-center mt-2">Total wins: <span id="wins" class="font-bold">0</span></div>
+				<div class="text-xs md:text-base  text-center mt-2">Total losses: <span id="losses" class="font-bold">0</span></div>
+				<div class="text-xs md:text-base  text-center mt-2">Win rate: <span id="rate" class="font-bold">0</span></div>
+				<div class="text-xs md:text-base  text-center mt-2">Goals for: <span id="goalsFor" class="font-bold">0</span></div>
+				<div class="text-xs md:text-base  text-center mt-2">Goals against: <span id="goalsAgainst" class="font-bold">0</span></div>
+				<div class="m-1 mt-4 flex items-center justify-center">
+					<button id="close" class="align-center justify-center rounded-2xl bg-violet-200 px-[1em] py-1 border">
+						<p class="text-xs md:text-base  font-semibold text-violet-900 duration-200 group-active:translate-y-[5%]">Close</p>
+					</button>
 				</div>
 			</div>
-
+		</div>
 		`;
         this.shadowRoot.appendChild(style);
         this.addEventListeners();
@@ -71,7 +70,11 @@ class PublicProfileComponent extends HTMLElement {
             return;
         const username = this.shadowRoot.querySelector("#username");
         if (username) {
-            username.innerHTML = this.response.username;
+            const fullUsername = this.response.username || "";
+            username.innerHTML = fullUsername.length > 10
+                ? `${fullUsername.slice(0, 7)}...`
+                : fullUsername;
+            username.setAttribute("title", fullUsername);
         }
         const profilePicContainer = this.shadowRoot.querySelector("#profile-picture");
         const img = profilePicContainer === null || profilePicContainer === void 0 ? void 0 : profilePicContainer.querySelector("img");

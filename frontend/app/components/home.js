@@ -14,38 +14,38 @@ class HomeComponent extends HTMLElement {
         style.rel = "stylesheet";
         style.href = "./app/tailwind.css";
         this.shadowRoot.innerHTML = `
-        <section class="h-screen">
-          <div class="container h-full px-6 py-24">
-            <div class="flex flex-col h-full items-center justify-center space-y-12 text-center">
-              <div class="flex justify-center w-full">
-                <svg 
-                  class="max-w-[700px] w-full h-auto" 
-                  viewBox="0 0 400 120" 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  preserveAspectRatio="xMidYMid meet">
-                  <style>
-                    .title {
-                      font-family: 'Press Start 2P', monospace;
-                      fill: #A020F0;
-                      font-size: 40px;
-                      animation: blink 1s steps(1, start) infinite;
+
+        <div class="h-full w-full">
+          <div class="flex flex-col h-full items-center justify-center space-y-4 text-center">
+            <div class="flex justify-center w-full">
+              <svg 
+                class="max-w-[700px] w-full h-auto" 
+                viewBox="0 0 400 120" 
+                xmlns="http://www.w3.org/2000/svg" 
+                preserveAspectRatio="xMidYMid meet">
+                <style>
+                  .title {
+                    font-family: 'Press Start 2P', monospace;
+                    fill: #A020F0;
+                    font-size: 40px;
+                    animation: blink 1s steps(1, start) infinite;
+                  }
+                  @keyframes blink {
+                    50% {
+                      opacity: 0;
                     }
-                    @keyframes blink {
-                      50% {
-                        opacity: 0;
-                      }
-                    }
-                  </style>
-                  <text x="50%" y="50%" class="title" text-anchor="middle" dominant-baseline="middle">
-                    PONG
-                  </text>
-                </svg>
-              </div>
-              <div id="dataContainer" class="w-full flex justify-center items-center px-4"></div>
+                  }
+                </style>
+                <text x="50%" y="50%" class="title" text-anchor="middle" dominant-baseline="middle">
+                  PONG
+                </text>
+              </svg>
             </div>
+            <div id="dataContainer" class="w-full flex justify-center items-center px-4"></div>
           </div>
-        </section>
-      `;
+        </div>
+
+    `;
         this.dataContainer = this.shadowRoot.querySelector("#dataContainer");
         if (window.location.hash === "#register") {
             (_a = this.dataContainer) === null || _a === void 0 ? void 0 : _a.appendChild(document.createElement("pong-register"));

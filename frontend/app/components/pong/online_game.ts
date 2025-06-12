@@ -112,7 +112,7 @@ export function setupOnlineGame(shadowRoot: ShadowRoot | null) {
                         ` (${data.finalScore.player1} - ${data.finalScore.player2})` : '';
                     statusElement.textContent = `${data.message}${resultText}`;
                     statusElement.className = 'text-center font-bold text-xl mt-2 mb-4 text-violet-900';
-                    instructionsElement.textContent = 'Nova partida començarà en uns segons...';
+                    instructionsElement.textContent = 'Partida finalitzada.';
                     
                     // Animació per mostrar el guanyador
                     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';

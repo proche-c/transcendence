@@ -251,6 +251,7 @@ async function gameRoutes(fastify, options) {
   }
 
   // Finalitzar la partida
+   // Finalitzar la partida
   async function endGame(roomId, winnerMessage, winnerNumber) {
     const room = fastify.gameRooms.get(roomId);
     if (!room) return;
@@ -288,34 +289,19 @@ async function gameRoutes(fastify, options) {
         client.send(JSON.stringify({ 
           type: "end", 
           message: winnerMessage,
-          finalScore: room.gameState.scores
+          finalScore: room.gameState.scores,
+          gameOver: true // Nou camp per indicar fi definitiu del joc
         }));
       }
     });
 
-    // Reiniciar l'estat del joc
-    room.gameState.ball = { x: 400, y: 250, speedX: 5, speedY: 5 };
-    room.gameState.scores = { player1: 0, player2: 0 };
-    
-    // Mantenim la sala preparada per si els mateixos jugadors volen jugar una altra partida
+    // Eliminar la sala després d'uns segons
     setTimeout(() => {
-      if (fastify.gameRooms.has(roomId) && room.players.length > 0) {
-        if (room.players.length === 2) {
-          room.running = true;
-          room.gameState.running = true;
-          startGame(roomId);
-          
-          room.players.forEach(client => {
-            if (client.readyState === client.OPEN) {
-              client.send(JSON.stringify({ 
-                type: "gameStart", 
-                message: "Nova partida iniciada!"
-              }));
-            }
-          });
-        }
+      if (fastify.gameRooms.has(roomId)) {
+        fastify.gameRooms.delete(roomId);
+        fastify.log.info(`Sala ${roomId} eliminada després de finalitzar la partida`);
       }
-    }, 3000); // Esperem 3 segons abans d'iniciar una nova partida
+    }, 3000); // Donem 10 segons perquè els jugadors vegin el resultat
   }
   
   // Actualitzar estadístiques d'un jugador
