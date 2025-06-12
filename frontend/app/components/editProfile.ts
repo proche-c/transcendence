@@ -278,7 +278,26 @@ private askPassword(): Promise<string | null> {
 				// Continue the Profile load (username/avatar)
 				const formData = new FormData();
 				formData.append("username", username);
-				if (file) formData.append("avatar", file);
+				try {
+					if (file) {
+						const maxSize = 1 * 1024 * 1024; // 2 MB
+						const validTypes = ["image/jpeg", "image/png", "image/webp"];
+
+						if (file.size > maxSize) {
+							alert("El archivo es demasiado grande. Máximo 2MB.");
+							return;
+						}
+						if (!validTypes.includes(file.type)) {
+							alert("El tipo de archivo no es válido. Solo se permiten JPG, PNG o WEBP.");
+							return;
+						}
+
+						formData.append("avatar", file);
+					}
+				} catch (error) {
+					console.error("Error uploading picture", error);
+					alert("Error con la imagen seleccionada.");
+				}
 			  
 				try {
 				  const response = await fetch(`https://${SERVER_IP}:8443/api/edit-profile`, {
@@ -291,13 +310,21 @@ private askPassword(): Promise<string | null> {
 					await this.getProfile(); // Refresh profile
 					this.dispatchEvent(new CustomEvent("profile-updated", { bubbles: true }));
 					this.remove();
-				  } else {
-					const errorData = await response.json();
-					console.error(errorData.message || "Error saving changes");
-				  }
-				} catch (error) {
-				  console.error("Error uploading profile", error);
+				} else if (response.status === 413) {
+					alert("El archivo es demasiado grande o tiene un formato no permitido.");
+				} else {
+					// Intenta obtener JSON si no es 413
+					try {
+						const errorData = await response.json();
+						console.error(errorData.message || "Error saving changes");
+					} catch (e) {
+						console.error("Error inesperado al guardar cambios");
+					}
 				}
+			} catch (error) {
+				console.error("Error uploading profile", error);
+				alert("Error al subir el perfil. Intenta nuevamente.");
+			}
 			  });
 			  
 		}			
