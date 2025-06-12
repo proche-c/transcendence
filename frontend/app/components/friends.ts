@@ -91,7 +91,7 @@ class FriendsComponent extends HTMLElement {
 				<div class="flex flex-col flex-grow h-[87%]">
 					<pong-header></pong-header>
 					<div class="flex grow justify-center md:gap-4 h-120 md:h-100">
-						<div class=" bg-neutral-50 m-1 rounded-2xl flex flex-col flex-1 max-w-sm border-2 border-violet-600">
+						<div class=" bg-neutral-100 m-1 rounded-2xl flex flex-col flex-1 max-w-sm border-2 border-violet-600">
 							<h2 class="text-center text-[10px] md:text-[14px] border-b-1 border-violet-600 m-1 p-1 font-bold">Friends</h2>
 							<div class="flex bg-neutral-50 flex-col flex-grow overflow-y-auto rounded-b-2xl">
 							${friendsButtons}
@@ -99,7 +99,7 @@ class FriendsComponent extends HTMLElement {
 						</div>
 						<div id="profileCard" class="fixed z-50 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-orange-200"></div>
 
-						<div class=" bg-neutral-50 m-1 rounded-2xl flex flex-col flex-2 max-w-sm border-2 border-violet-600">
+						<div class=" bg-neutral-100 m-1 rounded-2xl flex flex-col flex-2 max-w-sm border-2 border-violet-600">
 							<h2 class="text-center text-[10px] md:text-[14px] border-b-1 border-violet-600 m-1 p-1 font-bold">Users</h2>
 							<div class="flex bg-neutral-50 flex-col flex-grow overflow-y-auto rounded-b-2xl px-2">
 							${usersButtons}
@@ -172,7 +172,7 @@ class FriendsComponent extends HTMLElement {
 			if (!response.ok) {
 				alert(`Error: ${data.message}`);
 			}
-			
+
 		} catch(error: any) {
 			console.error("Error sending friend request", error);
 			alert("Failed to send ")

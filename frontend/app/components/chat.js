@@ -79,63 +79,60 @@ class ChatComponent extends HTMLElement {
         this.shadowRoot.innerHTML = `
 			<div class="flex h-screen items-center">
 				<div><pong-menu></pong-menu></div> 
-				<div class="flex flex-col flex-grow h-[87%] bg-blue-300">
+				<div class="flex flex-col flex-grow h-[87%] m-1">
 					<pong-header></pong-header>
-					<div id="profileCard" class="absolute z-50 top-0 left-0 bg-white mt-8 ml-8"></div>
-					<div class="flex grow ml-6 justify-center">
-						<div class="bg-neutral-50 m-4 rounded-2xl flex flex-row w-full max-w-4xl border-2 border-violet-600">
-							<div class="flex items-center h-full border-r border-violet-300 pr-2">
-								<div class="flex h-5/8 w-8 md:w-24 flex-col items-center justify-around border-e border-violet-700 bg-violet-100 rounded-4xl px-2 ml-4">
-									<div id="newChat" class="relative">
-										<button id="new-chat-btn" class="flex flex-col items-center">➕<span class="text-[10px]">New chat</span></button>
-										<div id="new-chat-dropdown" class="absolute hidden z-50 bg-white border border-gray-300 rounded shadow flex-col min-w-[100px]"></div>
+					<div class="flex flex-col grow">
+						<div class="flex h-10 w-80 md:h-15 md:w-[600px] items-center justify-around border-e border-violet-700 bg-violet-100 rounded-4xl px-1 m-1 mx-auto  md:text-[16px]">
+							<div id="newChat" class="relative">
+								<button id="new-chat-btn" class="flex flex-col items-center">➕<span class="text-[10px] md:text-[16px]">New chat</span></button>
+								<div id="new-chat-dropdown" class="absolute hidden z-50 bg-white border border-gray-300 rounded shadow flex-col min-w-[100px]"></div>
+							</div>
+							<div id="newChatroom" class="relative">
+								<button id="new-chatromm-btn" class="flex flex-col items-center">➕<span class="text-[10px] md:text-[16px]">New channel</span></button>
+								<div id="new-chatroom" class="absolute hidden z-50 bg-white border border-gray-300 rounded shadow p-4 flex-col min-w-[200px] space-y-2">
+									<input type="text" id="channel-name" class="border p-1 w-full rounded text-[11px]" placeholder="Channel name" />
+
+									<div class="flex gap-2 items-center  text-[10px] md:text-[16px]">
+										<input type="radio" name="privacy" id="public" value="public" checked />
+										<label for="public">Public</label>
+
+										<input type="radio" name="privacy" id="private" value="private" />
+										<label for="private">Private</label>
 									</div>
-									<div id="newChatroom" class="relative">
-										<button id="new-chatromm-btn" class="flex flex-col items-center">➕<span class="text-[10px]">New channel</span></button>
-										<div id="new-chatroom" class="absolute hidden z-50 bg-white border border-gray-300 rounded shadow p-4 flex-col min-w-[200px] space-y-2">
-											<input type="text" id="channel-name" class="border p-1 w-full rounded" placeholder="Channel name" />
 
-											<div class="flex gap-2 items-center">
-												<input type="radio" name="privacy" id="public" value="public" checked />
-												<label for="public">Public</label>
-
-												<input type="radio" name="privacy" id="private" value="private" />
-												<label for="private">Private</label>
-											</div>
-
-											<div id="password-container" class="hidden">
-												<input type="password" id="channel-password" class="border p-1 w-full rounded" placeholder="Password" />
-											</div>
-
-											<div class="flex justify-end gap-2">
-												<button id="cancel-channel" class="text-sm bg-gray-200 px-3 py-1 rounded hover:bg-gray-300">Cancel</button>
-												<button id="create-channel" class="text-sm bg-violet-500 text-white px-3 py-1 rounded hover:bg-violet-600">Create</button>
-											</div>
-										</div>
+									<div id="password-container" class="hidden text-[10px] md:text-[16px]">
+										<input type="password" id="channel-password" class="border p-1 w-full rounded" placeholder="Password" />
 									</div>
-									<div id="joinChannel" class="relative">
-										<button id="join-chatroom-btn" class="flex flex-col items-center">⊕<span class="text-[10px]">Join channel</span></button>
-										<div id="join-chatroom-dropdown" class="absolute hidden z-50 bg-white border border-gray-300 rounded shadow flex-col min-w-[100px]"></div>
-									</div>
-									<div id="blockUser" class="relative">
-										<button id="block-user-btn" class="flex flex-col items-center">➖<span class="text-[10px]">Block user</span></button>
-										<div id="block-user-dropdown" class="absolute hidden z-50 bg-white border border-gray-300 rounded shadow flex-col min-w-[100px]"></div>
+
+									<div class="flex justify-end gap-2">
+										<button id="cancel-channel" class=" text-[11px] md:text-[16px] bg-gray-200 px-2 py-1 rounded hover:bg-gray-300">Cancel</button>
+										<button id="create-channel" class=" text-[11px] md:text-[16px] bg-violet-500 text-white px-2 py-1 rounded hover:bg-violet-600">Create</button>
 									</div>
 								</div>
 							</div>
-							<div class="flex flex-col flex-[1] border-r border-violet-300">
-								<div id="chat-channels" class="flex bg-neutral-50 flex-col rounded-b-2xl"></div>
+							<div id="joinChannel" class="relative">
+								<button id="join-chatroom-btn" class="flex flex-col items-center">⊕<span class="text-[10px] md:text-[16px]">Join channel</span></button>
+								<div id="join-chatroom-dropdown" class="absolute hidden z-50 bg-white border border-gray-300 rounded shadow flex-col min-w-[100px]"></div>
+							</div>
+							<div id="blockUser" class="relative">
+								<button id="block-user-btn" class="flex flex-col items-center">➖<span class="text-[10px] md:text-[16px]">Block user</span></button>
+								<div id="block-user-dropdown" class="absolute hidden z-50 bg-white border border-gray-300 rounded shadow flex-col min-w-[100px]"></div>
+							</div>
+						</div>
+						<div class=" m-1 p-1 rounded-2xl flex flex-row w-80 h-96  md:w-[600px] md:h-[400px] overflow-hidden  max-w-4xl border-2 border-violet-600 mx-auto bg-neutral-100">
+							<div class="flex flex-col flex-[1] border-r border-violet-300 overflow-auto">
+								<div id="chat-channels" class="flex bg-neutral-50 flex-col rounded-t-2xl"></div>
 								<div id="chat-dms" class="flex bg-neutral-50 flex-col flex-grow rounded-b-2xl"></div>
 							</div>
 							<div class="flex flex-col flex-[2]">
 			
-								<div class="flex items-center justify-between border-b border-violet-600 m-2 p-3">
-									<h2 id="current-chat" class="text-center flex-grow">${this.currentChat}</h2>
+								<div class="flex items-center justify-between border-b border-violet-600 m-1 p-1">
+									<h2 id="current-chat" class="text-center flex-grow text-[13px] md:text-[18px]">${this.currentChat}</h2>
 								</div>
 								<div id="messages" class="flex flex-col flex-grow p-2 overflow-y-auto max-h-[400px] bg-white rounded-b-2xl border-b border-gray-300"></div>
 								<div class="flex p-2 border-t border-gray-300">
-									<input id="message" class="flex-grow p-2 border border-gray-300 rounded-l-md" placeholder="Type a message..." />
-									<button id="send" class="bg-violet-500 text-white px-4 py-2 rounded-r-md hover:bg-violet-600">Send</button>
+									<input id="message" class="flex-grow p-2 border border-gray-300 rounded-l-md  text-[12px] md:text-[18px]" placeholder="Type a message..." />
+									<button id="send" class="bg-violet-500 text-white px-4 py-2 rounded-r-md hover:bg-violet-600 text-[12px] md:text-[18px]">Send</button>
 								</div>
 							</div>
 						</div>
@@ -193,11 +190,11 @@ class ChatComponent extends HTMLElement {
             if (this.chatChannels && this.chats) {
                 const labelChannels = document.createElement("h2");
                 labelChannels.textContent = "Channels";
-                labelChannels.className = "text-left italic font-bold p-2 w-full border-b border-gray-400 bg-gray-100";
+                labelChannels.className = "text-left italic font-bold p-1 w-full border-b border-gray-400 bg-gray-100 text-[11px] md:text-[16px] rounded-t";
                 this.chatChannels.appendChild(labelChannels);
                 const btn = document.createElement("button");
                 btn.textContent = "GENERAL";
-                btn.className = "text-left p-3 hover:bg-violet-100 w-full border-b border-gray-300";
+                btn.className = "text-left p-1 hover:bg-violet-100 w-full border-b border-gray-300 text-[11px] md:text-[16px]";
                 btn.addEventListener("click", () => {
                     this.updateCurrentChat("GENERAL");
                 });
@@ -205,7 +202,7 @@ class ChatComponent extends HTMLElement {
                 for (const chatroom of this.chats.chatrooms) {
                     const btn = document.createElement("button");
                     btn.textContent = chatroom.name;
-                    btn.className = "text-left p-2 hover:bg-violet-100 w-full border-b border-gray-300";
+                    btn.className = "text-left p-1 hover:bg-violet-100 w-full border-b border-gray-300 text-[11px] md:text-[16px]";
                     btn.addEventListener("click", () => __awaiter(this, void 0, void 0, function* () {
                         this.updateCurrentChat(chatroom.name);
                         this.printChatroomMessages(chatroom.id);
@@ -216,12 +213,12 @@ class ChatComponent extends HTMLElement {
             if (this.chatDMs && this.chats) {
                 const labelDMs = document.createElement("h2");
                 labelDMs.textContent = "DMs";
-                labelDMs.className = "text-left italic font-bold p-2 w-full border-b border-gray-400 bg-gray-100";
+                labelDMs.className = "text-left italic font-bold p-1 w-full border-b border-gray-400 bg-gray-100 text-[11px] md:text-[16px]";
                 this.chatDMs.appendChild(labelDMs);
                 for (const chat of this.chats.oneToOneChats) {
                     const btn = document.createElement("button");
                     btn.textContent = chat.other_user;
-                    btn.className = "text-left p-2 hover:bg-violet-100 w-full border-b border-gray-300";
+                    btn.className = "text-left p-1 hover:bg-violet-100 w-full border-b border-gray-300 text-[11px] md:text-[16px]";
                     btn.addEventListener("click", () => __awaiter(this, void 0, void 0, function* () {
                         this.updateCurrentChat(chat.other_user);
                         this.printChatMessages(chat.id);
@@ -238,6 +235,7 @@ class ChatComponent extends HTMLElement {
             const newChatBtn = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelector("#new-chat-btn");
             const dropdown = (_b = this.shadowRoot) === null || _b === void 0 ? void 0 : _b.querySelector("#new-chat-dropdown");
             newChatBtn === null || newChatBtn === void 0 ? void 0 : newChatBtn.addEventListener("click", () => {
+                var _a;
                 if (!dropdown)
                     return;
                 dropdown.classList.toggle("hidden");
@@ -249,7 +247,7 @@ class ChatComponent extends HTMLElement {
                             return;
                         const userBtn = document.createElement("button");
                         userBtn.textContent = user.username;
-                        userBtn.className = "text-left p-2 hover:bg-violet-100 w-full";
+                        userBtn.className = "text-left p-1 hover:bg-violet-100 w-full text-[11px] md:text-[16px]";
                         userBtn.addEventListener("click", () => {
                             const newChat = { id: -1, other_user: user.username, avatar: "" };
                             if (!this.chats) {
@@ -263,10 +261,24 @@ class ChatComponent extends HTMLElement {
                         dropdown.appendChild(userBtn);
                     });
                 }
-                const btnRect = newChatBtn.getBoundingClientRect();
+                // Corrige la posición absoluta con respecto al botón
+                const dropdownRect = dropdown.getBoundingClientRect();
+                const buttonRect = newChatBtn.getBoundingClientRect();
+                const containerRect = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.host.getBoundingClientRect();
+                const spaceRight = window.innerWidth - buttonRect.right;
+                const spaceLeft = buttonRect.left;
                 dropdown.style.position = "absolute";
-                dropdown.style.top = `${newChatBtn.offsetTop}px`;
-                dropdown.style.left = `${newChatBtn.offsetLeft + newChatBtn.offsetWidth + 8}px`;
+                dropdown.style.top = `${newChatBtn.offsetTop + newChatBtn.offsetHeight}px`;
+                if (spaceRight >= dropdownRect.width) {
+                    // suficiente espacio a la derecha
+                    dropdown.style.left = `${newChatBtn.offsetLeft + 8}px`;
+                    dropdown.style.right = "auto";
+                }
+                else {
+                    // despliega a la izquierda
+                    dropdown.style.left = "auto";
+                    dropdown.style.right = "0px";
+                }
             });
         });
     }
@@ -347,10 +359,10 @@ class ChatComponent extends HTMLElement {
                         if ((_a = this.chats) === null || _a === void 0 ? void 0 : _a.chatrooms.some(chat => chat.name === chatroom.name))
                             return;
                         const wrapper = document.createElement("div");
-                        wrapper.className = "flex flex-col p-2 border-b border-gray-200";
+                        wrapper.className = "flex flex-col p-2 border-b border-gray-200 text-[11px] md:text-[16px]";
                         const userBtn = document.createElement("button");
                         userBtn.textContent = chatroom.name;
-                        userBtn.className = "text-left p-2 hover:bg-violet-100 w-full";
+                        userBtn.className = "text-left p-2 hover:bg-violet-100 w-full text-[11px] md:text-[16px]";
                         wrapper.appendChild(userBtn);
                         dropdown.appendChild(wrapper);
                         userBtn.addEventListener("click", () => {
@@ -426,7 +438,7 @@ class ChatComponent extends HTMLElement {
                             return;
                         const userBtn = document.createElement("button");
                         userBtn.textContent = user.username;
-                        userBtn.className = "text-left p-2 hover:bg-violet-100 w-full";
+                        userBtn.className = "text-left p-2 hover:bg-violet-100 w-full text-[11px] md:text-[16px]";
                         userBtn.addEventListener("click", () => {
                             var _a;
                             const msg = { type: 7, destinatary: user.username };
@@ -437,9 +449,16 @@ class ChatComponent extends HTMLElement {
                     });
                 }
                 const btnRect = blockUserBtn.getBoundingClientRect();
-                dropdown.style.position = "absolute";
-                dropdown.style.top = `${blockUserBtn.offsetTop}px`;
-                dropdown.style.left = `${blockUserBtn.offsetLeft + blockUserBtn.offsetWidth + 8}px`;
+                const dropdownWidth = 150;
+                let left = btnRect.left - dropdownWidth - 16; // más a la izquierda
+                let top = btnRect.bottom + 16; // más abajo que antes (antes era +8)
+                // Si no hay espacio a la izquierda, lo ponemos a la derecha
+                if (left < 0) {
+                    left = btnRect.right + 16;
+                }
+                dropdown.style.position = "fixed";
+                dropdown.style.top = `${top}px`;
+                dropdown.style.left = `${left}px`;
             });
         });
     }
@@ -473,7 +492,7 @@ class ChatComponent extends HTMLElement {
             return;
         const messageElement = document.createElement("div");
         messageElement.textContent = `${sender}: ${message}`;
-        messageElement.className = "p-2 border-b border-gray-300";
+        messageElement.className = "p-2 border-b border-gray-300 text-[10px] md:text-[16px]";
         this.messagesBox.appendChild(messageElement);
         this.messagesBox.scrollTop = this.messagesBox.scrollHeight;
     }
