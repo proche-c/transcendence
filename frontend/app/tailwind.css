@@ -1295,11 +1295,6 @@
       height: calc(var(--spacing) * 16);
     }
   }
-  .md\:h-100 {
-    @media (width >= 48rem) {
-      height: calc(var(--spacing) * 100);
-    }
-  }
   .md\:h-110 {
     @media (width >= 48rem) {
       height: calc(var(--spacing) * 110);
@@ -1413,6 +1408,16 @@
     @media (width >= 64rem) {
       font-size: var(--text-base);
       line-height: var(--tw-leading, var(--text-base--line-height));
+    }
+  }
+  .xl\:h-\[500px\] {
+    @media (width >= 80rem) {
+      height: 500px;
+    }
+  }
+  .xl\:w-\[900px\] {
+    @media (width >= 80rem) {
+      width: 900px;
     }
   }
 }

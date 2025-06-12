@@ -74,7 +74,7 @@ class ChatComponent extends HTMLElement {
 				<div class="flex flex-col flex-grow h-[87%] m-1">
 					<pong-header></pong-header>
 					<div class="flex flex-col grow">
-						<div class="flex h-10 w-80 md:h-15 md:w-[600px] items-center justify-around border-e border-violet-700 bg-violet-100 rounded-4xl px-1 m-1 mx-auto  md:text-[16px]">
+						<div class="flex h-10 w-80 md:h-15 md:w-[600px] xl:w-[900px] items-center justify-around border-e border-violet-700 bg-violet-100 rounded-4xl px-1 m-1 mx-auto  md:text-[16px]">
 							<div id="newChat" class="relative">
 								<button id="new-chat-btn" class="flex flex-col items-center">➕<span class="text-[10px] md:text-[16px]">New chat</span></button>
 								<div id="new-chat-dropdown" class="absolute hidden z-50 bg-white border border-gray-300 rounded shadow flex-col min-w-[100px]"></div>
@@ -111,7 +111,7 @@ class ChatComponent extends HTMLElement {
 								<div id="block-user-dropdown" class="absolute hidden z-50 bg-white border border-gray-300 rounded shadow flex-col min-w-[100px]"></div>
 							</div>
 						</div>
-						<div class=" m-1 p-1 rounded-2xl flex flex-row w-80 h-96  md:w-[600px] md:h-[400px] overflow-hidden  max-w-4xl border-2 border-violet-600 mx-auto bg-neutral-100">
+						<div class=" m-1 p-1 rounded-2xl flex flex-row w-80 h-96  md:w-[600px] md:h-[400px] xl:w-[900px] xl:h-[500px] overflow-hidden  max-w-4xl border-2 border-violet-600 mx-auto bg-neutral-100">
 							<div class="flex flex-col flex-[1] border-r border-violet-300 overflow-auto">
 								<div id="chat-channels" class="flex bg-neutral-50 flex-col rounded-t-2xl"></div>
 								<div id="chat-dms" class="flex bg-neutral-50 flex-col flex-grow rounded-b-2xl"></div>

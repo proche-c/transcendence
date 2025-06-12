@@ -83,7 +83,11 @@ class PublicProfileComponent extends HTMLElement {
             return;
         const username = this.shadowRoot.querySelector("#username");
         if (username) {
-            username.innerHTML = this.response.username;
+            const fullUsername = this.response.username || "";
+            username.innerHTML = fullUsername.length > 10
+                ? `${fullUsername.slice(0, 7)}...`
+                : fullUsername;
+            username.setAttribute("title", fullUsername);
         }
         const profilePicContainer = this.shadowRoot.querySelector("#profile-picture");
         const img = profilePicContainer === null || profilePicContainer === void 0 ? void 0 : profilePicContainer.querySelector("img");
