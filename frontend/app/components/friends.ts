@@ -71,7 +71,8 @@ class FriendsComponent extends HTMLElement {
 			return `
 				<div class="flex m-1 ml-3 items center">
 					<div class="w-6 h-6 md:w-8 md:h-8 rounded-full overflow-hidden border-1 md:border-2 border-black flex items-center justify-center bg-emerald-200">
-						<img src="${avatarUrl}" class="w-full h-full object-cover" />
+						
+					
 					</div>
 					<button class="user-button ml-1 flex-1 text-left text-[10px] md:text-[14px]" data-username="${user.username}">${displayName}</button>
 					<div class="ml-auto flex items-center space-x-1">
