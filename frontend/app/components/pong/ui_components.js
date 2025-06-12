@@ -41,14 +41,6 @@ export function showWinnerMessage(ctx, canvas, message) {
     ctx.textAlign = 'center';
     ctx.fillText(message, canvas.width / 2, canvas.height / 2);
 }
-export function showLoserMessage(ctx, canvas, message) {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '32px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText(message, canvas.width / 2, canvas.height / 2);
-}
 export function showStartMessage(ctx, canvas) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     // Fons semitransparent

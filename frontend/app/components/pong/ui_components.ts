@@ -54,15 +54,6 @@ export function showWinnerMessage(ctx: CanvasRenderingContext2D, canvas: HTMLCan
     ctx.fillText(message, canvas.width / 2, canvas.height / 2);
 }
 
-export function showLoserMessage(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, message: string) {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '32px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText(message, canvas.width / 2, canvas.height / 2);
-}
 
 export function showStartMessage(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);

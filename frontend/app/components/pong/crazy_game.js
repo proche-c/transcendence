@@ -1,5 +1,5 @@
 import { createInitialCrazyGameState, resetCrazyBall } from './game_utils.js';
-import { renderCrazyGame, showLoserMessage, showStartMessage, startCountdown } from './ui_components.js';
+import { renderCrazyGame, showStartMessage, startCountdown } from './ui_components.js';
 export function setupCrazyGame(shadowRoot) {
     if (!shadowRoot)
         return null;
@@ -9,6 +9,26 @@ export function setupCrazyGame(shadowRoot) {
     const keysPressed = {};
     let gameStarted = false;
     let countdownActive = false;
+    // Add interface elements similar to other game modes
+    const statusElement = document.createElement('div');
+    statusElement.className = 'text-center font-bold text-xl mt-2 mb-4 text-violet-900';
+    statusElement.textContent = 'Crazy Mode';
+    const instructionsElement = document.createElement('div');
+    instructionsElement.className = 'text-center text-gray-700 mt-2';
+    instructionsElement.textContent = 'Left: W/S | Right: ↑/↓ | Top: Y/U | Bottom: B/N';
+    // Create game status container
+    const gameStatusContainer = document.createElement('div');
+    gameStatusContainer.className = 'flex flex-col items-center justify-center space-y-2 mb-4';
+    gameStatusContainer.appendChild(statusElement);
+    gameStatusContainer.appendChild(instructionsElement);
+    // Add elements to the interface
+    const gameContainer = shadowRoot.querySelector('.grow');
+    if (gameContainer) {
+        const infoContainer = document.createElement('div');
+        infoContainer.className = 'w-full max-w-lg mx-auto text-center';
+        infoContainer.appendChild(gameStatusContainer);
+        gameContainer.insertBefore(infoContainer, gameContainer.firstChild);
+    }
     function handleCrazyPlayerMovement(gameState, keys) {
         const boardSize = 800;
         const moveSpeed = 7;
@@ -82,7 +102,9 @@ export function setupCrazyGame(shadowRoot) {
             if (gameState.lives.left <= 0) {
                 gameState.running = false;
                 gameState.loser = 'left';
-                showLoserMessage(ctx, canvas, "Left player has lost!");
+                statusElement.textContent = "Game Over - Left player has lost!";
+                statusElement.className = 'text-center font-bold text-xl mt-2 mb-4 text-red-600';
+                addReturnToMenuButton();
             }
         }
         else if (ball.x >= boardSize) {
@@ -91,7 +113,9 @@ export function setupCrazyGame(shadowRoot) {
             if (gameState.lives.right <= 0) {
                 gameState.running = false;
                 gameState.loser = 'right';
-                showLoserMessage(ctx, canvas, "Right player has lost!");
+                statusElement.textContent = "Game Over - Right player has lost!";
+                statusElement.className = 'text-center font-bold text-xl mt-2 mb-4 text-red-600';
+                addReturnToMenuButton();
             }
         }
         else if (ball.y <= 0) {
@@ -100,7 +124,9 @@ export function setupCrazyGame(shadowRoot) {
             if (gameState.lives.top <= 0) {
                 gameState.running = false;
                 gameState.loser = 'top';
-                showLoserMessage(ctx, canvas, "Top player has lost!");
+                statusElement.textContent = "Game Over - Top player has lost!";
+                statusElement.className = 'text-center font-bold text-xl mt-2 mb-4 text-red-600';
+                addReturnToMenuButton();
             }
         }
         else if (ball.y >= boardSize) {
@@ -109,18 +135,26 @@ export function setupCrazyGame(shadowRoot) {
             if (gameState.lives.bottom <= 0) {
                 gameState.running = false;
                 gameState.loser = 'bottom';
-                showLoserMessage(ctx, canvas, "Bottom player has lost!");
+                statusElement.textContent = "Game Over - Bottom player has lost!";
+                statusElement.className = 'text-center font-bold text-xl mt-2 mb-4 text-red-600';
+                addReturnToMenuButton();
             }
         }
     }
+    function addReturnToMenuButton() {
+        instructionsElement.textContent = 'The game has ended. Return to the main menu to play again.';
+    }
     const keydownHandler = (e) => {
         keysPressed[e.key.toLowerCase()] = true;
-        // Detecta la tecla Enter per començar el joc
+        // Detect Enter key to start game
         if (e.key.toLowerCase() === 'enter' && !gameStarted && !countdownActive) {
             countdownActive = true;
+            statusElement.textContent = 'Get ready...';
             startCountdown(ctx, canvas, gameState, () => {
                 gameStarted = true;
                 countdownActive = false;
+                statusElement.textContent = 'Game in progress!';
+                statusElement.className = 'text-center font-bold text-xl mt-2 mb-4 text-green-700';
             });
         }
     };
@@ -129,7 +163,7 @@ export function setupCrazyGame(shadowRoot) {
     };
     window.addEventListener('keydown', keydownHandler);
     window.addEventListener('keyup', keyupHandler);
-    // Mostra el missatge inicial
+    // Show initial message
     showStartMessage(ctx, canvas);
     const draw = () => {
         if (!gameState.running) {
@@ -137,7 +171,7 @@ export function setupCrazyGame(shadowRoot) {
             window.removeEventListener('keyup', keyupHandler);
             return;
         }
-        // Només actualitza el joc si ha començat
+        // Only update if game has started
         if (gameStarted) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             handleCrazyPlayerMovement(gameState, keysPressed);
@@ -149,10 +183,17 @@ export function setupCrazyGame(shadowRoot) {
         requestAnimationFrame(draw);
     };
     draw();
-    // Retorna una funció de neteja
+    // Return cleanup function
     return () => {
         window.removeEventListener('keydown', keydownHandler);
         window.removeEventListener('keyup', keyupHandler);
         gameState.running = false;
+        // Remove added elements
+        if (gameContainer) {
+            const infoContainer = gameContainer.querySelector('.w-full.max-w-lg');
+            if (infoContainer) {
+                gameContainer.removeChild(infoContainer);
+            }
+        }
     };
 }

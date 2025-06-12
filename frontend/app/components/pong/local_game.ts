@@ -12,12 +12,36 @@ export function setupLocalGame(shadowRoot: ShadowRoot | null) {
     let gameStarted = false;
     let countdownActive = false;
 
+    // Afegim elements d'instruccions similars al mode online
+    const statusElement = document.createElement('div');
+    statusElement.className = 'text-center font-bold text-xl mt-2 mb-4 text-violet-900';
+    statusElement.textContent = 'Local Mode';
+    
+    const instructionsElement = document.createElement('div');
+    instructionsElement.className = 'text-center text-gray-700 mt-2';
+    instructionsElement.textContent = 'Player 1 (left): uses W/S | Player 2 (right): arrows up/down';
+    
+    // Contenidor d'estat del joc
+    const gameStatusContainer = document.createElement('div');
+    gameStatusContainer.className = 'flex flex-col items-center justify-center space-y-2 mb-4';
+    gameStatusContainer.appendChild(statusElement);
+    gameStatusContainer.appendChild(instructionsElement);
+    
+    // Afegir elements a la interfície
+    const gameContainer = shadowRoot.querySelector('.grow');
+    if (gameContainer) {
+        const infoContainer = document.createElement('div');
+        infoContainer.className = 'w-full max-w-lg mx-auto text-center';
+        infoContainer.appendChild(gameStatusContainer);
+        gameContainer.insertBefore(infoContainer, gameContainer.firstChild);
+    }
+
     function checkScore() {
         if (gameState.ball.x <= 0) {
             gameState.scores.player2++;
             if (gameState.scores.player2 >= 4) {
                 gameState.running = false;
-                showWinnerMessage(ctx, canvas, "Player 2 Wins!");
+                showWinnerMessage(ctx, canvas, "Player 2 wins!");
                 reportResultToServer(gameState);
             } else {
                 resetBall(gameState, 0);
@@ -26,7 +50,7 @@ export function setupLocalGame(shadowRoot: ShadowRoot | null) {
             gameState.scores.player1++;
             if (gameState.scores.player1 >= 4) {
                 gameState.running = false;
-                showWinnerMessage(ctx, canvas, "Player 1 Wins!");
+                showWinnerMessage(ctx, canvas,  "Player 1 wins!");
                 reportResultToServer(gameState);
             } else {
                 resetBall(gameState, 1);
@@ -85,5 +109,13 @@ export function setupLocalGame(shadowRoot: ShadowRoot | null) {
         window.removeEventListener('keydown', keydownHandler);
         window.removeEventListener('keyup', keyupHandler);
         gameState.running = false;
+        
+        // Eliminar elements afegits
+        if (gameContainer) {
+            const infoContainer = gameContainer.querySelector('.w-full.max-w-lg');
+            if (infoContainer) {
+                gameContainer.removeChild(infoContainer);
+            }
+        }
     };
 }

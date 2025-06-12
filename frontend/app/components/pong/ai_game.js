@@ -13,6 +13,26 @@ export function setupAIGame(shadowRoot) {
     let lastAIUpdateTime = 0;
     let aiTargetY = 250;
     let movingToCenter = false;
+    // Afegim elements d'instruccions similars al mode online
+    const statusElement = document.createElement('div');
+    statusElement.className = 'text-center font-bold text-xl mt-2 mb-4 text-violet-900';
+    statusElement.textContent = 'Playing vs IA';
+    const instructionsElement = document.createElement('div');
+    instructionsElement.className = 'text-center text-gray-700 mt-2';
+    instructionsElement.textContent = 'Use W/S to play';
+    // Contenidor d'estat del joc
+    const gameStatusContainer = document.createElement('div');
+    gameStatusContainer.className = 'flex flex-col items-center justify-center space-y-2 mb-4';
+    gameStatusContainer.appendChild(statusElement);
+    gameStatusContainer.appendChild(instructionsElement);
+    // Afegir elements a la interfície
+    const gameContainer = shadowRoot.querySelector('.grow');
+    if (gameContainer) {
+        const infoContainer = document.createElement('div');
+        infoContainer.className = 'w-full max-w-lg mx-auto text-center';
+        infoContainer.appendChild(gameStatusContainer);
+        gameContainer.insertBefore(infoContainer, gameContainer.firstChild);
+    }
     function predictBallPosition(gameState) {
         const { ball, players } = gameState;
         if (ball.speedX <= 0)
@@ -136,5 +156,12 @@ export function setupAIGame(shadowRoot) {
         window.removeEventListener('keydown', keydownHandler);
         window.removeEventListener('keyup', keyupHandler);
         gameState.running = false;
+        // Eliminar elements afegits
+        if (gameContainer) {
+            const infoContainer = gameContainer.querySelector('.w-full.max-w-lg');
+            if (infoContainer) {
+                gameContainer.removeChild(infoContainer);
+            }
+        }
     };
 }
