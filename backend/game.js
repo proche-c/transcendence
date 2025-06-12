@@ -221,7 +221,7 @@ async function gameRoutes(fastify, options) {
       });
 
       if (room.running && gameState.running) {
-        setTimeout(() => updateGame(), 1000 / 60);
+        setTimeout(() => updateGame(), 1000 / 75);
       }
     }
 
