@@ -351,21 +351,35 @@ async function gameRoutes(fastify, options) {
   }
 
   // Reiniciar la pilota després d'un gol
-  function resetBall(roomId) {
+   function resetBall(roomId) {
     const room = fastify.gameRooms.get(roomId);
     if (!room || !room.running) return;
 
     const gameState = room.gameState;
+    
+    // Guarda qui ha rebut el gol (basant-nos en la posició actual de la pilota)
+    const goalReceivedByPlayer = (gameState.ball.x <= 0) ? 1 : 2;
+    
     gameState.ball.x = 400;
     gameState.ball.y = 250;
-    gameState.ball.speedX = gameState.ball.speedX > 0 ? -10 : 10;
+    gameState.ball.speedX = 0; // Aturem la pilota temporalment
     gameState.ball.speedY = 0;
 
+    // Enviar puntuació actualitzada
     room.players.forEach(client => {
       if (client.readyState === client.OPEN) {
         client.send(JSON.stringify({ type: "score", scores: gameState.scores }));
       }
     });
+    
+    // Esperar 2 segons i després moure la pilota cap al jugador que ha rebut el gol
+    setTimeout(() => {
+      if (room && room.running) {
+        // Si el gol el va rebre el jugador 1, la pilota va cap a l'esquerra (-10)
+        // Si el gol el va rebre el jugador 2, la pilota va cap a la dreta (10)
+        gameState.ball.speedX = (goalReceivedByPlayer === 1) ? -10 : 10;
+      }
+    }, 2000);
   }
   
   // Programar neteja periòdica de sales inactives
