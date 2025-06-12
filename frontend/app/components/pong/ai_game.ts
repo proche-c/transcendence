@@ -105,7 +105,7 @@ export function setupAIGame(shadowRoot: ShadowRoot | null) {
         gameState.ball.x = 400;
         gameState.ball.y = 250;
         gameState.ball.speedY = 0;
-        gameState.ball.speedX = flag === 0 ? -6 : 6;
+        gameState.ball.speedX = flag === 0 ? -10 : 10;
     }
 
     const keydownHandler = (e: KeyboardEvent) => {

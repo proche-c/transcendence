@@ -7,7 +7,7 @@ export function createInitialGameState(): GameState {
             player1: { x: 30, y: 200, width: 10, height: 80, orientation: 'vertical' },
             player2: { x: 740, y: 200, width: 10, height: 80, orientation: 'vertical' }
         },
-        ball: { x: 400, y: 250, speedX: 6, speedY: 0 },
+        ball: { x: 400, y: 250, speedX: 10, speedY: 0 },
         scores: { player1: 0, player2: 0 },
         running: true
     };
@@ -70,7 +70,7 @@ export function resetBall(gameState: GameState, flag: number) {
     gameState.ball.x = 400;
     gameState.ball.y = 250;
     gameState.ball.speedY = 0;
-    gameState.ball.speedX = flag === 0 ? -6 : 6;
+    gameState.ball.speedX = flag === 0 ? -10 : 10;
 }
 
 export function resetCrazyBall(gameState: CrazyGameState) {
@@ -80,7 +80,7 @@ export function resetCrazyBall(gameState: CrazyGameState) {
     
     // Velocidad aleatoria para que la bola no salga siempre en la misma dirección
     const angle = Math.random() * Math.PI * 2;
-    const speed = 7;
+    const speed = 10;
     gameState.ball.speedX = Math.cos(angle) * speed;
     gameState.ball.speedY = Math.sin(angle) * speed;
 }
