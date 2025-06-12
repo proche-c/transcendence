@@ -104,7 +104,22 @@ export function setupOnlineGame(shadowRoot) {
                     gameStarted = false;
                     statusElement.textContent = data.message;
                     statusElement.className = 'text-center font-bold text-xl mt-2 mb-4 text-red-600';
-                    instructionsElement.textContent = 'Esperant nous jugadors...';
+                    // Mostrar missatge d'error i botó per tornar al menú
+                    instructionsElement.textContent = 'La partida ha finalitzat. Torna al menú principal per jugar de nou.';
+                    // Afegir un botó per tornar al menú principal
+                    // Mostrar missatge a la pantalla
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#ff6b6b';
+                    ctx.font = 'bold 28px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(data.message, canvas.width / 2, canvas.height / 2);
+                    ctx.font = 'bold 18px Arial';
+                    ctx.fillText('Torna al menú principal per començar una nova partida', canvas.width / 2, canvas.height / 2 + 40);
+                    // Si s'ha desconnectat forçosament, tanquem la connexió
+                    if (data.forceDisconnect) {
+                        socket.close();
+                    }
                     break;
             }
         }

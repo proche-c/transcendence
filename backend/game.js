@@ -135,34 +135,26 @@ async function gameRoutes(fastify, options) {
         }
       });
 
-      // Gestionar la desconnexió
+            // Gestionar la desconnexió
       connection.on('close', () => {
         fastify.websocketGames = fastify.websocketGames.filter(client => client !== connection);
         
         const room = fastify.gameRooms.get(connection.roomId);
         if (room) {
-          room.players = room.players.filter(client => client !== connection);
+          // Notificar als jugadors restants abans d'eliminar la sala
+          room.players.filter(client => client !== connection).forEach(client => {
+            if (client.readyState === client.OPEN) {
+              client.send(JSON.stringify({ 
+                type: "gameEnd", 
+                message: "Un jugador s'ha desconnectat. La partida ha finalitzat.",
+                forceDisconnect: true
+              }));
+            }
+          });
           
-          if (room.running) {
-            room.running = false;
-            room.gameState.running = false;
-            
-            // Notificar als jugadors restants
-            room.players.forEach(client => {
-              if (client.readyState === client.OPEN) {
-                client.send(JSON.stringify({ 
-                  type: "gameEnd", 
-                  message: "Un jugador s'ha desconnectat. La partida ha finalitzat."
-                }));
-              }
-            });
-          }
-          
-          // Si la sala està buida, l'eliminem
-          if (room.players.length === 0) {
-            fastify.gameRooms.delete(connection.roomId);
-            fastify.log.info(`Sala ${connection.roomId} eliminada per falta de jugadors`);
-          }
+          // Eliminar la sala immediatament
+          fastify.gameRooms.delete(connection.roomId);
+          fastify.log.info(`Sala ${connection.roomId} eliminada perquè un jugador s'ha desconnectat`);
         }
         
         fastify.log.info(`Jugador desconnectat: ${connection.playerId} de la sala ${connection.roomId}`);
