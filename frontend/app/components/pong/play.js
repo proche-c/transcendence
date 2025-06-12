@@ -118,7 +118,7 @@ class PlayComponent extends HTMLElement {
                     </div>
                 </div>
                 <button id="backToMenuBtn" class="mt-4 p-4 text-lg font-bold text-white bg-gray-800 hover:bg-gray-900 transition-colors rounded-lg shadow-md">
-                    Volver
+                    Back to Menu
                 </button>
             </div>
         </div>
@@ -146,7 +146,7 @@ class PlayComponent extends HTMLElement {
                     </div>
                 </div>
                 <button id="backToMenuBtn" class="mt-4 p-4 text-lg font-bold text-white bg-gray-800 hover:bg-gray-900 transition-colors rounded-lg shadow-md">
-                    Volver
+                    Back to Menu
                 </button>
             </div>
         </div>

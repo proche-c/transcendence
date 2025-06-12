@@ -70,7 +70,10 @@ export function resetBall(gameState: GameState, flag: number) {
     gameState.ball.x = 400;
     gameState.ball.y = 250;
     gameState.ball.speedY = 0;
-    gameState.ball.speedX = flag === 0 ? -10 : 10;
+    gameState.ball.speedX = 0;
+    setTimeout(() => {
+        gameState.ball.speedX = flag === 0 ? -10 : 10;
+    }, 2000);
 }
 
 export function resetCrazyBall(gameState: CrazyGameState) {

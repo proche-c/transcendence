@@ -236,9 +236,9 @@ async function gameRoutes(fastify, options) {
     const gameState = room.gameState;
     
     if (gameState.scores.player1 >= 4) {
-      endGame(roomId, "Jugador 1 gana!", 1);
+      endGame(roomId, "Player 1 wins!", 1);
     } else if (gameState.scores.player2 >= 4) {
-      endGame(roomId, "Jugador 2 gana!", 2);
+      endGame(roomId, "Player 2 wins!", 2);
     }
   }
 

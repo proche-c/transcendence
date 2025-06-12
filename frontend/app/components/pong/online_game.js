@@ -58,21 +58,21 @@ export function setupOnlineGame(shadowRoot) {
                     gameState = data.gameState;
                     roomId = data.roomId;
                     console.log(`Inicialitzat com a Jugador ${playerNumber} a sala ${roomId}`);
-                    roomIndicator.textContent = `Sala: ${roomId || 'desconeguda'}`;
-                    statusElement.textContent = `Jugador ${playerNumber}`;
+                    roomIndicator.textContent = `Room: ${roomId || 'unknown'}`;
+                    statusElement.textContent = `Player ${playerNumber}`;
                     updateInstructions();
                     if (data.gameState.running) {
                         gameStarted = true;
                         statusElement.className = 'text-center font-bold text-xl mt-2 mb-4 text-green-700';
                     }
                     else {
-                        statusElement.textContent += ' - Esperant oponent...';
+                        statusElement.textContent += ' - Waiting opponent...';
                     }
                     requestAnimationFrame(draw);
                     break;
                 case 'gameStart':
                     gameStarted = true;
-                    statusElement.textContent = `Jugador ${playerNumber} - Partida en curs`;
+                    statusElement.textContent = `Player ${playerNumber} - Game running`;
                     statusElement.className = 'text-center font-bold text-xl mt-2 mb-4 text-green-700';
                     break;
                 case 'update':
@@ -91,7 +91,7 @@ export function setupOnlineGame(shadowRoot) {
                         ` (${data.finalScore.player1} - ${data.finalScore.player2})` : '';
                     statusElement.textContent = `${data.message}${resultText}`;
                     statusElement.className = 'text-center font-bold text-xl mt-2 mb-4 text-violet-900';
-                    instructionsElement.textContent = 'Partida finalitzada.';
+                    instructionsElement.textContent = 'The game has ended.';
                     // Animació per mostrar el guanyador
                     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -105,7 +105,7 @@ export function setupOnlineGame(shadowRoot) {
                     statusElement.textContent = data.message;
                     statusElement.className = 'text-center font-bold text-xl mt-2 mb-4 text-red-600';
                     // Mostrar missatge d'error i botó per tornar al menú
-                    instructionsElement.textContent = 'La partida ha finalitzat. Torna al menú principal per jugar de nou.';
+                    instructionsElement.textContent = 'The game has ended. Return to the main menu to play again.';
                     // Afegir un botó per tornar al menú principal
                     // Mostrar missatge a la pantalla
                     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
@@ -115,7 +115,7 @@ export function setupOnlineGame(shadowRoot) {
                     ctx.textAlign = 'center';
                     ctx.fillText(data.message, canvas.width / 2, canvas.height / 2);
                     ctx.font = 'bold 18px Arial';
-                    ctx.fillText('Torna al menú principal per començar una nova partida', canvas.width / 2, canvas.height / 2 + 40);
+                    ctx.fillText('Return to the main menu to start a new game', canvas.width / 2, canvas.height / 2 + 40);
                     // Si s'ha desconnectat forçosament, tanquem la connexió
                     if (data.forceDisconnect) {
                         socket.close();
@@ -128,7 +128,7 @@ export function setupOnlineGame(shadowRoot) {
         }
     };
     function updateInstructions() {
-        instructionsElement.textContent = 'Controla amb las flechas ↑↓ o las teclas W/S';
+        instructionsElement.textContent = 'Control with arrows ↑↓ or keys W/S';
     }
     const keydownHandler = (e) => {
         if (!playerNumber || !gameStarted)

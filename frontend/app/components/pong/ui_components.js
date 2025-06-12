@@ -58,10 +58,10 @@ export function showStartMessage(ctx, canvas) {
     ctx.fillStyle = '#ffffff';
     ctx.font = '36px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText("¡Preparados para jugar!", canvas.width / 2, canvas.height / 2 - 40);
+    ctx.fillText("¡Ready to play!", canvas.width / 2, canvas.height / 2 - 40);
     // Instruccions
     ctx.font = '28px Arial';
-    ctx.fillText("Pulsa ENTER para empezar", canvas.width / 2, canvas.height / 2 + 20);
+    ctx.fillText("Press ENTER to begin", canvas.width / 2, canvas.height / 2 + 20);
 }
 export function startCountdown(ctx, canvas, gameState, onComplete) {
     let count = 3;

@@ -85,7 +85,7 @@ export function setupCrazyGame(shadowRoot: ShadowRoot | null) {
             if (gameState.lives.left <= 0) {
                 gameState.running = false;
                 gameState.loser = 'left';
-                showLoserMessage(ctx, canvas, "Jugador izquierdo ha perdido!");
+                showLoserMessage(ctx, canvas, "Left player has lost!");
             }
         } else if (ball.x >= boardSize) {
             gameState.lives.right--;
@@ -93,7 +93,7 @@ export function setupCrazyGame(shadowRoot: ShadowRoot | null) {
             if (gameState.lives.right <= 0) {
                 gameState.running = false;
                 gameState.loser = 'right';
-                showLoserMessage(ctx, canvas, "Jugador derecho ha perdido!");
+                showLoserMessage(ctx, canvas, "Right player has lost!");
             }
         } else if (ball.y <= 0) {
             gameState.lives.top--;
@@ -101,7 +101,7 @@ export function setupCrazyGame(shadowRoot: ShadowRoot | null) {
             if (gameState.lives.top <= 0) {
                 gameState.running = false;
                 gameState.loser = 'top';
-                showLoserMessage(ctx, canvas, "Jugador superior ha perdido!");
+                showLoserMessage(ctx, canvas, "Top player has lost!");
             }
         } else if (ball.y >= boardSize) {
             gameState.lives.bottom--;
@@ -109,7 +109,7 @@ export function setupCrazyGame(shadowRoot: ShadowRoot | null) {
             if (gameState.lives.bottom <= 0) {
                 gameState.running = false;
                 gameState.loser = 'bottom';
-                showLoserMessage(ctx, canvas, "Jugador inferior ha perdido!");
+                showLoserMessage(ctx, canvas, "Bottom player has lost!");
             }
         }
     }

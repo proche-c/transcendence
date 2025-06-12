@@ -1,4 +1,4 @@
-import { createInitialGameState, updateBallPosition, checkPaddleCollisions, reportResultToServer } from './game_utils.js';
+import { createInitialGameState, updateBallPosition, checkPaddleCollisions, reportResultToServer, resetBall } from './game_utils.js';
 import { renderLocalGame, showWinnerMessage, showStartMessage, startCountdown } from './ui_components.js';
 export function setupAIGame(shadowRoot) {
     if (!shadowRoot)
@@ -90,12 +90,6 @@ export function setupAIGame(shadowRoot) {
                 resetBall(gameState, 1);
             }
         }
-    }
-    function resetBall(gameState, flag) {
-        gameState.ball.x = 400;
-        gameState.ball.y = 250;
-        gameState.ball.speedY = 0;
-        gameState.ball.speedX = flag === 0 ? -10 : 10;
     }
     const keydownHandler = (e) => {
         keysPressed[e.key.toLowerCase()] = true;
