@@ -115,6 +115,7 @@ class ChatComponent extends HTMLElement {
 								<div id="chat-channels" class="flex bg-neutral-50 flex-col rounded-t-2xl"></div>
 								<div id="chat-dms" class="flex bg-neutral-50 flex-col flex-grow rounded-b-2xl"></div>
 							</div>
+							<div id="profileCard" class="fixed z-50 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
 							<div class="flex flex-col flex-[2]">
 			
 								<div class="flex items-center justify-between border-b border-violet-600 m-1 p-1">
@@ -168,6 +169,29 @@ class ChatComponent extends HTMLElement {
                     this.messageInput.value = "";
             }
         });
+        // const allProfileButtons = [
+        // 	...this.shadowRoot?.querySelectorAll(".user-button") ?? [],
+        // 	...this.shadowRoot?.querySelectorAll(".friend-button") ?? []
+        // ];
+        // allProfileButtons.forEach((button) => {
+        // 	button.addEventListener("click", (event) => {
+        // 		const target = event.currentTarget as HTMLElement;
+        // 		const username = target.getAttribute("data-username") || target.getAttribute("data-friendname");
+        // 		if (username) {
+        // 			this.showUserProfile(username);
+        // 		}
+        // 	});
+        // });
+    }
+    showUserProfile(username) {
+        var _a;
+        const profileCard = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelector("#profileCard");
+        if (profileCard) {
+            profileCard.innerHTML = "";
+            const publicProfile = document.createElement("pong-public-profile");
+            publicProfile.setAttribute("username", username);
+            profileCard.appendChild(publicProfile);
+        }
     }
     async printListChannels() {
         var _a, _b;
@@ -209,7 +233,12 @@ class ChatComponent extends HTMLElement {
                 const btn = document.createElement("button");
                 btn.textContent = chat.other_user;
                 btn.className = "text-left p-1 hover:bg-violet-100 w-full border-b border-gray-300 text-[11px] md:text-[16px]";
-                btn.addEventListener("click", async () => {
+                btn.addEventListener("click", async (event) => {
+                    const target = event.currentTarget;
+                    const username = chat.other_user;
+                    if (username) {
+                        this.showUserProfile(username);
+                    }
                     this.updateCurrentChat(chat.other_user);
                     this.printChatMessages(chat.id);
                 });
@@ -323,6 +352,7 @@ class ChatComponent extends HTMLElement {
                 (_d = this.chats) === null || _d === void 0 ? void 0 : _d.chatrooms.push(newChatroom);
                 this.updateCurrentChat(channelNameInput.value);
                 chatroomDropdown.classList.add('hidden');
+                channelNameInput.value = "";
                 this.printListChannels();
             });
         }

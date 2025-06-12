@@ -58,19 +58,20 @@ class FriendsComponent extends HTMLElement {
             const avatarUrl = `https://${SERVER_IP}:8443/api/static/${avatar}`;
             const displayName = user.username.length > 7 ? user.username.slice(0, 4) + "..." : user.username;
             return `
-            <div class="flex m-1 ml-3 items center">
-                <div class="w-6 h-6 md:w-8 md:h-8 rounded-full overflow-hidden border-1 md:border-2 border-black flex items-center justify-center bg-emerald-200">
-                    <img src="${avatarUrl}" class="w-full h-full object-cover" />
-                </div>
-                <button class="user-button ml-1 flex-1 text-left text-[10px] md:text-[14px]" data-username="${user.username}">${displayName}</button>
-                <div class="ml-auto flex items-center space-x-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    <button class="add-button text-[10px] md:text-[14px] text-green-700 font-bold italic" name-to-add="${user.username}">Add friend</button>
-                </div>
-            </div>
-        `;
+				<div class="flex m-1 ml-3 items center">
+					<div class="w-6 h-6 md:w-8 md:h-8 rounded-full overflow-hidden border-1 md:border-2 border-black flex items-center justify-center bg-emerald-200">
+						
+					
+					</div>
+					<button class="user-button ml-1 flex-1 text-left text-[10px] md:text-[14px]" data-username="${user.username}">${displayName}</button>
+					<div class="ml-auto flex items-center space-x-1">
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" class="size-6">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+						</svg>
+						<button class="add-button text-[10px] md:text-[14px] text-green-700 font-bold italic" name-to-add="${user.username}">Add friend</button>
+					</div>
+				</div>
+			`;
         })
             .join("");
         this.shadowRoot.innerHTML = `
